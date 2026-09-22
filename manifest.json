@@ -1,0 +1,16 @@
+{
+  "name": "Painel RazenLab",
+  "short_name": "RazenLab",
+  "description": "Pedidos, precificação e vitrine da RazenLab",
+  "start_url": "./painel.html",
+  "scope": "./",
+  "display": "standalone",
+  "orientation": "portrait",
+  "background_color": "#020A1F",
+  "theme_color": "#030C2B",
+  "lang": "pt-BR",
+  "icons": [
+    { "src": "assets/icon-192.png", "sizes": "192x192", "type": "image/png" },
+    { "src": "assets/icon-512.png", "sizes": "512x512", "type": "image/png" }
+  ]
+}

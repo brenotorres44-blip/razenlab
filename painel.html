@@ -1,0 +1,1230 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta name="robots" content="noindex, nofollow">
+<title>Painel RazenLab</title>
+<link rel="manifest" href="manifest.json">
+<meta name="theme-color" content="#030C2B">
+<link rel="icon" type="image/png" href="assets/favicon.png">
+<link rel="apple-touch-icon" href="assets/apple-touch-icon.png">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Sora:wght@500;600;700&family=Manrope:wght@400;500;600&display=swap" rel="stylesheet">
+<style>
+:root{
+  --bed:#020A1F; --panel:#0B1C40; --raised:#12295A; --line:#1A3366;
+  --electric:#1E9BFF; --cyan:#5CE1FF; --spark:#F28A14; --mint:#3FD9A4;
+  --text:#EEF4FF; --muted:#9DB0D3; --faint:#6A7FA8; --rose:#E0808A; --violet:#9B8BFF;
+  --display:"Sora","Segoe UI",system-ui,sans-serif;
+  --body:"Manrope","Segoe UI",system-ui,sans-serif;
+  --mono:ui-monospace,SFMono-Regular,Menlo,Consolas,monospace;
+}
+*{box-sizing:border-box}
+html,body{margin:0;padding:0}
+body{background:var(--bed);color:var(--text);font-family:var(--body);font-size:15px;line-height:1.5;-webkit-font-smoothing:antialiased;padding-bottom:env(safe-area-inset-bottom)}
+.wrap{max-width:1120px;margin:0 auto;padding:18px 16px 40px}
+h2{font-family:var(--display);font-size:18px;margin:0 0 14px;font-weight:600;letter-spacing:-.2px}
+h3{font-size:13px;margin:0 0 10px;font-weight:600;color:var(--muted)}
+p{margin:0 0 10px}
+.sub{color:var(--muted);font-size:13px}
+.mono{font-family:var(--mono);font-variant-numeric:tabular-nums}
+
+header{position:sticky;top:0;z-index:20;background:rgba(2,10,31,.92);backdrop-filter:blur(10px);-webkit-backdrop-filter:blur(10px);border-bottom:1px solid var(--line);padding-top:env(safe-area-inset-top)}
+.head-in{max-width:1120px;margin:0 auto;padding:12px 16px 0}
+.brand{display:flex;align-items:center;gap:10px}
+.brand img{width:34px;height:34px;border-radius:50%;box-shadow:0 0 0 1px rgba(92,225,255,.35),0 0 14px rgba(30,155,255,.3)}
+.brand b{font-family:var(--display);font-weight:700;font-size:17px;letter-spacing:.4px}
+.brand b span{color:var(--electric)}
+.brand .tagp{font-size:12px;color:var(--faint);margin-left:4px}
+.brand a{margin-left:auto;font-size:13px;color:var(--muted);text-decoration:none;border:1px solid var(--line);border-radius:999px;padding:6px 12px}
+.brand a:hover{border-color:var(--electric);color:var(--text)}
+nav{display:flex;gap:2px;overflow-x:auto;margin-top:10px;scrollbar-width:none}
+nav::-webkit-scrollbar{display:none}
+nav button{background:none;border:none;color:var(--muted);font-size:14px;font-family:var(--body);font-weight:500;padding:10px 12px;cursor:pointer;border-bottom:2px solid transparent;white-space:nowrap}
+nav button.on{color:var(--text);border-bottom-color:var(--electric)}
+
+.card{background:var(--panel);border:1px solid var(--line);border-radius:14px;padding:18px;margin-bottom:14px}
+.grid{display:grid;gap:12px}
+@media(min-width:640px){.g2{grid-template-columns:1fr 1fr}.g3{grid-template-columns:repeat(3,1fr)}.g4{grid-template-columns:repeat(4,1fr)}}
+@media(min-width:900px){.split{display:grid;grid-template-columns:3fr 2fr;gap:14px;align-items:start}}
+
+label{display:block}
+label>span.lbl{display:block;font-size:13px;color:var(--muted);margin-bottom:5px;font-weight:500}
+.hint{display:block;font-size:12px;color:var(--faint);margin-top:4px}
+input,select,textarea{width:100%;background:var(--bed);border:1px solid var(--line);border-radius:10px;color:var(--text);padding:10px 12px;font-size:15px;font-family:var(--body);outline:none}
+input:focus,select:focus,textarea:focus{border-color:var(--electric)}
+input.num{font-family:var(--mono);font-variant-numeric:tabular-nums}
+.field-row{display:flex;align-items:center;gap:8px;background:var(--bed);border:1px solid var(--line);border-radius:10px;padding:0 12px}
+.field-row:focus-within{border-color:var(--electric)}
+.field-row input{border:none;background:none;padding:10px 0}
+.field-row .unit{color:var(--muted);font-size:13px;white-space:nowrap}
+textarea{resize:vertical;min-height:72px}
+.check{display:flex;align-items:center;gap:10px;cursor:pointer}
+.check input{width:18px;height:18px;flex:0 0 auto;accent-color:var(--electric)}
+
+button.btn{background:var(--raised);border:1px solid var(--line);color:var(--text);border-radius:10px;padding:10px 14px;font-size:14px;font-family:var(--body);font-weight:500;cursor:pointer}
+button.btn:hover{border-color:var(--muted)}
+button.primary{background:var(--electric);border-color:var(--electric);color:#fff;font-weight:600}
+button.primary:hover{border-color:var(--cyan)}
+button.danger{color:var(--rose)}
+button.link{background:none;border:none;color:var(--muted);font-size:13px;cursor:pointer;padding:4px 0;font-family:var(--body);text-decoration:underline}
+.row{display:flex;gap:8px;flex-wrap:wrap;align-items:center}
+.right{margin-left:auto}
+
+.kpi{background:var(--panel);border:1px solid var(--line);border-radius:14px;padding:16px}
+.kpi .v{font-family:var(--display);font-size:24px;font-weight:600;letter-spacing:-.5px;margin-top:4px}
+.kpi .l{font-size:13px;color:var(--muted)}
+.big{font-family:var(--display);font-size:38px;font-weight:700;color:var(--cyan);letter-spacing:-1px;line-height:1.1}
+.line-item{display:flex;justify-content:space-between;gap:12px;font-size:14px;padding:5px 0}
+.line-item span:first-child{color:var(--muted)}
+.divider{border-top:1px solid var(--line);margin:14px 0}
+.bar-wrap{margin-bottom:12px}
+.bar{height:4px;border-radius:2px;margin-bottom:2px}
+
+.item{display:flex;gap:12px;align-items:center;padding:13px 0;border-bottom:1px solid var(--line);cursor:pointer}
+.item:last-child{border-bottom:none}
+.item .grow{flex:1;min-width:0}
+.item .name{font-size:15px;font-weight:500;margin-bottom:2px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.item .num-ped{font-family:var(--mono);font-size:12px;color:var(--faint);margin-right:6px}
+.thumb{width:56px;height:56px;border-radius:10px;object-fit:cover;background:var(--raised);flex:0 0 auto}
+.tag{display:inline-block;font-size:11px;font-weight:600;padding:3px 9px;border-radius:20px;border:1px solid;white-space:nowrap}
+.empty{color:var(--muted);font-size:14px;text-align:center;padding:26px 10px}
+
+.overlay{position:fixed;inset:0;background:rgba(1,6,18,.82);z-index:50;display:flex;align-items:flex-end;justify-content:center;overflow-y:auto}
+@media(min-width:700px){.overlay{align-items:flex-start;padding:36px 16px}}
+.modal{background:var(--panel);border:1px solid var(--line);border-radius:18px 18px 0 0;width:100%;max-width:740px;padding:20px;margin-top:40px}
+@media(min-width:700px){.modal{border-radius:18px;margin-top:0}}
+.modal-head{display:flex;align-items:center;gap:12px;margin-bottom:16px}
+.modal-head h2{margin:0;flex:1}
+.close{background:none;border:none;color:var(--muted);font-size:26px;line-height:1;cursor:pointer;padding:0 4px}
+
+.toast{position:fixed;left:50%;transform:translateX(-50%);bottom:24px;background:var(--raised);border:1px solid var(--line);color:var(--text);padding:12px 18px;border-radius:12px;font-size:14px;z-index:99;box-shadow:0 8px 24px rgba(0,0,0,.45);max-width:90vw}
+.filters{display:flex;gap:6px;overflow-x:auto;padding-bottom:6px;scrollbar-width:none}
+.filters::-webkit-scrollbar{display:none}
+.chip{background:none;border:1px solid var(--line);color:var(--muted);border-radius:20px;padding:6px 12px;font-size:13px;cursor:pointer;white-space:nowrap;font-family:var(--body)}
+.chip.on{background:var(--electric);color:#fff;border-color:var(--electric)}
+.fotos{display:flex;gap:10px;flex-wrap:wrap}
+.foto{position:relative;width:96px;height:96px;border-radius:12px;overflow:hidden;border:1px solid var(--line)}
+.foto img{width:100%;height:100%;object-fit:cover}
+.foto button{position:absolute;top:4px;right:4px;width:24px;height:24px;border-radius:50%;border:none;background:rgba(2,10,31,.85);color:#fff;cursor:pointer;font-size:14px;line-height:1}
+.foto-add{width:96px;height:96px;border-radius:12px;border:1px dashed var(--line);display:grid;place-items:center;color:var(--muted);font-size:13px;cursor:pointer;text-align:center;background:none;font-family:var(--body)}
+.foto-add:hover{border-color:var(--electric);color:var(--text)}
+.steps-pub{counter-reset:p;margin:0;padding:0;list-style:none}
+.steps-pub li{counter-increment:p;padding:8px 0 8px 34px;position:relative;font-size:14px;color:var(--muted)}
+.steps-pub li::before{content:counter(p);position:absolute;left:0;top:8px;width:22px;height:22px;border-radius:50%;background:var(--raised);color:var(--cyan);font-size:12px;font-weight:600;display:grid;place-items:center}
+.steps-pub b{color:var(--text);font-weight:600}
+</style>
+</head>
+<body>
+
+<header>
+  <div class="head-in">
+    <div class="brand">
+      <img id="logo-topo" src="data:image/jpeg;base64,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" alt="">
+      <b>RAZEN<span>LAB</span></b><span class="tagp">painel</span>
+      <a href="index.html" target="_blank" rel="noopener">Ver site</a>
+    </div>
+    <nav id="nav">
+      <button data-tab="painel" class="on">Início</button>
+      <button data-tab="pedidos">Pedidos</button>
+      <button data-tab="calculadora">Calculadora</button>
+      <button data-tab="vitrine">Vitrine</button>
+      <button data-tab="filamentos">Filamentos</button>
+      <button data-tab="config">Configurações</button>
+    </nav>
+  </div>
+</header>
+
+<main class="wrap" id="view"><div class="empty">Carregando…</div></main>
+<div id="modal-root"></div>
+<input type="file" id="arquivo-backup" accept="application/json,.json" style="display:none">
+<input type="file" id="arquivo-fotos" accept="image/*" multiple style="display:none">
+
+<script>
+"use strict";
+
+/* ============================================================
+   1. DADOS
+   Pedidos, filamentos e configurações → localStorage.
+   Vitrine (tem fotos, pesa mais) → IndexedDB.
+   ============================================================ */
+const CHAVE = "razenlab.v1";
+const CHAVE_ANTIGA = "atelie3d.v1";
+
+const CONFIG_PADRAO = {
+  precoFilamento: 120,   // R$/kg — usado quando o pedido não aponta para um filamento do catálogo
+  potencia: 200,         // W médios durante a impressão
+  precoKwh: 0.92,        // R$/kWh com impostos
+  valorImpressora: 2000, // R$
+  vidaUtil: 5000,        // horas de vida estimada
+  manutencaoHora: 0.5,   // R$/h em bicos, correias, plataforma
+  horaTrabalho: 30,      // R$/h do seu tempo
+  taxaFalha: 8,          // % do custo guardado para impressões perdidas
+  margem: 60,            // % de lucro sobre o custo
+  taxaPagamento: 5       // % da maquininha ou marketplace
+};
+
+const NEGOCIO_PADRAO = {
+  nome: "RazenLab",
+  slogan: "Peças personalizadas, presentes, protótipos e reposições. Você manda a ideia ou o arquivo, eu cuido do resto.",
+  sobre: "Preencha o que souber. A mensagem vai pronta para o WhatsApp e eu respondo com o orçamento.",
+  whatsapp: "", instagram: "", email: "", cidade: "", responsavel: "",
+  pagamento: "Pix, dinheiro ou cartão. 50% na aprovação e 50% na entrega.",
+  validadeDias: 7,
+  entregas: ""
+};
+
+const STATUS = {
+  orcamento: { rotulo:"Orçamento", cor:"#9DB0D3" },
+  aprovado:  { rotulo:"Aprovado",  cor:"#1E9BFF" },
+  imprimindo:{ rotulo:"Imprimindo",cor:"#F28A14" },
+  pronto:    { rotulo:"Pronto",    cor:"#9B8BFF" },
+  entregue:  { rotulo:"Entregue",  cor:"#3FD9A4" },
+  cancelado: { rotulo:"Cancelado", cor:"#E0808A" }
+};
+
+let dados = { config:{...CONFIG_PADRAO}, negocio:{...NEGOCIO_PADRAO}, filamentos:[], pedidos:[], seq:0 };
+let vitrine = [];
+let aba = "painel";
+let filtroStatus = "abertos";
+let busca = "";
+
+function normalizar(d){
+  return {
+    config: {...CONFIG_PADRAO, ...(d.config||{})},
+    negocio: {...NEGOCIO_PADRAO, ...(d.negocio||{})},
+    filamentos: d.filamentos || [],
+    pedidos: d.pedidos || [],
+    seq: d.seq || (d.pedidos||[]).reduce((m,p)=>Math.max(m, p.numero||0), 0)
+  };
+}
+function carregar(){
+  try{
+    let bruto = localStorage.getItem(CHAVE);
+    if(!bruto){
+      // traz os dados da versão anterior (Ateliê 3D), se existirem
+      bruto = localStorage.getItem(CHAVE_ANTIGA);
+      if(bruto) setTimeout(()=>toast("Pedidos da versão anterior importados."), 400);
+    }
+    if(bruto) dados = normalizar(JSON.parse(bruto));
+    // numera pedidos antigos que ainda não têm número
+    dados.pedidos.slice().reverse().forEach(p => { if(!p.numero) p.numero = ++dados.seq; });
+  }catch(e){
+    toast("Não foi possível ler os dados salvos.");
+  }
+}
+function salvar(){
+  try{ localStorage.setItem(CHAVE, JSON.stringify(dados)); }
+  catch(e){ toast("O navegador recusou a gravação. Exporte um backup."); }
+}
+
+/* IndexedDB mínimo, só para a vitrine */
+const idb = {
+  db: null,
+  abrir(){
+    return new Promise((ok, erro) => {
+      if(this.db) return ok(this.db);
+      const r = indexedDB.open("razenlab", 1);
+      r.onupgradeneeded = () => r.result.createObjectStore("kv");
+      r.onsuccess = () => { this.db = r.result; ok(this.db); };
+      r.onerror = () => erro(r.error);
+    });
+  },
+  async get(k){
+    const db = await this.abrir();
+    return new Promise((ok, erro) => {
+      const r = db.transaction("kv").objectStore("kv").get(k);
+      r.onsuccess = () => ok(r.result); r.onerror = () => erro(r.error);
+    });
+  },
+  async set(k, v){
+    const db = await this.abrir();
+    return new Promise((ok, erro) => {
+      const t = db.transaction("kv", "readwrite");
+      t.objectStore("kv").put(v, k);
+      t.oncomplete = () => ok(); t.onerror = () => erro(t.error);
+    });
+  }
+};
+async function carregarVitrine(){
+  try{ vitrine = (await idb.get("vitrine")) || []; }
+  catch(e){ vitrine = []; toast("Não foi possível abrir a vitrine salva."); }
+}
+async function salvarVitrine(){
+  try{ await idb.set("vitrine", vitrine); }
+  catch(e){ toast("A vitrine não foi gravada. Pouco espaço no aparelho?"); }
+}
+
+/* ============================================================
+   2. FORMATAÇÃO E APOIO
+   ============================================================ */
+function num(v){
+  if(typeof v === "number") return isFinite(v) ? v : 0;
+  if(v == null) return 0;
+  let s = String(v).trim().replace(/\s|R\$/g,"");
+  if(/^\d{1,3}(\.\d{3})+(,\d+)?$/.test(s)) s = s.replace(/\./g,"");
+  s = s.replace(",",".");
+  const x = parseFloat(s);
+  return isFinite(x) ? x : 0;
+}
+const brl = v => (isFinite(v)?v:0).toLocaleString("pt-BR",{style:"currency",currency:"BRL"});
+const dec = (v,c=1) => (isFinite(v)?v:0).toLocaleString("pt-BR",{minimumFractionDigits:c,maximumFractionDigits:c});
+function dataBR(iso){
+  if(!iso) return "—";
+  const [a,m,d] = iso.slice(0,10).split("-");
+  return d && m && a ? `${d}/${m}/${a}` : iso;
+}
+function hoje(){
+  const d = new Date();
+  return `${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,"0")}-${String(d.getDate()).padStart(2,"0")}`;
+}
+const id = () => Date.now().toString(36) + Math.random().toString(36).slice(2,6);
+const esc = s => String(s==null?"":s).replace(/[&<>"']/g, c => ({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c]));
+const numPed = n => "#" + String(n||0).padStart(4,"0");
+
+let toastTimer;
+function toast(msg){
+  clearTimeout(toastTimer);
+  document.querySelector(".toast")?.remove();
+  const el = document.createElement("div");
+  el.className = "toast"; el.textContent = msg;
+  document.body.appendChild(el);
+  toastTimer = setTimeout(()=>el.remove(), 3200);
+}
+
+/* ============================================================
+   3. CÁLCULO DE PREÇO
+   Todas as fórmulas do sistema estão aqui.
+   ============================================================ */
+function precificar(p, cfg = dados.config){
+  const horas = num(p.horas) + num(p.minutos)/60;
+  const qtd = Math.max(1, Math.round(num(p.qtd)) || 1);
+
+  // preço do filamento: o do catálogo, se o pedido apontar para um
+  const fil = dados.filamentos.find(f => f.id === p.filamentoId);
+  const precoKg = fil ? num(fil.precoKg) : num(cfg.precoFilamento);
+
+  // custos diretos de uma peça
+  const material  = (num(p.peso)/1000) * precoKg;
+  const energia   = (num(cfg.potencia)/1000) * horas * num(cfg.precoKwh);
+  const depreciacao = num(cfg.vidaUtil) > 0 ? (num(cfg.valorImpressora)/num(cfg.vidaUtil)) * horas : 0;
+  const maquina   = depreciacao + num(cfg.manutencaoHora) * horas;
+  const trabalho  = (num(p.acabamento)/60) * num(cfg.horaTrabalho);
+  const extras    = num(p.extras);
+
+  // custo de produção: só o que depende da impressora e do seu tempo
+  const direto = material + energia + maquina + trabalho;
+
+  // reserva para o que der errado e precisar ser reimpresso
+  const falha = direto * (num(cfg.taxaFalha)/100);
+
+  // margem só sobre a produção
+  const comMargem = (direto + falha) * (1 + num(cfg.margem)/100);
+
+  // a taxa de recebimento é somada por fora, para não comer a margem
+  const t = Math.min(Math.max(num(cfg.taxaPagamento),0), 90)/100;
+
+  // extras (tinta, ímã, caixinha) entram pelo valor pago, sem margem nem reserva
+  const custo = direto + falha + extras;
+  let preco = comMargem / (1 - t) + extras;
+
+  // preço combinado manualmente substitui o calculado
+  const manual = num(p.precoManual);
+  if(manual > 0) preco = manual;
+
+  // arredonda para centavos, para o orçamento fechar na conta do cliente
+  preco = Math.round(preco*100)/100;
+
+  const taxa  = preco * t;
+  const lucro = preco - taxa - custo;
+
+  // o frete entra no total e no custo, então não altera o lucro
+  const entrega = num(p.entrega);
+  const desconto = Math.max(0, num(p.desconto));
+  const total = Math.max(0, preco*qtd - desconto) + entrega;
+
+  return {
+    horas, qtd, precoKg, fil,
+    material, energia, maquina, trabalho, extras, falha,
+    custo, taxa, lucro, preco, manual: manual > 0,
+    entrega, desconto, total,
+    custoTotal: custo*qtd + entrega,
+    lucroTotal: lucro*qtd - desconto,
+    horasTotal: horas*qtd,
+    filamentoTotal: num(p.peso)*qtd,
+    margemReal: preco > 0 ? ((lucro*qtd - desconto)/(preco*qtd))*100 : 0
+  };
+}
+
+/* ============================================================
+   4. TELAS
+   ============================================================ */
+function render(){
+  document.querySelectorAll("#nav button").forEach(b => b.classList.toggle("on", b.dataset.tab === aba));
+  const v = document.getElementById("view");
+  v.innerHTML = ({painel:viewPainel, pedidos:viewPedidos, calculadora:viewCalculadora,
+                  vitrine:viewVitrine, filamentos:viewFilamentos, config:viewConfig})[aba]();
+  if(aba === "calculadora") atualizarSimulador();
+}
+
+/* ---------- Início ---------- */
+function viewPainel(){
+  const mes = hoje().slice(0,7);
+  const entregues = dados.pedidos.filter(p => p.status==="entregue" && (p.dataEntregue||"").startsWith(mes));
+  const faturamento = entregues.reduce((s,p)=>s+num(p.total),0);
+  const lucro = entregues.reduce((s,p)=>s+num(p.lucroTotal),0);
+  const abertos = dados.pedidos.filter(p => !["entregue","cancelado"].includes(p.status));
+  const emProducao = abertos.filter(p=>p.status!=="orcamento");
+  const horasFila = emProducao.reduce((s,p)=>s+num(p.horasTotal),0);
+  const aReceber = emProducao.reduce((s,p)=>s+Math.max(0, num(p.total)-num(p.valorPago)),0);
+  const prazos = abertos.filter(p=>p.prazo).sort((a,b)=>a.prazo.localeCompare(b.prazo)).slice(0,6);
+  const atrasados = abertos.filter(p=>p.prazo && p.prazo < hoje() && p.status!=="orcamento").length;
+
+  return `
+  <div class="grid g4" style="margin-bottom:14px">
+    <div class="kpi"><div class="l">Faturado no mês</div><div class="v mono">${brl(faturamento)}</div>
+      <div class="sub">${entregues.length} entregue${entregues.length===1?"":"s"}</div></div>
+    <div class="kpi"><div class="l">Lucro no mês</div><div class="v mono" style="color:var(--mint)">${brl(lucro)}</div>
+      <div class="sub">descontados custos e taxas</div></div>
+    <div class="kpi"><div class="l">A receber</div><div class="v mono">${brl(aReceber)}</div>
+      <div class="sub">em pedidos aprovados</div></div>
+    <div class="kpi"><div class="l">Fila de impressão</div><div class="v mono">${dec(horasFila)} h</div>
+      <div class="sub">${emProducao.length} pedido${emProducao.length===1?"":"s"}${atrasados?` · <span style="color:var(--spark)">${atrasados} atrasado${atrasados===1?"":"s"}</span>`:""}</div></div>
+  </div>
+  <div class="split">
+    <div class="card">
+      <h2>Próximos prazos</h2>
+      ${prazos.length ? prazos.map(itemPedido).join("") :
+        `<div class="empty">Nenhum pedido com prazo marcado.<br><button class="btn primary" style="margin-top:12px" data-acao="novo">Criar pedido</button></div>`}
+    </div>
+    <div class="card">
+      <h2>Resumo</h2>
+      <div class="line-item"><span>Orçamentos aguardando resposta</span><span class="mono">${dados.pedidos.filter(p=>p.status==="orcamento").length}</span></div>
+      <div class="line-item"><span>Prontos para entregar</span><span class="mono">${dados.pedidos.filter(p=>p.status==="pronto").length}</span></div>
+      <div class="line-item"><span>Trabalhos na vitrine</span><span class="mono">${vitrine.filter(v=>v.visivel!==false).length}</span></div>
+      <div class="line-item"><span>Total de pedidos</span><span class="mono">${dados.pedidos.length}</span></div>
+      <div class="divider"></div>
+      <button class="btn primary" style="width:100%" data-acao="novo">Novo pedido</button>
+      ${!dados.negocio.whatsapp ? `<p class="sub" style="margin-top:12px">Falta cadastrar seu WhatsApp em Configurações — o site usa ele no botão de orçamento.</p>` : ""}
+    </div>
+  </div>`;
+}
+
+/* ---------- Pedidos ---------- */
+function itemPedido(p){
+  const st = STATUS[p.status] || STATUS.orcamento;
+  const atrasado = p.prazo && p.prazo < hoje() && !["entregue","cancelado","orcamento"].includes(p.status);
+  const pendente = p.status!=="orcamento" && p.status!=="cancelado" && num(p.valorPago) < num(p.total) - 0.01;
+  return `
+  <div class="item" data-abrir="${p.id}">
+    <div class="grow">
+      <div class="name"><span class="num-ped">${numPed(p.numero)}</span>${esc(p.peca || "Peça sem nome")}</div>
+      <div class="sub">${esc(p.cliente || "Sem cliente")} · ${num(p.qtd)} un.${p.prazo ? ` · <span style="${atrasado?"color:var(--spark)":""}">entrega ${dataBR(p.prazo)}</span>` : ""}${pendente && num(p.valorPago)>0 ? " · pago em parte" : ""}</div>
+    </div>
+    <div style="text-align:right">
+      <div class="mono" style="color:var(--cyan)">${brl(num(p.total))}</div>
+      <span class="tag" style="color:${st.cor};border-color:${st.cor}44;background:${st.cor}18;margin-top:4px">${st.rotulo}</span>
+    </div>
+  </div>`;
+}
+function viewPedidos(){
+  let lista = dados.pedidos.slice().sort((a,b)=>(b.numero||0)-(a.numero||0));
+  if(filtroStatus === "abertos") lista = lista.filter(p=>!["entregue","cancelado"].includes(p.status));
+  else if(filtroStatus !== "todos") lista = lista.filter(p=>p.status===filtroStatus);
+  if(busca.trim()){
+    const b = busca.toLowerCase().replace("#","");
+    lista = lista.filter(p => (p.peca||"").toLowerCase().includes(b) || (p.cliente||"").toLowerCase().includes(b) || String(p.numero).includes(b));
+  }
+  const chips = [["abertos","Abertos"],["todos","Todos"]].concat(Object.entries(STATUS).map(([k,v])=>[k,v.rotulo]));
+  return `
+  <div class="row" style="margin-bottom:12px">
+    <input id="busca" placeholder="Buscar por peça, cliente ou número" value="${esc(busca)}" style="flex:1;min-width:200px">
+    <button class="btn primary" data-acao="novo">Novo pedido</button>
+  </div>
+  <div class="filters" style="margin-bottom:12px">
+    ${chips.map(([k,r])=>`<button class="chip ${filtroStatus===k?"on":""}" data-filtro="${k}">${r}</button>`).join("")}
+  </div>
+  <div class="card" id="lista-pedidos">
+    ${lista.length ? lista.map(itemPedido).join("") : `<div class="empty">Nenhum pedido aqui.</div>`}
+  </div>`;
+}
+
+/* ---------- Campos de peça (calculadora e pedido) ---------- */
+function camposPeca(p){
+  const opts = dados.filamentos.map(f =>
+    `<option value="${f.id}" ${p.filamentoId===f.id?"selected":""}>${esc(f.nome)} — ${brl(num(f.precoKg))}/kg</option>`).join("");
+  return `
+  <div class="grid g2">
+    <label><span class="lbl">Peça</span><input name="peca" value="${esc(p.peca||"")}" placeholder="Vaso hexagonal"></label>
+    <label><span class="lbl">Quantidade</span><input class="num" name="qtd" inputmode="numeric" value="${p.qtd??1}"></label>
+    <label><span class="lbl">Filamento</span>
+      <select name="filamentoId"><option value="">Preço padrão (${brl(num(dados.config.precoFilamento))}/kg)</option>${opts}</select></label>
+    <label><span class="lbl">Peso por peça</span>
+      <div class="field-row"><input class="num" name="peso" inputmode="decimal" value="${p.peso??0}"><span class="unit">g</span></div></label>
+    <label><span class="lbl">Tempo de impressão por peça</span>
+      <div class="field-row"><input class="num" name="horas" inputmode="decimal" value="${p.horas??0}"><span class="unit">h</span>
+      <input class="num" name="minutos" inputmode="numeric" value="${p.minutos??0}" style="max-width:70px"><span class="unit">min</span></div></label>
+    <label><span class="lbl">Acabamento por peça</span>
+      <div class="field-row"><input class="num" name="acabamento" inputmode="decimal" value="${p.acabamento??0}"><span class="unit">min</span></div>
+      <span class="hint">Tirar suporte, lixar, colar, embalar.</span></label>
+    <label><span class="lbl">Materiais extras por peça</span>
+      <div class="field-row"><span class="unit">R$</span><input class="num" name="extras" inputmode="decimal" value="${p.extras??0}"></div>
+      <span class="hint">Tinta, ímã, parafuso, caixinha.</span></label>
+    <label><span class="lbl">Entrega (pedido todo)</span>
+      <div class="field-row"><span class="unit">R$</span><input class="num" name="entrega" inputmode="decimal" value="${p.entrega??0}"></div></label>
+  </div>`;
+}
+function lerCampos(escopo){
+  const o = {};
+  escopo.querySelectorAll("[name]").forEach(el => { o[el.name] = el.type === "checkbox" ? el.checked : el.value; });
+  return o;
+}
+function blocoResultado(c){
+  const camadas = [
+    ["Filamento", c.material, "#1E9BFF"],
+    ["Energia", c.energia, "#5CE1FF"],
+    ["Máquina", c.maquina, "#9B8BFF"],
+    ["Seu tempo", c.trabalho, "#F28A14"],
+    ["Extras", c.extras, "#E0808A"],
+    ["Reserva de falhas", c.falha, "#6A7FA8"],
+    ["Taxa de recebimento", c.taxa, "#3A5288"],
+    ["Lucro", c.lucro, "#3FD9A4"]
+  ].filter(x => x[1] > 0.005);
+  const maior = Math.max(...camadas.map(x=>x[1]), 0.01);
+  const alerta = c.lucro < 0 ? `<p style="color:var(--rose);font-size:13px;margin-top:8px">Esse preço não cobre os custos.</p>` : "";
+  return `
+  <div class="sub">Preço por peça${c.manual?" (combinado)":""}</div>
+  <div class="big mono">${brl(c.preco)}</div>${alerta}
+  <div class="divider"></div>
+  <div class="line-item"><span>Total do pedido (${c.qtd} un.)</span><span class="mono">${brl(c.total)}</span></div>
+  ${c.desconto>0?`<div class="line-item"><span>Desconto aplicado</span><span class="mono">− ${brl(c.desconto)}</span></div>`:""}
+  <div class="line-item"><span>Custo total</span><span class="mono">${brl(c.custoTotal)}</span></div>
+  <div class="line-item"><span>Lucro do pedido</span><span class="mono" style="color:${c.lucroTotal<0?"var(--rose)":"var(--mint)"}">${brl(c.lucroTotal)} (${dec(c.margemReal,0)}%)</span></div>
+  <div class="line-item"><span>Máquina ocupada</span><span class="mono">${dec(c.horasTotal)} h</span></div>
+  <div class="line-item"><span>Filamento consumido</span><span class="mono">${dec(c.filamentoTotal,0)} g</span></div>
+  <div class="divider"></div>
+  <h3>Do que é feito o preço de uma peça</h3>
+  ${camadas.map(([nome,valor,cor])=>`
+    <div class="bar-wrap">
+      <div class="line-item" style="padding:0 0 5px"><span>${nome}</span><span class="mono">${brl(valor)}</span></div>
+      ${[0,1,2].map(i=>`<div class="bar" style="width:${Math.max(valor/maior*100,2)}%;background:${cor};opacity:${.7+i*.12}"></div>`).join("")}
+    </div>`).join("")}`;
+}
+
+/* ---------- Calculadora ---------- */
+let simulacao = {qtd:1, peso:40, horas:3, minutos:30, acabamento:10, extras:0, entrega:0};
+function viewCalculadora(){
+  return `
+  <div class="split">
+    <div class="card" id="sim-form">
+      <h2>Simular um preço</h2>
+      <p class="sub" style="margin-bottom:16px">Peso e tempo saem do fatiador. Nada aqui é salvo até você criar o pedido.</p>
+      ${camposPeca(simulacao)}
+      <div class="row" style="margin-top:16px">
+        <button class="btn primary" data-acao="simular-para-pedido">Criar pedido com esses dados</button>
+      </div>
+    </div>
+    <div class="card" id="sim-res"></div>
+  </div>`;
+}
+function atualizarSimulador(){
+  const form = document.getElementById("sim-form");
+  const res = document.getElementById("sim-res");
+  if(!form || !res) return;
+  simulacao = lerCampos(form);
+  res.innerHTML = blocoResultado(precificar(simulacao));
+}
+
+/* ---------- Vitrine ---------- */
+function viewVitrine(){
+  const lista = vitrine.slice().sort((a,b)=>(b.destaque?1:0)-(a.destaque?1:0));
+  return `
+  <div class="split">
+    <div class="card">
+      <div class="row" style="margin-bottom:6px">
+        <h2 style="margin:0">Trabalhos no site</h2>
+        <button class="btn primary right" data-acao="novo-trabalho">Adicionar trabalho</button>
+      </div>
+      <p class="sub" style="margin-bottom:10px">O que estiver visível aqui entra no site quando você publicar.</p>
+      ${lista.length ? lista.map(v => `
+        <div class="item" data-trabalho="${v.id}">
+          ${v.fotos && v.fotos[0] ? `<img class="thumb" src="${v.fotos[0]}" alt="">` : `<div class="thumb"></div>`}
+          <div class="grow">
+            <div class="name">${esc(v.titulo || "Sem título")}</div>
+            <div class="sub">${esc([v.categoria, v.material].filter(Boolean).join(" · ") || "—")}</div>
+          </div>
+          <div style="text-align:right">
+            ${v.destaque ? `<span class="tag" style="color:var(--spark);border-color:#F28A1444;background:#F28A1418">Destaque</span><br>` : ""}
+            ${v.visivel === false ? `<span class="tag" style="color:var(--faint);border-color:var(--line);margin-top:4px">Oculto</span>` : ""}
+          </div>
+        </div>`).join("") : `<div class="empty">Nenhum trabalho ainda. Adicione fotos das peças que você já fez — ou, ao entregar um pedido, use o botão "Mostrar na vitrine".</div>`}
+    </div>
+    <div class="card">
+      <h2>Publicar no site</h2>
+      <ol class="steps-pub">
+        <li>Clique em <b>Baixar vitrine.json</b>.</li>
+        <li>No GitHub, abra o repositório e clique em <b>Add file → Upload files</b>.</li>
+        <li>Arraste o arquivo baixado e confirme em <b>Commit changes</b>. Ele substitui o antigo.</li>
+        <li>Em 1 a 2 minutos o site mostra os trabalhos novos.</li>
+      </ol>
+      <button class="btn primary" style="width:100%;margin-top:10px" data-acao="publicar-vitrine">Baixar vitrine.json</button>
+      <div class="divider"></div>
+      <p class="sub">Trocou de aparelho ou limpou o navegador? Traga de volta o que já está publicado.</p>
+      <button class="btn" style="width:100%" data-acao="carregar-vitrine-site">Carregar vitrine do site</button>
+      <p class="sub" style="margin-top:12px">${vitrine.length} trabalho${vitrine.length===1?"":"s"} · ${pesoVitrine()} em fotos</p>
+    </div>
+  </div>`;
+}
+function pesoVitrine(){
+  const bytes = vitrine.reduce((s,v)=>s+(v.fotos||[]).reduce((a,f)=>a+f.length*0.75,0),0);
+  return bytes > 1048576 ? dec(bytes/1048576,1)+" MB" : dec(bytes/1024,0)+" KB";
+}
+
+/* ---------- Filamentos ---------- */
+function viewFilamentos(){
+  return `
+  <div class="card">
+    <h2>Adicionar filamento</h2>
+    <div class="grid g2" id="fil-form">
+      <label><span class="lbl">Nome</span><input name="nome" placeholder="PLA Voolt preto"></label>
+      <label><span class="lbl">Material</span><input name="material" placeholder="PLA, PETG, ABS, TPU"></label>
+      <label><span class="lbl">Cor</span><input name="cor" placeholder="Preto"></label>
+      <label><span class="lbl">Preço do rolo de 1 kg</span>
+        <div class="field-row"><span class="unit">R$</span><input class="num" name="precoKg" inputmode="decimal" placeholder="120"></div></label>
+    </div>
+    <button class="btn primary" style="margin-top:14px" data-acao="add-filamento">Adicionar</button>
+  </div>
+  <div class="card">
+    <h2>Catálogo</h2>
+    ${dados.filamentos.length ? dados.filamentos.map(f=>{
+      const usado = dados.pedidos.filter(p=>p.filamentoId===f.id && p.status!=="cancelado" && p.status!=="orcamento").reduce((s,p)=>s+num(p.filamentoTotal),0);
+      return `
+      <div class="item" style="cursor:default">
+        <div class="grow">
+          <div class="name">${esc(f.nome)}</div>
+          <div class="sub">${esc([f.material,f.cor].filter(Boolean).join(" · ")||"—")}${usado?` · ${dec(usado,0)} g usados em pedidos`:""}</div>
+        </div>
+        <div style="text-align:right">
+          <div class="mono">${brl(num(f.precoKg))}<span class="sub">/kg</span></div>
+          <button class="link danger" data-del-filamento="${f.id}">Remover</button>
+        </div>
+      </div>`;}).join("") : `<div class="empty">Sem filamentos cadastrados. O cálculo usa o preço padrão das configurações.</div>`}
+  </div>`;
+}
+
+/* ---------- Configurações ---------- */
+function viewConfig(){
+  const c = dados.config, n = dados.negocio;
+  const campo = (nome,rotulo,valor,unidade,dica,prefixo) => `
+    <label><span class="lbl">${rotulo}</span>
+      <div class="field-row">${prefixo?`<span class="unit">${prefixo}</span>`:""}
+        <input class="num" name="${nome}" inputmode="decimal" value="${String(valor).replace(".",",")}">
+        ${unidade?`<span class="unit">${unidade}</span>`:""}</div>
+      ${dica?`<span class="hint">${dica}</span>`:""}</label>`;
+  const texto = (nome,rotulo,valor,dica,ph) => `
+    <label><span class="lbl">${rotulo}</span><input name="${nome}" value="${esc(valor)}" placeholder="${esc(ph||"")}">
+      ${dica?`<span class="hint">${dica}</span>`:""}</label>`;
+
+  return `
+  <div class="card" id="neg-form">
+    <h2>Seu negócio</h2>
+    <p class="sub" style="margin-bottom:16px">Aparece no site e nos orçamentos em PDF.</p>
+    <div class="grid g2">
+      ${texto("responsavel","Seu nome",n.responsavel,"Assina o orçamento.","Breno")}
+      ${texto("whatsapp","WhatsApp",n.whatsapp,"Com DDD. Os botões do site abrem conversa com esse número.","(11) 90000-0000")}
+      ${texto("instagram","Instagram",n.instagram,null,"@razenlab")}
+      ${texto("email","E-mail",n.email,null,"contato@…")}
+      ${texto("cidade","Cidade",n.cidade,null,"São Bernardo do Campo, SP")}
+      ${texto("entregas","Peças entregues (opcional)",n.entregas,"Número exibido no topo do site. Deixe vazio para esconder.","50")}
+    </div>
+    <label style="margin-top:12px"><span class="lbl">Frase de apresentação do site</span><textarea name="slogan">${esc(n.slogan)}</textarea></label>
+    <label style="margin-top:12px"><span class="lbl">Texto da seção de contato</span><textarea name="sobre">${esc(n.sobre)}</textarea></label>
+    <div class="grid g2" style="margin-top:12px">
+      <label><span class="lbl">Formas de pagamento (vai no orçamento)</span><textarea name="pagamento">${esc(n.pagamento)}</textarea></label>
+      ${campo("validadeDias","Validade do orçamento",n.validadeDias,"dias")}
+    </div>
+    <button class="btn primary" style="margin-top:16px" data-acao="salvar-negocio">Salvar dados do negócio</button>
+  </div>
+
+  <div class="card" id="cfg-form">
+    <h2>Custos da oficina</h2>
+    <p class="sub" style="margin-bottom:16px">Alimentam todos os cálculos. Revise a cada compra de filamento ou aumento da luz.</p>
+    <div class="grid g2">
+      ${campo("precoFilamento","Preço padrão do filamento",c.precoFilamento,"/kg",null,"R$")}
+      ${campo("horaTrabalho","Sua hora de trabalho",c.horaTrabalho,"/h",null,"R$")}
+      ${campo("potencia","Potência média da impressora",c.potencia,"W","Média real durante a impressão, não a da fonte. 150–250 W é comum.")}
+      ${campo("precoKwh","Preço da energia",c.precoKwh,"/kWh","Está na conta de luz, já com impostos.","R$")}
+      ${campo("valorImpressora","Valor da impressora",c.valorImpressora,null,null,"R$")}
+      ${campo("vidaUtil","Vida útil estimada",c.vidaUtil,"h","5.000 h é um chute conservador.")}
+      ${campo("manutencaoHora","Manutenção e peças",c.manutencaoHora,"/h","Bico, correia, plataforma, lubrificante.","R$")}
+      ${campo("taxaFalha","Reserva para falhas",c.taxaFalha,"%","Quanto do que você imprime acaba no lixo.")}
+      ${campo("margem","Margem de lucro",c.margem,"%")}
+      ${campo("taxaPagamento","Taxa de recebimento",c.taxaPagamento,"%","Maquininha ou marketplace. Pix é 0.")}
+    </div>
+    <button class="btn primary" style="margin-top:16px" data-acao="salvar-config">Salvar custos</button>
+  </div>
+
+  <div class="card">
+    <h2>Backup</h2>
+    <p class="sub">Pedidos e configurações ficam gravados só neste navegador. Exporte de vez em quando — o arquivo inclui a vitrine com as fotos.</p>
+    <div class="row" style="margin-top:14px">
+      <button class="btn" data-acao="exportar">Exportar backup</button>
+      <button class="btn" data-acao="importar">Importar backup</button>
+      <button class="btn danger right" data-acao="apagar">Apagar tudo</button>
+    </div>
+  </div>`;
+}
+
+/* ============================================================
+   5. MODAL DE PEDIDO
+   ============================================================ */
+let pedidoAberto = null;
+
+function abrirPedido(p){
+  pedidoAberto = p ? {...p} : {
+    id:null, peca:"", cliente:"", contato:"", qtd:1, peso:40, horas:3, minutos:0,
+    acabamento:10, extras:0, entrega:0, filamentoId:"", status:"orcamento",
+    prazo:"", obs:"", valorPago:0, precoManual:"", desconto:0
+  };
+  desenharModalPedido();
+}
+function fecharModal(){
+  pedidoAberto = null; trabalhoAberto = null;
+  document.getElementById("modal-root").innerHTML = "";
+  document.body.style.overflow = "";
+}
+
+function desenharModalPedido(){
+  const p = pedidoAberto;
+  const c = precificar(p);
+  document.getElementById("modal-root").innerHTML = `
+  <div class="overlay" data-fechar>
+    <div class="modal" id="ped-form">
+      <div class="modal-head">
+        <h2>${p.id ? `Pedido ${numPed(p.numero)}` : "Novo pedido"}</h2>
+        <button class="close" data-fechar aria-label="Fechar">&times;</button>
+      </div>
+
+      <div class="grid g2" style="margin-bottom:12px">
+        <label><span class="lbl">Cliente</span><input name="cliente" value="${esc(p.cliente||"")}" placeholder="Nome de quem encomendou"></label>
+        <label><span class="lbl">Contato</span><input name="contato" value="${esc(p.contato||"")}" placeholder="WhatsApp ou @ do Instagram"></label>
+        <label><span class="lbl">Situação</span><select name="status">
+          ${Object.entries(STATUS).map(([k,v])=>`<option value="${k}" ${p.status===k?"selected":""}>${v.rotulo}</option>`).join("")}
+        </select></label>
+        <label><span class="lbl">Prazo de entrega</span><input type="date" name="prazo" value="${p.prazo||""}"></label>
+      </div>
+
+      ${camposPeca(p)}
+
+      <div class="grid g3" style="margin-top:12px">
+        <label><span class="lbl">Preço combinado por peça</span>
+          <div class="field-row"><span class="unit">R$</span><input class="num" name="precoManual" inputmode="decimal" value="${p.precoManual||""}" placeholder="automático"></div>
+          <span class="hint">Deixe vazio para usar o calculado.</span></label>
+        <label><span class="lbl">Desconto no pedido</span>
+          <div class="field-row"><span class="unit">R$</span><input class="num" name="desconto" inputmode="decimal" value="${p.desconto||0}"></div></label>
+        <label><span class="lbl">Valor já recebido</span>
+          <div class="field-row"><span class="unit">R$</span><input class="num" name="valorPago" inputmode="decimal" value="${p.valorPago||0}"></div>
+          <span class="hint"><button type="button" class="link" data-acao="pago-total">Marcar como pago</button></span></label>
+      </div>
+
+      <label style="margin-top:12px"><span class="lbl">Observações</span>
+        <textarea name="obs" placeholder="Cor combinada, detalhes do modelo, endereço">${esc(p.obs||"")}</textarea></label>
+
+      <div class="card" style="margin:16px 0 0;background:var(--bed)" id="ped-res">${blocoResultado(c)}</div>
+
+      <div class="row" style="margin-top:16px">
+        <button class="btn primary" data-acao="salvar-pedido">${p.id?"Salvar":"Criar pedido"}</button>
+        <button class="btn" data-acao="gerar-orcamento">Orçamento em PDF</button>
+        <button class="btn" data-acao="enviar-whats">Enviar no WhatsApp</button>
+        ${p.id?`<button class="btn" data-acao="duplicar">Duplicar</button>
+                ${p.status==="entregue"?`<button class="btn" data-acao="para-vitrine">Mostrar na vitrine</button>`:""}
+                <button class="btn danger right" data-acao="excluir-pedido">Excluir</button>`:""}
+      </div>
+    </div>
+  </div>`;
+  document.body.style.overflow = "hidden";
+}
+function atualizarModalPedido(){
+  const form = document.getElementById("ped-form");
+  const res = document.getElementById("ped-res");
+  if(!form || !res) return;
+  res.innerHTML = blocoResultado(precificar(lerCampos(form)));
+}
+
+function montarPedido(){
+  const v = lerCampos(document.getElementById("ped-form"));
+  const c = precificar(v);
+  const p = {
+    ...pedidoAberto,
+    peca:v.peca.trim(), cliente:v.cliente.trim(), contato:v.contato.trim(), obs:v.obs,
+    status:v.status, prazo:v.prazo, filamentoId:v.filamentoId,
+    qtd:c.qtd, peso:num(v.peso), horas:num(v.horas), minutos:num(v.minutos),
+    acabamento:num(v.acabamento), extras:num(v.extras), entrega:num(v.entrega),
+    precoManual: num(v.precoManual) > 0 ? num(v.precoManual) : "",
+    desconto:num(v.desconto), valorPago:num(v.valorPago),
+    precoUn:c.preco, total:c.total, custoTotal:c.custoTotal, lucroTotal:c.lucroTotal,
+    horasTotal:c.horasTotal, filamentoTotal:c.filamentoTotal
+  };
+  if(p.status === "entregue" && !p.dataEntregue) p.dataEntregue = hoje();
+  if(p.status !== "entregue") delete p.dataEntregue;
+  return p;
+}
+function salvarPedido(silencioso){
+  const p = montarPedido();
+  if(p.id){
+    dados.pedidos = dados.pedidos.map(x => x.id===p.id ? p : x);
+  }else{
+    p.id = id();
+    p.numero = ++dados.seq;
+    p.criadoEm = new Date().toISOString();
+    dados.pedidos.unshift(p);
+  }
+  salvar();
+  pedidoAberto = p;
+  if(!silencioso){ fecharModal(); render(); toast(`Pedido ${numPed(p.numero)} salvo.`); }
+  return p;
+}
+
+function textoResumo(p){
+  const c = precificar(p);
+  const n = dados.negocio;
+  return [
+    `*Orçamento ${n.nome || "RazenLab"} ${numPed(p.numero)}*`,
+    "",
+    `${p.peca || "Peça"} — ${c.qtd} un.`,
+    `Valor por peça: ${brl(c.preco)}`,
+    c.desconto > 0 ? `Desconto: − ${brl(c.desconto)}` : null,
+    c.entrega > 0 ? `Entrega: ${brl(c.entrega)}` : null,
+    `*Total: ${brl(c.total)}*`,
+    p.prazo ? `Prazo: ${dataBR(p.prazo)}` : null,
+    c.fil ? `Material: ${[c.fil.material, c.fil.cor].filter(Boolean).join(" ")}` : null,
+    "",
+    n.pagamento ? `Pagamento: ${n.pagamento}` : null,
+    `Válido por ${num(n.validadeDias)||7} dias.`
+  ].filter(x => x !== null).join("\n");
+}
+function enviarWhats(){
+  const p = salvarPedido(true);
+  const txt = textoResumo(p);
+  let fone = String(p.contato||"").replace(/\D/g,"");
+  if(fone.length >= 10 && fone.length <= 11) fone = "55" + fone;
+  const url = fone.length >= 12
+    ? `https://wa.me/${fone}?text=${encodeURIComponent(txt)}`
+    : `https://wa.me/?text=${encodeURIComponent(txt)}`;
+  window.open(url, "_blank", "noopener");
+  desenharModalPedido();
+}
+
+/* ---------- Orçamento em PDF (página para imprimir) ---------- */
+function gerarOrcamento(){
+  const p = salvarPedido(true);
+  desenharModalPedido();
+  const c = precificar(p);
+  const n = dados.negocio;
+  const logo = document.getElementById("logo-topo").src;
+  const validade = new Date(Date.now() + (num(n.validadeDias)||7)*86400000);
+  const validadeISO = `${validade.getFullYear()}-${String(validade.getMonth()+1).padStart(2,"0")}-${String(validade.getDate()).padStart(2,"0")}`;
+  const material = c.fil ? [c.fil.material, c.fil.cor].filter(Boolean).join(" · ") : "";
+  const contatos = [n.whatsapp && ("WhatsApp " + n.whatsapp), n.instagram && ("@" + n.instagram.replace(/^@/,"")), n.email, n.cidade].filter(Boolean);
+
+  const html = `<!DOCTYPE html><html lang="pt-BR"><head><meta charset="utf-8">
+  <title>Orçamento ${numPed(p.numero)} — ${esc(p.cliente||"cliente")}</title>
+  <link href="https://fonts.googleapis.com/css2?family=Sora:wght@600;700&family=Manrope:wght@400;500;600&display=swap" rel="stylesheet">
+  <style>
+    @page{size:A4;margin:0}
+    *{box-sizing:border-box;-webkit-print-color-adjust:exact;print-color-adjust:exact}
+    body{margin:0;font-family:Manrope,Segoe UI,sans-serif;color:#0B1733;font-size:13px;line-height:1.5;background:#fff}
+    .pg{width:210mm;min-height:297mm;margin:0 auto;display:flex;flex-direction:column}
+    .hd{background:#030C2B;color:#fff;padding:26px 36px;display:flex;align-items:center;gap:18px;position:relative;overflow:hidden}
+    .hd::after{content:"";position:absolute;right:-60px;top:-80px;width:280px;height:280px;border-radius:50%;background:radial-gradient(circle,rgba(30,155,255,.35),transparent 65%)}
+    .hd img{width:74px;height:74px;border-radius:50%;position:relative;z-index:1}
+    .hd h1{font-family:Sora,sans-serif;font-size:24px;margin:0;letter-spacing:.5px}
+    .hd h1 span{color:#1E9BFF}
+    .hd p{margin:2px 0 0;color:#9DB0D3;font-size:12px}
+    .hd .doc{margin-left:auto;text-align:right;position:relative;z-index:1}
+    .hd .doc b{font-family:Sora,sans-serif;font-size:15px;display:block}
+    .bd{padding:30px 36px;flex:1}
+    .meta{display:grid;grid-template-columns:1fr 1fr 1fr;gap:18px;margin-bottom:26px}
+    .meta small{display:block;color:#6A7FA8;font-size:11px;text-transform:uppercase;letter-spacing:.6px;margin-bottom:2px}
+    .meta b{font-size:14px}
+    table{width:100%;border-collapse:collapse;margin-bottom:18px}
+    th{text-align:left;font-size:11px;color:#6A7FA8;text-transform:uppercase;letter-spacing:.6px;padding:10px 0;border-bottom:2px solid #0B1733}
+    td{padding:14px 0;border-bottom:1px solid #DDE5F2;vertical-align:top}
+    th.r,td.r{text-align:right}
+    .tot{margin-left:auto;width:280px}
+    .tot div{display:flex;justify-content:space-between;padding:6px 0}
+    .tot .final{border-top:2px solid #0B1733;margin-top:6px;padding-top:12px;font-family:Sora,sans-serif;font-size:20px}
+    .tot .final span:last-child{color:#1E9BFF}
+    .box{background:#F2F6FD;border-radius:10px;padding:16px 18px;margin-top:26px}
+    .box h3{font-family:Sora,sans-serif;font-size:13px;margin:0 0 6px}
+    .box p{margin:0;white-space:pre-line}
+    .sig{margin-top:48px;width:240px;border-top:1px solid #0B1733;padding-top:6px;font-size:12px}
+    .ft{padding:16px 36px;border-top:4px solid #1E9BFF;display:flex;justify-content:space-between;gap:12px;font-size:11px;color:#4A5E86}
+    .noprint{position:fixed;top:14px;right:14px;display:flex;gap:8px}
+    .noprint button{font-family:Manrope,sans-serif;font-size:14px;padding:10px 16px;border-radius:10px;border:none;cursor:pointer;background:#1E9BFF;color:#fff;font-weight:600}
+    .noprint button.sec{background:#E5ECF8;color:#0B1733}
+    @media print{.noprint{display:none}}
+  </style></head><body>
+  <div class="noprint"><button onclick="window.print()">Salvar em PDF</button><button class="sec" onclick="window.close()">Fechar</button></div>
+  <div class="pg">
+    <div class="hd">
+      <img src="${logo}" alt="">
+      <div><h1>RAZEN<span>LAB</span></h1><p>Transformando ideias em realidade, camada por camada.</p></div>
+      <div class="doc"><b>ORÇAMENTO ${numPed(p.numero)}</b><p>Emitido em ${dataBR(hoje())}</p></div>
+    </div>
+    <div class="bd">
+      <div class="meta">
+        <div><small>Cliente</small><b>${esc(p.cliente||"—")}</b>${p.contato?`<br>${esc(p.contato)}`:""}</div>
+        <div><small>Prazo de entrega</small><b>${p.prazo?dataBR(p.prazo):"A combinar"}</b></div>
+        <div><small>Válido até</small><b>${dataBR(validadeISO)}</b></div>
+      </div>
+      <table>
+        <thead><tr><th>Descrição</th><th class="r">Qtd.</th><th class="r">Unitário</th><th class="r">Subtotal</th></tr></thead>
+        <tbody>
+          <tr>
+            <td><b>${esc(p.peca||"Peça impressa em 3D")}</b>${material?`<br><span style="color:#6A7FA8">Material: ${esc(material)}</span>`:""}</td>
+            <td class="r">${c.qtd}</td><td class="r">${brl(c.preco)}</td><td class="r">${brl(c.preco*c.qtd)}</td>
+          </tr>
+        </tbody>
+      </table>
+      <div class="tot">
+        <div><span>Subtotal</span><span>${brl(c.preco*c.qtd)}</span></div>
+        ${c.desconto>0?`<div><span>Desconto</span><span>− ${brl(c.desconto)}</span></div>`:""}
+        ${c.entrega>0?`<div><span>Entrega</span><span>${brl(c.entrega)}</span></div>`:""}
+        <div class="final"><span>Total</span><span>${brl(c.total)}</span></div>
+      </div>
+      ${p.obs?`<div class="box"><h3>Observações</h3><p>${esc(p.obs)}</p></div>`:""}
+      ${n.pagamento?`<div class="box"><h3>Pagamento</h3><p>${esc(n.pagamento)}</p></div>`:""}
+      <div class="sig">${n.responsavel?esc(n.responsavel)+"<br>":""}<span style="color:#6A7FA8">RazenLab · Impressão 3D</span></div>
+    </div>
+    <div class="ft"><span>${esc(contatos.join("  ·  "))}</span><span>${numPed(p.numero)}</span></div>
+  </div>
+  <script>window.addEventListener("load",()=>setTimeout(()=>window.print(),500));<\/script>
+  </body></html>`;
+
+  const w = window.open("", "_blank");
+  if(!w){ toast("O navegador bloqueou a janela. Libere pop-ups para este site."); return; }
+  w.document.open(); w.document.write(html); w.document.close();
+}
+
+/* ============================================================
+   6. MODAL DE TRABALHO DA VITRINE
+   ============================================================ */
+let trabalhoAberto = null;
+
+function abrirTrabalho(t){
+  trabalhoAberto = t ? {...t, fotos:[...(t.fotos||[])]} : { id:null, titulo:"", categoria:"", descricao:"", material:"", dimensoes:"", prazo:"", fotos:[], destaque:false, visivel:true };
+  desenharModalTrabalho();
+}
+function desenharModalTrabalho(){
+  const t = trabalhoAberto;
+  const cats = [...new Set(vitrine.map(v=>v.categoria).filter(Boolean))];
+  document.getElementById("modal-root").innerHTML = `
+  <div class="overlay" data-fechar>
+    <div class="modal" id="trab-form">
+      <div class="modal-head">
+        <h2>${t.id ? "Editar trabalho" : "Novo trabalho"}</h2>
+        <button class="close" data-fechar aria-label="Fechar">&times;</button>
+      </div>
+      <span class="lbl" style="display:block;font-size:13px;color:var(--muted);margin-bottom:8px">Fotos (até 4 — a primeira é a capa)</span>
+      <div class="fotos" style="margin-bottom:16px">
+        ${t.fotos.map((f,i)=>`<div class="foto"><img src="${f}" alt=""><button data-del-foto="${i}" aria-label="Remover foto">&times;</button></div>`).join("")}
+        ${t.fotos.length < 4 ? `<button class="foto-add" data-acao="add-foto">+ Foto</button>` : ""}
+      </div>
+      <div class="grid g2">
+        <label><span class="lbl">Título</span><input name="titulo" value="${esc(t.titulo)}" placeholder="Suporte de headset personalizado"></label>
+        <label><span class="lbl">Categoria</span><input name="categoria" list="lista-cats" value="${esc(t.categoria)}" placeholder="Decoração, Utilidades, Geek…">
+          <datalist id="lista-cats">${cats.map(c=>`<option value="${esc(c)}">`).join("")}</datalist></label>
+        <label><span class="lbl">Material</span><input name="material" value="${esc(t.material)}" placeholder="PLA preto fosco"></label>
+        <label><span class="lbl">Tamanho</span><input name="dimensoes" value="${esc(t.dimensoes)}" placeholder="12 × 8 × 20 cm"></label>
+        <label><span class="lbl">Prazo médio</span><input name="prazo" value="${esc(t.prazo)}" placeholder="3 a 5 dias"></label>
+      </div>
+      <label style="margin-top:12px"><span class="lbl">Descrição</span><textarea name="descricao" placeholder="Para que serve, o que pode ser personalizado">${esc(t.descricao)}</textarea></label>
+      <div class="row" style="margin-top:14px;gap:22px">
+        <label class="check"><input type="checkbox" name="visivel" ${t.visivel!==false?"checked":""}> Mostrar no site</label>
+        <label class="check"><input type="checkbox" name="destaque" ${t.destaque?"checked":""}> Destaque</label>
+      </div>
+      <p class="sub" style="margin-top:14px">Nunca coloque nome, rosto ou endereço de cliente nas fotos sem autorização.</p>
+      <div class="row" style="margin-top:12px">
+        <button class="btn primary" data-acao="salvar-trabalho">Salvar</button>
+        ${t.id?`<button class="btn danger right" data-acao="excluir-trabalho">Excluir</button>`:""}
+      </div>
+    </div>
+  </div>`;
+  document.body.style.overflow = "hidden";
+}
+function guardarCamposTrabalho(){
+  const form = document.getElementById("trab-form");
+  if(!form) return;
+  const v = lerCampos(form);
+  Object.assign(trabalhoAberto, {
+    titulo:v.titulo, categoria:v.categoria, material:v.material, dimensoes:v.dimensoes,
+    prazo:v.prazo, descricao:v.descricao, visivel:v.visivel, destaque:v.destaque
+  });
+}
+async function salvarTrabalho(){
+  guardarCamposTrabalho();
+  const t = trabalhoAberto;
+  if(!t.titulo.trim()){ toast("Dê um título ao trabalho."); return; }
+  if(!t.fotos.length){ toast("Adicione pelo menos uma foto."); return; }
+  t.titulo = t.titulo.trim(); t.categoria = t.categoria.trim();
+  if(t.id) vitrine = vitrine.map(v => v.id===t.id ? t : v);
+  else { t.id = id(); t.criadoEm = new Date().toISOString(); vitrine.unshift(t); }
+  await salvarVitrine();
+  fecharModal(); aba = "vitrine"; render();
+  toast("Trabalho salvo. Baixe a vitrine.json para publicar.");
+}
+
+/* reduz a foto para caber no site sem pesar */
+function comprimirFoto(arquivo){
+  return new Promise((ok, erro) => {
+    const leitor = new FileReader();
+    leitor.onload = () => {
+      const img = new Image();
+      img.onload = () => {
+        const max = 1100;
+        let w = img.width, h = img.height;
+        if(w > max || h > max){ const k = max/Math.max(w,h); w = Math.round(w*k); h = Math.round(h*k); }
+        const cv = document.createElement("canvas");
+        cv.width = w; cv.height = h;
+        cv.getContext("2d").drawImage(img, 0, 0, w, h);
+        ok(cv.toDataURL("image/jpeg", 0.8));
+      };
+      img.onerror = () => erro(new Error("imagem"));
+      img.src = leitor.result;
+    };
+    leitor.onerror = () => erro(leitor.error);
+    leitor.readAsDataURL(arquivo);
+  });
+}
+
+function baixarArquivo(nome, conteudo){
+  const blob = new Blob([conteudo], {type:"application/json"});
+  const a = document.createElement("a");
+  a.href = URL.createObjectURL(blob);
+  a.download = nome;
+  document.body.appendChild(a); a.click(); a.remove();
+  setTimeout(()=>URL.revokeObjectURL(a.href), 1500);
+}
+function publicarVitrine(){
+  const n = dados.negocio;
+  const pacote = {
+    negocio: { nome:n.nome, slogan:n.slogan, sobre:n.sobre, whatsapp:n.whatsapp, instagram:n.instagram, email:n.email, cidade:n.cidade, entregas:n.entregas },
+    itens: vitrine.filter(v => v.visivel !== false).map(v => ({
+      id:v.id, titulo:v.titulo, categoria:v.categoria, descricao:v.descricao, material:v.material,
+      dimensoes:v.dimensoes, prazo:v.prazo, fotos:v.fotos, destaque:!!v.destaque
+    })),
+    atualizadoEm: new Date().toISOString()
+  };
+  baixarArquivo("vitrine.json", JSON.stringify(pacote));
+  toast(`vitrine.json com ${pacote.itens.length} trabalho${pacote.itens.length===1?"":"s"}. Agora suba no GitHub.`);
+}
+async function carregarVitrineDoSite(){
+  try{
+    const r = await fetch("vitrine.json?v=" + Date.now(), {cache:"no-store"});
+    if(!r.ok) throw new Error();
+    const d = await r.json();
+    const chegando = (d.itens||[]).map(i => ({...i, visivel:true}));
+    const ids = new Set(vitrine.map(v=>v.id));
+    const novos = chegando.filter(i => !ids.has(i.id));
+    vitrine = [...vitrine, ...novos];
+    if(d.negocio){
+      Object.keys(d.negocio).forEach(k => { if(d.negocio[k] && !dados.negocio[k]) dados.negocio[k] = d.negocio[k]; });
+      salvar();
+    }
+    await salvarVitrine(); render();
+    toast(novos.length ? `${novos.length} trabalho${novos.length===1?"":"s"} trazido${novos.length===1?"":"s"} do site.` : "Nada novo no site.");
+  }catch(e){
+    toast("Não encontrei a vitrine.json publicada. O painel precisa estar aberto pelo endereço do site.");
+  }
+}
+
+/* ============================================================
+   7. BACKUP
+   ============================================================ */
+function exportar(){
+  baixarArquivo(`razenlab-backup-${hoje()}.json`, JSON.stringify({...dados, vitrine, versao:1}, null, 1));
+  toast("Backup gerado.");
+}
+function importar(arquivo){
+  const leitor = new FileReader();
+  leitor.onload = async () => {
+    try{
+      const d = JSON.parse(leitor.result);
+      if(!d || typeof d !== "object" || !Array.isArray(d.pedidos)) throw new Error("formato");
+      dados = normalizar(d);
+      if(Array.isArray(d.vitrine)){ vitrine = d.vitrine; await salvarVitrine(); }
+      salvar(); render();
+      toast(`${dados.pedidos.length} pedidos e ${vitrine.length} trabalhos carregados.`);
+    }catch(e){ toast("Esse arquivo não é um backup do painel."); }
+  };
+  leitor.onerror = () => toast("Não foi possível ler o arquivo.");
+  leitor.readAsText(arquivo);
+}
+
+/* ============================================================
+   8. EVENTOS
+   ============================================================ */
+document.addEventListener("click", async e => {
+  const alvo = e.target;
+
+  const tab = alvo.closest("#nav button");
+  if(tab){ aba = tab.dataset.tab; render(); window.scrollTo(0,0); return; }
+
+  if(alvo.hasAttribute("data-fechar")){ fecharModal(); return; }
+
+  const chip = alvo.closest("[data-filtro]");
+  if(chip){ filtroStatus = chip.dataset.filtro; render(); return; }
+
+  const abrir = alvo.closest("[data-abrir]");
+  if(abrir){ abrirPedido(dados.pedidos.find(p => p.id === abrir.dataset.abrir)); return; }
+
+  const trab = alvo.closest("[data-trabalho]");
+  if(trab){ abrirTrabalho(vitrine.find(v => v.id === trab.dataset.trabalho)); return; }
+
+  const delFoto = alvo.closest("[data-del-foto]");
+  if(delFoto){ guardarCamposTrabalho(); trabalhoAberto.fotos.splice(+delFoto.dataset.delFoto, 1); desenharModalTrabalho(); return; }
+
+  const delFil = alvo.closest("[data-del-filamento]");
+  if(delFil){
+    if(confirm("Remover este filamento do catálogo? Pedidos antigos passam a usar o preço padrão.")){
+      dados.filamentos = dados.filamentos.filter(f => f.id !== delFil.dataset.delFilamento);
+      salvar(); render();
+    }
+    return;
+  }
+
+  const acao = alvo.closest("[data-acao]");
+  if(!acao) return;
+
+  switch(acao.dataset.acao){
+    case "novo": abrirPedido(null); break;
+
+    case "simular-para-pedido": {
+      const v = lerCampos(document.getElementById("sim-form"));
+      abrirPedido({ id:null, peca:v.peca, cliente:"", contato:"", qtd:num(v.qtd)||1,
+        peso:num(v.peso), horas:num(v.horas), minutos:num(v.minutos), acabamento:num(v.acabamento),
+        extras:num(v.extras), entrega:num(v.entrega), filamentoId:v.filamentoId,
+        status:"orcamento", prazo:"", obs:"", valorPago:0, precoManual:"", desconto:0 });
+      break;
+    }
+    case "salvar-pedido": salvarPedido(false); break;
+    case "gerar-orcamento": gerarOrcamento(); break;
+    case "enviar-whats": enviarWhats(); break;
+    case "pago-total": {
+      const form = document.getElementById("ped-form");
+      form.querySelector('[name="valorPago"]').value = dec(precificar(lerCampos(form)).total, 2);
+      break;
+    }
+    case "duplicar": {
+      const copia = {...montarPedido(), id:null, numero:null, status:"orcamento", valorPago:0, prazo:""};
+      delete copia.dataEntregue; delete copia.criadoEm;
+      abrirPedido(copia);
+      toast("Cópia aberta. Ajuste e salve.");
+      break;
+    }
+    case "para-vitrine": {
+      const p = salvarPedido(true);
+      const fil = dados.filamentos.find(f => f.id === p.filamentoId);
+      abrirTrabalho(null);
+      Object.assign(trabalhoAberto, { titulo:p.peca, material: fil ? [fil.material, fil.cor].filter(Boolean).join(" ") : "" });
+      desenharModalTrabalho();
+      render();
+      toast("Adicione as fotos da peça.");
+      break;
+    }
+    case "excluir-pedido":
+      if(confirm("Excluir este pedido? Não dá para desfazer.")){
+        dados.pedidos = dados.pedidos.filter(p => p.id !== pedidoAberto.id);
+        salvar(); fecharModal(); render(); toast("Pedido excluído.");
+      }
+      break;
+
+    case "novo-trabalho": abrirTrabalho(null); break;
+    case "add-foto": guardarCamposTrabalho(); document.getElementById("arquivo-fotos").click(); break;
+    case "salvar-trabalho": salvarTrabalho(); break;
+    case "excluir-trabalho":
+      if(confirm("Excluir este trabalho da vitrine?")){
+        vitrine = vitrine.filter(v => v.id !== trabalhoAberto.id);
+        await salvarVitrine(); fecharModal(); render(); toast("Trabalho excluído.");
+      }
+      break;
+    case "publicar-vitrine": publicarVitrine(); break;
+    case "carregar-vitrine-site": carregarVitrineDoSite(); break;
+
+    case "add-filamento": {
+      const f = lerCampos(document.getElementById("fil-form"));
+      if(!f.nome.trim()){ toast("Dê um nome ao filamento."); break; }
+      dados.filamentos.push({ id:id(), nome:f.nome.trim(), material:f.material.trim(), cor:f.cor.trim(), precoKg:num(f.precoKg) });
+      salvar(); render(); toast("Filamento adicionado.");
+      break;
+    }
+    case "salvar-negocio": {
+      const n = lerCampos(document.getElementById("neg-form"));
+      Object.keys(n).forEach(k => { dados.negocio[k] = k === "validadeDias" ? num(n[k]) : n[k].trim(); });
+      salvar(); toast("Dados do negócio salvos. Publique a vitrine para atualizar o site.");
+      break;
+    }
+    case "salvar-config": {
+      const c = lerCampos(document.getElementById("cfg-form"));
+      Object.keys(CONFIG_PADRAO).forEach(k => { dados.config[k] = num(c[k]); });
+      salvar(); toast("Custos salvos.");
+      break;
+    }
+    case "exportar": exportar(); break;
+    case "importar": document.getElementById("arquivo-backup").click(); break;
+    case "apagar":
+      if(confirm("Apagar pedidos, vitrine, filamentos e configurações deste navegador?") &&
+         confirm("Tem certeza? Sem um backup exportado, isso não volta.")){
+        localStorage.removeItem(CHAVE); localStorage.removeItem(CHAVE_ANTIGA);
+        dados = normalizar({}); vitrine = []; await salvarVitrine();
+        render(); toast("Tudo apagado.");
+      }
+      break;
+  }
+});
+
+document.addEventListener("input", e => {
+  if(e.target.id === "busca"){
+    busca = e.target.value;
+    const tmp = document.createElement("div");
+    tmp.innerHTML = viewPedidos();
+    document.getElementById("lista-pedidos").innerHTML = tmp.querySelector("#lista-pedidos").innerHTML;
+    return;
+  }
+  if(e.target.closest("#ped-form")) atualizarModalPedido();
+  if(e.target.closest("#sim-form")) atualizarSimulador();
+});
+document.addEventListener("change", async e => {
+  if(e.target.closest("#ped-form") || e.target.closest("#sim-form")){
+    if(e.target.closest("#ped-form")) atualizarModalPedido(); else atualizarSimulador();
+  }
+  if(e.target.id === "arquivo-backup" && e.target.files[0]){ importar(e.target.files[0]); e.target.value = ""; }
+  if(e.target.id === "arquivo-fotos" && e.target.files.length && trabalhoAberto){
+    const livres = 4 - trabalhoAberto.fotos.length;
+    const arquivos = [...e.target.files].slice(0, livres);
+    toast("Preparando fotos…");
+    for(const a of arquivos){
+      try{ trabalhoAberto.fotos.push(await comprimirFoto(a)); }
+      catch(err){ toast("Uma das imagens não pôde ser lida."); }
+    }
+    e.target.value = "";
+    desenharModalTrabalho();
+  }
+});
+document.addEventListener("keydown", e => { if(e.key === "Escape") fecharModal(); });
+
+if("serviceWorker" in navigator && location.protocol === "https:"){
+  navigator.serviceWorker.register("sw.js").catch(()=>{});
+}
+
+(async function iniciar(){
+  carregar();
+  await carregarVitrine();
+  render();
+})();
+</script>
+</body>
+</html>
