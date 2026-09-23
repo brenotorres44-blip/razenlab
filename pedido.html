@@ -2390,9 +2390,9 @@ const numPed = n => "#" + String(n || 0).padStart(4, "0");
 function dataBR(s){ if(!s) return "—"; const [a,m,d] = String(s).slice(0,10).split("-"); return d && m && a ? `${d}/${m}/${a}` : s; }
 
 const ETAPAS = ["Pedido recebido","Orçamento","Pagamento","Produção","Enviado","Entregue"];
-const ETAPA = { solicitado:0, orcamento:1, comprovante:2, pago:3, imprimindo:3, pronto:3, enviado:4, entregue:5, cancelado:-1 };
-const COR = { solicitado:"#5CE1FF", orcamento:"#F28A14", comprovante:"#F2C14E", pago:"#1E9BFF", imprimindo:"#1E9BFF", pronto:"#1E9BFF", enviado:"#3FD9A4", entregue:"#3FD9A4", cancelado:"#FF5C74" };
-const ROTULO = { solicitado:"Recebido", orcamento:"Aguardando pagamento", comprovante:"Conferindo pagamento", pago:"Pagamento confirmado", imprimindo:"Em produção", pronto:"Pronto para envio", enviado:"A caminho", entregue:"Entregue", cancelado:"Cancelado" };
+const ETAPA = { solicitado:0, orcamento:1, comprovante:2, pago:3, imprimindo:3, pronto:3, enviado:4, entregue:5, cancelado:-1, perdido:-1 };
+const COR = { solicitado:"#5CE1FF", orcamento:"#F28A14", comprovante:"#F2C14E", pago:"#1E9BFF", imprimindo:"#1E9BFF", pronto:"#1E9BFF", enviado:"#3FD9A4", entregue:"#3FD9A4", cancelado:"#FF5C74", perdido:"#B07A8C" };
+const ROTULO = { solicitado:"Recebido", orcamento:"Aguardando pagamento", comprovante:"Conferindo pagamento", pago:"Pagamento confirmado", imprimindo:"Em produção", pronto:"Pronto para envio", enviado:"A caminho", entregue:"Entregue", cancelado:"Cancelado", perdido:"Orçamento encerrado" };
 
 /* ---------- Pix "copia e cola" (padrão BR Code do Banco Central) ---------- */
 function campo(id, v){ return id + String(v.length).padStart(2, "0") + v; }
@@ -2421,7 +2421,7 @@ function linkWhats(msg){
 
 function mensagem(){
   const s = P.status;
-  const m = {
+  let m = {
     solicitado: ["Recebemos seu pedido!", "Estamos analisando o que você pediu. O orçamento com frete aparece aqui e chega no seu WhatsApp."],
     orcamento: ["Seu orçamento está pronto", "Confira os valores abaixo. A produção começa assim que o Pix for confirmado."],
     comprovante: ["Recebemos seu comprovante", "Estamos conferindo o pagamento. Em breve seu pedido entra em produção."],
@@ -2430,8 +2430,10 @@ function mensagem(){
     pronto: ["Sua peça está pronta", "Estamos preparando o envio pelos Correios."],
     enviado: ["Seu pedido está a caminho", "Acompanhe a entrega pelo código de rastreio."],
     entregue: ["Pedido entregue", "Obrigado por escolher a RazenLab! Esperamos que tenha gostado."],
-    cancelado: ["Pedido cancelado", "Se tiver alguma dúvida, fale com a gente pelo WhatsApp."]
+    cancelado: ["Pedido cancelado", "Se tiver alguma dúvida, fale com a gente pelo WhatsApp."],
+    perdido: ["Orçamento encerrado", "Se ainda tiver interesse, fale com a gente pelo WhatsApp que preparamos um orçamento atualizado."]
   }[s] || ["Seu pedido", ""];
+  if(s === "orcamento" && P.vencido) m = ["Este orçamento venceu", `Ele era válido até ${dataBR(P.validadeAte)}. Fale com a gente pelo WhatsApp que atualizamos os valores para você.`];
   return `<div class="aviso" style="border-color:${COR[s]}55;background:${COR[s]}12"><b>${m[0]}</b><p>${m[1]}</p></div>`;
 }
 
@@ -2448,7 +2450,7 @@ function render(){
       <div><div class="sub">Pedido ${numPed(P.numero)} · ${dataBR(P.criado_em)}</div><h1>Olá, ${esc((P.cliente || "").split(" ")[0] || "cliente")}!</h1></div>
       <span class="pill" style="color:${COR[s]};border-color:${COR[s]}66">${"<i></i>"}${ROTULO[s] || s}</span>
     </div>
-    ${s !== "cancelado" ? `<div class="passos">${ETAPAS.map((t,i) => `<div class="passo ${i < etapa ? "feito" : i === etapa ? "agora" : ""}">${t}</div>`).join("")}</div>` : ""}
+    ${!["cancelado","perdido"].includes(s) ? `<div class="passos">${ETAPAS.map((t,i) => `<div class="passo ${i < etapa ? "feito" : i === etapa ? "agora" : ""}">${t}</div>`).join("")}</div>` : ""}
     ${mensagem()}
   </div>`;
 
@@ -2464,6 +2466,7 @@ function render(){
       <div class="li"><span>Frete${P.freteServico ? ` <small style="display:block;font-size:12.5px;color:var(--faint)">${esc(P.freteServico)}</small>` : ""}</span><span>${num(P.frete) > 0 ? brl(P.frete) : "incluso"}</span></div>
       ${P.prazo ? `<div class="li"><span>Prazo de envio</span><span>${dataBR(P.prazo)}</span></div>` : ""}
       <div class="li total"><span>Total</span><span>${brl(P.total)}</span></div>
+      ${P.validadeAte && s === "orcamento" ? `<p class="nota" style="margin-top:6px;${P.vencido?"color:var(--red)":""}">${P.vencido?"Venceu em":"Orçamento válido até"} ${dataBR(P.validadeAte)}</p>` : ""}
       ${P.recado ? `<div class="recado">${esc(P.recado)}</div>` : ""}
     </div>`;
   }else if(P.pedidoCliente){
@@ -2499,7 +2502,7 @@ function render(){
     }, 0);
   }
 
-  if(s === "orcamento" || s === "comprovante"){
+  if((s === "orcamento" && !P.vencido) || s === "comprovante"){
     html += `
     <div class="card">
       <h2>${s === "comprovante" ? "Enviar outro comprovante" : "Já pagou? Envie o comprovante"}</h2>

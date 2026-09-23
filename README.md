@@ -6,7 +6,7 @@ Impressão 3D sob encomenda: site para clientes, página de acompanhamento do pe
 |---|---|
 | `index.html` | Site: vitrine de trabalhos e pedido de orçamento |
 | `pedido.html` | Página do cliente: orçamento, Pix com QR Code, comprovante e rastreio |
-| `painel.html` | Seu sistema: pedidos, orçamento, clientes, estoque, financeiro, vitrine |
+| `painel.html` | Seu sistema: pedidos, orçamento, clientes, estoque, financeiro, análise, vitrine |
 | `privacidade.html` | Política de privacidade (LGPD) e termos de encomenda |
 | `404.html` | Página de endereço não encontrado |
 | `config.js` | Endereço e chave pública do Supabase — **preencher** |

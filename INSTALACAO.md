@@ -109,10 +109,23 @@ No painel, dentro de um pedido, o botão **Cotar frete pelo CEP** passa a mostra
 
 Use **Configurações → Exportar cópia** de vez em quando para ter um arquivo extra guardado no Drive.
 
+## Atualizações do sistema
+
+Quando uma atualização mexer no banco, rode de novo o `supabase/01_estrutura.sql` inteiro no SQL Editor. Ele é seguro de repetir: cria só o que falta e não apaga nenhum pedido.
+
+## Análise de orçamentos
+
+- Todo orçamento recebe um número ao ser salvo, e o PDF só é gerado depois de salvar, então nenhum orçamento sai sem número.
+- O nome do cliente é obrigatório: é ele que diz para quem foi cada orçamento.
+- Quando o cliente não fechar, abra o orçamento, toque em **Não fechou** e escolha o motivo.
+- Orçamentos que passaram da validade aparecem como **Vencidos**: cobre o cliente ou marque como "Não fechou".
+- A página **Análise** mostra taxa de fechamento, motivos, faixas de preço e tempo para fechar. **Exportar planilha** gera um arquivo que abre no Excel ou no Google Planilhas.
+
 ## Se algo der errado
 
 - **"O painel ainda não está ligado ao Supabase"** → o `config.js` não foi preenchido ou não foi enviado ao GitHub.
 - **"Esta conta existe, mas ainda não tem acesso"** → falta rodar o `02_admin.sql` com o seu e-mail exato.
 - **Cotar frete diz que a função não foi publicada** → faça a etapa 8.
 - **Não chega mensagem no Telegram** → confira se você mandou "oi" para o robô antes de pegar o chat id, e os dois segredos.
+- **"Falta atualizar o banco"** ao marcar "Não fechou" → rode de novo o `01_estrutura.sql`.
 - **Mudou algo e o celular mostra a versão antiga** → feche e abra o app, ou recarregue a página.

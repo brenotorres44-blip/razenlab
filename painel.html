@@ -456,12 +456,27 @@ const STATUS = {
   pronto:     { rotulo:"Pronto",      cor:"#9B8BFF" },
   enviado:    { rotulo:"Enviado",     cor:"#4FD1C5" },
   entregue:   { rotulo:"Entregue",    cor:"#3FD9A4" },
-  cancelado:  { rotulo:"Cancelado",   cor:"#FF3B5C" }
+  cancelado:  { rotulo:"Cancelado",   cor:"#FF3B5C" },
+  perdido:    { rotulo:"Não fechou",  cor:"#B07A8C" }
 };
+const MOTIVOS_PERDA = ["Preço acima do esperado","Prazo não atendeu","Cliente não respondeu","Fechou com outra empresa","Desistiu do projeto","Inviável de produzir","Outro"];
 const FLUXO = ["solicitado","orcamento","comprovante","pago","imprimindo","pronto","enviado","entregue"];
 const CONSOME_FILAMENTO = ["imprimindo","pronto","enviado","entregue"];
 const FATURADO = ["pago","imprimindo","pronto","enviado","entregue"];     // já recebeu o dinheiro
 const AGUARDA_PAGAMENTO = ["orcamento","comprovante"];
+const ENCERRADO = ["entregue","cancelado","perdido"];
+
+/* resultado comercial de um orçamento: base de toda a análise */
+function resultado(p){
+  if(FATURADO.includes(p.status)) return "fechado";
+  if(p.status === "perdido") return "perdido";
+  if(p.status === "cancelado") return "cancelado";
+  return "aberto";
+}
+function somaDias(isoData, n){ const d = new Date(isoData + "T12:00:00"); d.setDate(d.getDate() + n); return d.toISOString().slice(0,10); }
+function difDias(a, b){ if(!a || !b) return null; return Math.round((new Date(b+"T12:00:00") - new Date(a+"T12:00:00")) / 86400000); }
+const dataOrc = p => p.dataOrcamento || (p.criadoEm || "").slice(0,10);
+const vencido = p => p.status === "orcamento" && !!p.validadeAte && p.validadeAte < hoje();
 
 // todo orçamento novo começa daqui: tudo zerado, 1 unidade
 const PECA_ZERO = { peca:"", qtd:1, peso:0, horas:0, minutos:0, acabamento:0, extras:0, entrega:0, filamentoId:"" };
@@ -521,11 +536,23 @@ async function gravarFilamento(f){
   if(r.error) throw r.error;
   f.id = r.data.id;
 }
-async function gravarPedido(p){
+async function gravarPedido(p, forcar){
   const linha = linhaDoPedido(p);
-  const r = p.id
-    ? await sb.from("pedidos").update(linha).eq("id", p.id).select().single()
-    : await sb.from("pedidos").insert(linha).select().single();
+  if(!p.id){
+    const r = await sb.from("pedidos").insert(linha).select().single();
+    if(r.error) throw r.error;
+    return pedidoDaLinha(r.data);
+  }
+  // só grava se ninguém mexeu no pedido desde que ele foi aberto (outro aparelho ou o cliente)
+  let q = sb.from("pedidos").update(linha).eq("id", p.id);
+  if(p.atualizadoEm && !forcar) q = q.eq("atualizado_em", p.atualizadoEm);
+  const r = await q.select().maybeSingle();
+  if(r.error) throw r.error;
+  if(!r.data){ const e = new Error("conflito"); e.conflito = true; throw e; }
+  return pedidoDaLinha(r.data);
+}
+async function buscarPedido(id){
+  const r = await sb.from("pedidos").select("id,numero,token,status,dados,criado_em,atualizado_em").eq("id", id).single();
   if(r.error) throw r.error;
   return pedidoDaLinha(r.data);
 }
@@ -683,7 +710,7 @@ function resumoMes(k){
   const l = dados.pedidos.filter(p => FATURADO.includes(p.status) && (p.dataPago||"").startsWith(k));
   return { qtd:l.length, fat:l.reduce((s,p)=>s+num(p.total),0), lucro:l.reduce((s,p)=>s+num(p.lucroTotal),0), pecas:l.reduce((s,p)=>s+num(p.qtd),0) };
 }
-const abertos = () => dados.pedidos.filter(p => !["entregue","cancelado"].includes(p.status));
+const abertos = () => dados.pedidos.filter(p => !ENCERRADO.includes(p.status));
 const emProducao = () => dados.pedidos.filter(p => ["pago","imprimindo","pronto"].includes(p.status));
 const aguardando = () => dados.pedidos.filter(p => AGUARDA_PAGAMENTO.includes(p.status));
 const atrasado = p => p.prazo && p.prazo < hoje() && ["pago","imprimindo","pronto"].includes(p.status);
@@ -710,6 +737,7 @@ const I = {
   site:'<circle cx="12" cy="12" r="10"/><path d="M2 12h20M12 2a15 15 0 0 1 0 20M12 2a15 15 0 0 0 0 20"/>',
   seta:'<path d="m15 18-6-6 6-6"/>',
   seta2:'<path d="m9 18 6-6-6-6"/>',
+  analise:'<path d="M21.2 15.9A10 10 0 1 1 8 2.8"/><path d="M22 12A10 10 0 0 0 12 2v10z"/>',
   sair:'<path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"/><path d="m16 17 5-5-5-5M21 12H9"/>'
 };
 const ico = (n, extra="") => `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round" ${extra}>${I[n]}</svg>`;
@@ -724,6 +752,7 @@ const PAGINAS = [
   { id:"clientes",   nome:"Clientes",      ico:"clientes" },
   { id:"estoque",    nome:"Estoque",       ico:"estoque" },
   { id:"financeiro", nome:"Financeiro",    ico:"financeiro" },
+  { id:"analise",    nome:"Análise",       ico:"analise" },
   { id:"vitrine",    nome:"Vitrine",       ico:"vitrine" },
   { id:"config",     nome:"Configurações", ico:"config" }
 ];
@@ -751,7 +780,7 @@ function desenharNav(){
   const mob = [["painel","Início","painel"],["pedidos","Pedidos","pedidos"],["orcar","Orçar","mais2"],["estoque","Estoque","estoque"],["mais","Mais","mais"]];
   document.getElementById("bnav").innerHTML = mob.map(([id,n,ic]) => id==="orcar"
     ? `<button class="fab ${aba===id?"on":""}" data-ir="${id}"><span class="c">${ico(ic)}</span>${n}</button>`
-    : `<button class="${(aba===id)||(id==="mais"&&["clientes","financeiro","vitrine","config"].includes(aba))?"on":""}" data-ir="${id}">${ico(ic)}${n}</button>`).join("");
+    : `<button class="${(aba===id)||(id==="mais"&&["clientes","financeiro","analise","vitrine","config"].includes(aba))?"on":""}" data-ir="${id}">${ico(ic)}${n}</button>`).join("");
 }
 
 function ir(id){
@@ -766,7 +795,7 @@ function abrirFolhaMais(){
     <div class="ov" data-fechar style="align-items:flex-end;padding:0">
       <div class="folha" style="width:100%">
         <div class="lbl" style="padding:4px 6px 10px">MÓDULOS</div>
-        ${["clientes","financeiro","vitrine","config"].map(id => { const p = PAGINAS.find(x=>x.id===id);
+        ${["clientes","financeiro","analise","vitrine","config"].map(id => { const p = PAGINAS.find(x=>x.id===id);
           return `<button class="nav-it ${aba===id?"on":""}" data-ir="${id}" style="padding:14px 12px">${ico(p.ico)}<span>${p.nome}</span></button>`; }).join("")}
         <a class="nav-it" href="index.html" target="_blank" rel="noopener" style="padding:14px 12px;text-decoration:none">${ico("site")}<span>Abrir o site</span></a>
         <button class="nav-it" data-acao="sair" style="padding:14px 12px">${ico("sair")}<span>Sair</span></button>
@@ -957,7 +986,7 @@ function calendario(){
   const a = calRef.getFullYear(), m = calRef.getMonth();
   const ini = new Date(a, m, 1), iniGrade = new Date(a, m, 1 - ini.getDay());
   const prazos = {};
-  dados.pedidos.filter(p => p.prazo && !["cancelado","entregue"].includes(p.status)).forEach(p => { prazos[p.prazo] = (prazos[p.prazo]||0) + 1; });
+  dados.pedidos.filter(p => p.prazo && !ENCERRADO.includes(p.status)).forEach(p => { prazos[p.prazo] = (prazos[p.prazo]||0) + 1; });
   let dias = "";
   for(let i=0;i<42;i++){
     const d = new Date(iniGrade.getFullYear(), iniGrade.getMonth(), iniGrade.getDate()+i), k = iso(d);
@@ -1014,6 +1043,10 @@ TELAS.painel = () => {
 
   return `
   ${bannerMigracao()}
+  ${(() => { const venc = dados.pedidos.filter(vencido).length; return venc ? `<div class="pn rv" style="--d:30ms;margin-bottom:16px;border-color:rgba(176,122,140,.5);display:flex;align-items:center;gap:14px;flex-wrap:wrap">
+      <i class="led" style="color:#B07A8C"></i>
+      <span style="flex:1;min-width:200px"><b>${venc} orçamento${venc>1?"s":""} vencido${venc>1?"s":""}</b> sem resposta do cliente. Cobre ou marque como "Não fechou" para a análise ficar certa.</span>
+      <button class="tb min" data-ir="pedidos" data-filtro-ir="vencidos">Ver vencidos</button></div>` : ""; })()}
   ${(novos||comp) ? `<div class="pn rv" style="--d:40ms;margin-bottom:16px;border-color:rgba(242,138,20,.45);display:flex;align-items:center;gap:14px;flex-wrap:wrap">
       <i class="led pulsa" style="color:var(--spark)"></i>
       <span style="flex:1;min-width:200px">${novos?`<b>${novos} solicitaç${novos===1?"ão nova":"ões novas"}</b> esperando orçamento`:""}${novos&&comp?" · ":""}${comp?`<b>${comp} comprovante${comp>1?"s":""}</b> para conferir`:""}</span>
@@ -1096,21 +1129,26 @@ TELAS.painel = () => {
 let filtroStatus = "abertos", busca = "";
 function listaPedidos(){
   let l = dados.pedidos.slice().sort((a,b) => (b.numero||0)-(a.numero||0));
-  if(filtroStatus === "abertos") l = l.filter(p => !["entregue","cancelado"].includes(p.status));
+  if(filtroStatus === "abertos") l = l.filter(p => !ENCERRADO.includes(p.status));
   else if(filtroStatus === "acao") l = l.filter(p => ["solicitado","comprovante"].includes(p.status));
+  else if(filtroStatus === "vencidos") l = l.filter(vencido);
   else if(filtroStatus !== "todos") l = l.filter(p => p.status === filtroStatus);
-  if(busca.trim()){ const q = busca.toLowerCase().replace("#",""); l = l.filter(p => (p.peca||"").toLowerCase().includes(q) || (p.cliente||"").toLowerCase().includes(q) || String(p.numero).includes(q)); }
+  if(busca.trim()){
+    const q = busca.toLowerCase().replace("#",""), d = q.replace(/\D/g,"");
+    l = l.filter(p => (p.peca||"").toLowerCase().includes(q) || (p.cliente||"").toLowerCase().includes(q) || String(p.numero).includes(q)
+      || (d.length >= 4 && String(p.contato||"").replace(/\D/g,"").includes(d)));
+  }
   return l.length ? l.map(p => `
     <div class="it" data-abrir="${p.id}">
       <div class="g">
         <div class="n"><span class="nr">${numPed(p.numero)}</span>${esc(p.peca||"Peça sem nome")}</div>
-        <div class="s">${esc(p.cliente||"Sem cliente")} · ${num(p.qtd)} un.${p.prazo?` · <span class="${atrasado(p)?"dn":""}">entrega ${dataBR(p.prazo)}</span>`:""}</div>
+        <div class="s">${esc(p.cliente||"Sem cliente")} · ${num(p.qtd)} un.${p.prazo?` · <span class="${atrasado(p)?"dn":""}">entrega ${dataBR(p.prazo)}</span>`:""}${vencido(p)?` · <span class="dn">venceu em ${dataBR(p.validadeAte)}</span>`:""}${p.status==="perdido"&&p.motivoPerda?` · ${esc(p.motivoPerda)}`:""}</div>
       </div>
       <div class="val"><b>${brl(num(p.total))}</b>${stLed(p.status)}</div>
     </div>`).join("") : `<div class="vazio"><span class="lbl">NENHUM REGISTRO</span>Nada encontrado com esse filtro.</div>`;
 }
 TELAS.pedidos = () => {
-  const chips = [["acao","Precisa de ação"],["abertos","Abertos"],["todos","Todos"]].concat(Object.entries(STATUS).map(([k,v])=>[k,v.rotulo]));
+  const chips = [["acao","Precisa de ação"],["vencidos","Vencidos"],["abertos","Abertos"],["todos","Todos"]].concat(Object.entries(STATUS).map(([k,v])=>[k,v.rotulo]));
   return `
   <div class="row rv" style="--d:40ms;margin-bottom:14px">
     <input id="busca" placeholder="Buscar por peça, cliente ou número" value="${esc(busca)}" style="flex:1;min-width:220px">
@@ -1193,9 +1231,11 @@ function listaClientes(){
   const m = {};
   dados.pedidos.filter(p => p.cliente && p.status !== "cancelado").forEach(p => {
     const k = p.cliente.trim().toLowerCase();
-    const c = m[k] || (m[k] = { nome:p.cliente.trim(), contato:"", pedidos:0, gasto:0, ultimo:"" });
+    const c = m[k] || (m[k] = { nome:p.cliente.trim(), contato:"", pedidos:0, fechados:0, perdidos:0, gasto:0, ultimo:"" });
     c.pedidos++;
-    if(p.status !== "orcamento") c.gasto += num(p.total);
+    const r = resultado(p);
+    if(r === "fechado"){ c.fechados++; c.gasto += num(p.total); }
+    if(r === "perdido") c.perdidos++;
     if(p.contato) c.contato = p.contato;
     const d = (p.criadoEm||"").slice(0,10); if(d > c.ultimo) c.ultimo = d;
   });
@@ -1207,8 +1247,8 @@ TELAS.clientes = () => {
   <div class="pn rv" style="--d:60ms">
     <div class="ph"><h2>Clientes</h2><span class="cod">${cs.length} REGISTRO${cs.length===1?"":"S"}</span></div>
     ${cs.length ? `<div class="rolar"><table class="tabela">
-      <thead><tr><th>Cliente</th><th>Contato</th><th class="r">Pedidos</th><th class="r">Total comprado</th><th class="r">Último</th></tr></thead>
-      <tbody>${cs.map(c => `<tr data-cliente="${esc(c.nome)}" style="cursor:pointer"><td><b>${esc(c.nome)}</b></td><td class="muted">${esc(c.contato||"—")}</td><td class="r hudn">${c.pedidos}</td><td class="r hudn" style="color:var(--cyan)">${brl(c.gasto)}</td><td class="r muted">${dataBR(c.ultimo)}</td></tr>`).join("")}</tbody>
+      <thead><tr><th>Cliente</th><th>Contato</th><th class="r">Orçamentos</th><th class="r">Fechados</th><th class="r">Fechamento</th><th class="r">Total comprado</th><th class="r">Último</th></tr></thead>
+      <tbody>${cs.map(c => { const dec_ = c.fechados + c.perdidos; return `<tr data-cliente="${esc(c.nome)}" style="cursor:pointer"><td><b>${esc(c.nome)}</b></td><td class="muted">${esc(c.contato||"—")}</td><td class="r hudn">${c.pedidos}</td><td class="r hudn">${c.fechados}</td><td class="r hudn">${dec_ ? dec(c.fechados/dec_*100,0)+"%" : "—"}</td><td class="r hudn" style="color:var(--cyan)">${brl(c.gasto)}</td><td class="r muted">${dataBR(c.ultimo)}</td></tr>`; }).join("")}</tbody>
     </table></div>` : `<div class="vazio"><span class="lbl">SEM CLIENTES AINDA</span>Os clientes aparecem aqui automaticamente conforme você registra pedidos com nome.</div>`}
   </div>`;
 };
@@ -1280,6 +1320,109 @@ TELAS.financeiro = () => {
     </div>
   </div>`;
 };
+
+/* ---------- análise de orçamentos (fechados × não fechados) ---------- */
+let periodoAnalise = 90;
+function orcamentosDoPeriodo(){
+  const desde = periodoAnalise ? somaDias(hoje(), -periodoAnalise) : "0000-00-00";
+  return dados.pedidos.filter(p => p.status !== "solicitado" && dataOrc(p) >= desde);
+}
+function taxaFech(l){
+  const f = l.filter(p => resultado(p) === "fechado").length, pe = l.filter(p => resultado(p) === "perdido").length;
+  return { f, pe, v: (f + pe) ? f / (f + pe) * 100 : 0 };
+}
+function barras(itens, fmt, cor){
+  const max = Math.max(1, ...itens.map(i => i.v));
+  return itens.map(i => `<div class="est" style="padding:9px 0"><div class="t"><span>${i.rot}</span><span>${fmt(i)}</span></div>
+    <div class="trilho"><i data-largura="${Math.max(2, i.v / max * 100)}%"${cor ? ` style="background:${cor};box-shadow:0 0 10px ${cor}"` : ""}></i></div></div>`).join("");
+}
+TELAS.analise = () => {
+  const base = orcamentosDoPeriodo();
+  const grp = r => base.filter(p => resultado(p) === r);
+  const fech = grp("fechado"), perd = grp("perdido"), abert = grp("aberto");
+  const soma = l => l.reduce((s,p) => s + num(p.total), 0), media = l => l.length ? soma(l) / l.length : 0;
+  const tx = taxaFech(base);
+  const dias = fech.map(p => difDias(dataOrc(p), p.dataPago)).filter(d => d != null && d >= 0);
+  const tempo = dias.length ? dias.reduce((a,b) => a + b, 0) / dias.length : null;
+
+  const mot = {};
+  perd.forEach(p => { const k = p.motivoPerda || "Sem motivo informado"; mot[k] = mot[k] || { rot:k, v:0, valor:0 }; mot[k].v++; mot[k].valor += num(p.total); });
+  const motivos = Object.values(mot).sort((a,b) => b.v - a.v);
+
+  const faixas = [[0,50,"Até R$ 50"],[50,150,"De R$ 50 a R$ 150"],[150,300,"De R$ 150 a R$ 300"],[300,Infinity,"Acima de R$ 300"]]
+    .map(([a,b,rot]) => ({ rot, ...taxaFech(base.filter(p => num(p.total) >= a && num(p.total) < b)) }));
+  const origens = [["site","Pedidos pelo site"],["painel","Criados por você"]]
+    .map(([o,rot]) => ({ rot, ...taxaFech(base.filter(p => (p.origem === "site" ? "site" : "painel") === o)) }));
+
+  const meses = ultimosMeses(6);
+  const doMes = (k, filtro) => dados.pedidos.filter(p => p.status !== "solicitado" && dataOrc(p).startsWith(k) && filtro(p)).reduce((s,p) => s + num(p.total), 0);
+  const orcMes = meses.map(m => doMes(m.k, () => true)), fechMes = meses.map(m => doMes(m.k, p => resultado(p) === "fechado"));
+
+  const ultimosPerdidos = perd.slice().sort((a,b) => (b.dataPerdido||"").localeCompare(a.dataPerdido||"")).slice(0, 8);
+  const periodos = [[30,"30 dias"],[90,"90 dias"],[365,"12 meses"],[0,"Tudo"]];
+  const fmtTaxa = i => (i.f + i.pe) ? `${dec(i.v,0)}% · ${i.f} de ${i.f + i.pe}` : "sem dados";
+
+  return `
+  <div class="row rv" style="--d:30ms;margin-bottom:14px">
+    <div class="chips" style="flex:1">${periodos.map(([d,r]) => `<button class="chip ${periodoAnalise===d?"on":""}" data-periodo="${d}">${r}</button>`).join("")}</div>
+    <button class="tb" data-acao="exportar-csv">Exportar planilha</button>
+  </div>
+  <section class="kpis">
+    <div class="pn hov kpi rv" style="--d:60ms"><div class="lbl">Orçamentos emitidos</div><div class="v" data-conta="${base.length}">0</div><div class="dl">${brl(soma(base))} orçados</div></div>
+    <div class="pn hov kpi rv" style="--d:120ms"><div class="lbl">Taxa de fechamento</div><div class="v ${tx.f+tx.pe && tx.v>=50?"up":""}" data-conta="${tx.v}" data-tipo="pct">0%</div><div class="dl">${tx.f} fechado${tx.f===1?"":"s"} · ${tx.pe} não fech${tx.pe===1?"ou":"aram"}${abert.length?` · ${abert.length} em aberto`:""}</div></div>
+    <div class="pn hov kpi rv" style="--d:180ms"><div class="lbl">Valor fechado</div><div class="v up" data-conta="${soma(fech)}" data-tipo="brl">${brl(0)}</div><div class="dl">ticket médio ${brl(media(fech))}</div></div>
+    <div class="pn hov kpi rv" style="--d:240ms"><div class="lbl">Tempo para fechar</div><div class="v">${tempo == null ? "—" : dec(tempo,1) + " dia" + (tempo >= 1.95 ? "s" : "")}</div><div class="dl">do orçamento ao pagamento</div></div>
+  </section>
+  <section class="baixo" style="margin-bottom:16px">
+    <div class="pn rv" style="--d:300ms">
+      <div class="ph"><h2>Orçado × fechado</h2><span class="cod">ÚLTIMOS 6 MESES</span></div>
+      ${graficoHolo("ana", meses.map(m => m.rot), [{ nome:"Orçado", cor:"#8FA8C8", vals:orcMes }, { nome:"Fechado", cor:"#3FD9A4", vals:fechMes }])}
+    </div>
+    <div class="pn rv" style="--d:360ms">
+      <div class="ph"><h2>Por que não fecharam</h2></div>
+      ${motivos.length ? barras(motivos, i => `${i.v} · ${brl(i.valor)}`, "#B07A8C")
+        : `<div class="vazio"><span class="lbl">SEM PERDAS REGISTRADAS</span>Quando um orçamento não fechar, marque "Não fechou" e escolha o motivo.</div>`}
+      <div class="sep"></div>
+      <div class="li"><span>Ticket médio dos que fecharam</span><span>${brl(media(fech))}</span></div>
+      <div class="li"><span>Ticket médio dos que não fecharam</span><span>${brl(media(perd))}</span></div>
+      <div class="li"><span>Valor que ficou na mesa</span><span class="dn">${brl(soma(perd))}</span></div>
+    </div>
+  </section>
+  <section class="baixo">
+    <div class="pn rv" style="--d:420ms">
+      <div class="ph"><h2>Fechamento por faixa de preço</h2></div>
+      ${barras(faixas, fmtTaxa)}
+      <p class="dica">Se as faixas mais caras fecham bem menos, o preço pode estar pesando nesses pedidos.</p>
+      <div class="sep"></div>
+      <div class="ph" style="margin-bottom:6px"><h2>Por origem</h2></div>
+      ${barras(origens, fmtTaxa)}
+    </div>
+    <div class="pn rv" style="--d:480ms">
+      <div class="ph"><h2>Não fecharam por último</h2><span class="cod">${perd.length} NO PERÍODO</span></div>
+      ${ultimosPerdidos.length ? ultimosPerdidos.map(p => `<div class="fila-it" data-abrir="${p.id}">
+          <div class="hr">${numPed(p.numero)}</div>
+          <div class="g"><div class="n">${esc(p.cliente||"Sem cliente")}</div><div class="s">${esc(p.motivoPerda||"Sem motivo")}${p.notaPerda?` · ${esc(p.notaPerda)}`:""}</div></div>
+          <b class="hudn" style="color:#D9A5B6">${brl(num(p.total))}</b></div>`).join("")
+        : `<div class="vazio"><span class="lbl">NADA POR AQUI</span>Nenhum orçamento marcado como não fechado no período.</div>`}
+    </div>
+  </section>`;
+};
+function exportarCSV(){
+  const l = orcamentosDoPeriodo().sort((a,b) => (a.numero||0) - (b.numero||0));
+  if(!l.length){ toast("Nenhum orçamento no período escolhido."); return; }
+  const n2 = v => (Math.round(num(v) * 100) / 100).toFixed(2).replace(".", ",");
+  const cel = v => { const t = String(v == null ? "" : v); return /[;"\n\r]/.test(t) ? `"${t.replace(/"/g,'""')}"` : t; };
+  const RES = { fechado:"Fechado", perdido:"Não fechou", aberto:"Em aberto", cancelado:"Cancelado" };
+  const cab = ["Número","Data do orçamento","Válido até","Cliente","WhatsApp","Cidade","UF","Origem","Peça","Material","Quantidade",
+    "Total (R$)","Frete (R$)","Custo (R$)","Lucro (R$)","Situação","Resultado","Motivo (não fechou)","Detalhe","Data do pagamento","Dias até fechar"];
+  const linhas = l.map(p => { const e = p.endereco || {}, r = resultado(p); return [
+    p.numero, dataBR(dataOrc(p)), p.validadeAte ? dataBR(p.validadeAte) : "", p.cliente, p.contato, e.cidade, e.uf, p.origem === "site" ? "Site" : "Painel",
+    p.peca, p.materialTexto, p.qtd, n2(p.total), n2(p.entrega), n2(p.custoTotal), n2(p.lucroTotal), (STATUS[p.status] || {}).rotulo || p.status,
+    RES[r], p.motivoPerda, p.notaPerda, p.dataPago ? dataBR(p.dataPago) : "", r === "fechado" ? (difDias(dataOrc(p), p.dataPago) ?? "") : ""
+  ].map(cel).join(";"); });
+  baixar(`razenlab-orcamentos-${hoje()}.csv`, "\ufeff" + [cab.join(";"), ...linhas].join("\r\n"), "text/csv;charset=utf-8");
+  toast(`${l.length} orçamentos exportados. Abre direto no Excel ou no Google Planilhas.`);
+}
 
 /* ---------- vitrine ---------- */
 function pesoVitrine(){
@@ -1406,11 +1549,21 @@ function desenharPedido(){
   <div class="ov" data-fechar>
     <div class="md" role="dialog" aria-modal="true" aria-label="Pedido">
       <div class="pn" id="ped-form">
-        <div class="md-h"><h2>${p.id ? `PEDIDO ${numPed(p.numero)}` : "NOVO ORÇAMENTO"}</h2><button class="x" data-fechar aria-label="Fechar">&times;</button></div>
+        <div class="md-h"><div style="flex:1;min-width:0"><h2>${p.id ? `ORÇAMENTO ${numPed(p.numero)}` : "NOVO ORÇAMENTO"}</h2>
+          ${p.id ? `<div class="p13 muted" style="margin-top:4px">${p.cliente?`para <b style="color:var(--text)">${esc(p.cliente)}</b> · `:""}orçado em ${dataBR(dataOrc(p))}${p.validadeAte?` · <span class="${vencido(p)?"dn":""}">${vencido(p)?"venceu":"válido até"} ${dataBR(p.validadeAte)}</span>`:""}${p.origem==="site"?" · pedido pelo site":""}</div>` : `<div class="p13 muted" style="margin-top:4px">O número é gerado ao salvar.</div>`}</div>
+          <button class="x" data-fechar aria-label="Fechar">&times;</button></div>
         <input type="hidden" name="status" value="${p.status}">
         <div class="fluxo" role="group" aria-label="Situação">
           ${FLUXO.map(k => `<button type="button" class="${p.status===k?"on":""}" data-status="${k}" style="--c:${STATUS[k].cor}">${STATUS[k].rotulo}</button>`).join("")}
+          <button type="button" class="${p.status==="perdido"?"on":""}" data-status="perdido" style="--c:${STATUS.perdido.cor};flex:0 0 auto">Não fechou</button>
           <button type="button" class="${p.status==="cancelado"?"on":""}" data-status="cancelado" style="--c:${STATUS.cancelado.cor};flex:0 0 auto">Cancelar</button>
+        </div>
+        <div class="req" id="perda" style="border-color:rgba(176,122,140,.55);background:rgba(176,122,140,.08)" ${p.status==="perdido"?"":"hidden"}>
+          <div class="lbl" style="color:#D9A5B6;margin-bottom:10px">POR QUE NÃO FECHOU?</div>
+          <div class="grid g2">
+            <label class="f"><span>Motivo</span><select name="motivoPerda"><option value="">Escolha…</option>${MOTIVOS_PERDA.map(m => `<option ${p.motivoPerda===m?"selected":""}>${m}</option>`).join("")}</select></label>
+            <label class="f"><span>Detalhe (opcional)</span><input name="notaPerda" value="${esc(p.notaPerda||"")}" placeholder="Ex.: achou caro, pediu R$ 60"></label>
+          </div>
         </div>
 
         ${p.pedidoCliente ? `<div class="req">
@@ -1463,6 +1616,7 @@ function desenharPedido(){
             <div class="pn" style="background:rgba(2,8,20,.55)" id="ped-res">${blocoResultado(c)}</div>
             ${p.token ? `<div class="link-cli"><code>${esc(linkCliente(p))}</code><button type="button" class="tb min" data-copiar="${esc(linkCliente(p))}">Copiar link</button></div>
               <p class="dica">Link do cliente: mostra o orçamento, o Pix e o andamento.</p>` : `<p class="dica" style="margin-top:12px">O link do cliente aparece depois de salvar.</p>`}
+            ${p.id ? `<div class="pn" style="margin-top:14px;background:rgba(2,8,20,.45)"><div class="lbl" style="margin-bottom:8px">HISTÓRICO</div><div id="historico" class="p13 muted">Carregando…</div></div>` : ""}
           </div>
         </div>
         <div class="row" style="margin-top:18px">
@@ -1477,6 +1631,17 @@ function desenharPedido(){
     </div>
   </div>`;
   document.body.style.overflow = "hidden";
+  if(p.id) carregarHistorico(p.id);
+}
+async function carregarHistorico(id){
+  const el = () => document.getElementById("historico");
+  try{
+    const r = await sb.from("pedidos_historico").select("de,para,em").eq("pedido_id", id).order("em");
+    if(r.error) throw r.error;
+    if(!el()) return;
+    el().innerHTML = r.data.length ? r.data.map(h => `<div class="li" style="padding:3px 0"><span>${h.de ? "→ " : "Criado · "}${stLed(h.para)}</span><span>${new Date(h.em).toLocaleString("pt-BR",{day:"2-digit",month:"2-digit",hour:"2-digit",minute:"2-digit"})}</span></div>`).join("")
+      : "Sem registros ainda.";
+  }catch(e){ if(el()) el().textContent = "O histórico aparece depois de rodar o 01_estrutura.sql atualizado."; }
 }
 function atualizarPedido(){
   const f = document.getElementById("ped-form"), r = document.getElementById("ped-res");
@@ -1494,6 +1659,12 @@ function montarPedido(){
     materialTexto: c.fil ? [c.fil.material, c.fil.cor].filter(Boolean).join(" ") : "",
     precoUn:c.preco, total:c.total, custoTotal:c.custoTotal, lucroTotal:c.lucroTotal, horasTotal:c.horasTotal, filamentoTotal:c.filamentoTotal };
   delete p.valorPago;
+  // orçamento: para quem, quando foi feito, até quando vale e de onde veio
+  p.origem = p.origem || "painel";
+  if(p.status !== "solicitado" && !p.dataOrcamento) p.dataOrcamento = hoje();
+  if(p.dataOrcamento && !p.validadeAte) p.validadeAte = somaDias(p.dataOrcamento, num(dados.negocio.validadeDias) || 7);
+  if(p.status === "perdido"){ p.motivoPerda = v.motivoPerda || ""; p.notaPerda = (v.notaPerda || "").trim(); if(!p.dataPerdido) p.dataPerdido = hoje(); }
+  else { delete p.motivoPerda; delete p.notaPerda; delete p.dataPerdido; }
   // datas que alimentam os relatórios
   if(FATURADO.includes(p.status)){ if(!p.dataPago) p.dataPago = hoje(); } else delete p.dataPago;
   if(["enviado","entregue"].includes(p.status)){ if(!p.dataEnviado) p.dataEnviado = hoje(); } else delete p.dataEnviado;
@@ -1505,20 +1676,34 @@ async function salvarPedido(silencioso, mudarStatus){
   const form = document.getElementById("ped-form");
   if(mudarStatus) form.querySelector('[name="status"]').value = mudarStatus;
   const p = montarPedido();
+  if(!p.cliente){ toast("Informe para quem é o orçamento (nome do cliente)."); form.querySelector('[name="cliente"]').focus(); return null; }
   if(!p.peca){ toast("Dê um nome para a peça antes de salvar."); form.querySelector('[name="peca"]').focus(); return null; }
+  if(p.status === "perdido" && !p.motivoPerda){ toast("Escolha o motivo de não ter fechado — é o que alimenta a análise."); form.querySelector('[name="motivoPerda"]').focus(); return null; }
   ocupado = true;
   const mudou = ajustarEstoque(p);
   try{
-    const salvo = await gravarPedido(p);
+    let salvo;
+    try{ salvo = await gravarPedido(p); }
+    catch(e){
+      if(!e.conflito) throw e;
+      const atual = await buscarPedido(p.id);
+      const sobrescrever = confirm(`Este pedido foi alterado em outro lugar enquanto você editava (situação agora: ${STATUS[atual.status]?.rotulo || atual.status}).\n\nOK = salvar o que você digitou, mantendo comprovante e dados enviados pelo cliente.\nCancelar = descartar e ver a versão mais recente.`);
+      if(!sobrescrever){ pedidoAberto = atual; await carregarTudo(); desenharPedido(); toast("Mostrando a versão mais recente."); return null; }
+      ["comprovante","comprovanteEm","avisadoNovo","avisadoComprovante"].forEach(k => { if(atual[k] !== undefined) p[k] = atual[k]; });
+      if(atual.status === "comprovante" && p.status === "orcamento") p.status = "comprovante";
+      p.atualizadoEm = atual.atualizadoEm;
+      salvo = await gravarPedido(p);
+    }
     for(const f of mudou) await gravarFilamento(f);
     const i = dados.pedidos.findIndex(x => x.id === salvo.id);
     if(i >= 0) dados.pedidos[i] = salvo; else dados.pedidos.unshift(salvo);
     pedidoAberto = salvo;
     const baixo = mudou.find(f => num(f.estoque) <= num(f.minimo));
-    if(!silencioso){ fecharModal(); render(); toast(`Pedido ${numPed(salvo.numero)} salvo.` + (baixo ? ` Atenção: ${baixo.nome} com estoque baixo.` : "")); }
+    if(!silencioso){ fecharModal(); render(); toast(`${["solicitado","orcamento","perdido"].includes(salvo.status) ? "Orçamento" : "Pedido"} ${numPed(salvo.numero)} salvo.` + (baixo ? ` Atenção: ${baixo.nome} com estoque baixo.` : "")); }
     return salvo;
   }catch(e){
-    falhou(e, "salvar o pedido");
+    if(/pedidos_status_check/.test(e && e.message || "")) toast('Falta atualizar o banco: rode de novo o 01_estrutura.sql no Supabase para liberar "Não fechou".');
+    else falhou(e, "salvar o pedido");
     try{ await carregarTudo(); }catch(_){}
     return null;
   }finally{ ocupado = false; }
@@ -1533,7 +1718,7 @@ function textoOrcamento(p){
   const c = precificar(p);
   return [`Olá, ${(p.cliente||"").split(" ")[0] || "tudo bem"}! Aqui é da *RazenLab*.`, "", `Seu orçamento ${numPed(p.numero)} está pronto:`,
     `${p.peca} — ${c.qtd} un.`, `Valor: ${brl(c.preco*c.qtd - c.desconto)}`, c.entrega>0?`Frete (${p.freteServico || "Correios"}): ${brl(c.entrega)}`:null, `*Total: ${brl(c.total)}*`,
-    p.prazo?`Prazo: ${dataBR(p.prazo)}`:null, "", "Pelo link abaixo você vê os detalhes, paga por Pix e envia o comprovante:", linkCliente(p)].filter(x => x !== null).join("\n");
+    p.prazo?`Prazo: ${dataBR(p.prazo)}`:null, p.validadeAte?`Válido até ${dataBR(p.validadeAte)}.`:null, "", "Pelo link abaixo você vê os detalhes, paga por Pix e envia o comprovante:", linkCliente(p)].filter(x => x !== null).join("\n");
 }
 function textoEnvio(p){
   return [`Olá, ${(p.cliente||"").split(" ")[0] || "tudo bem"}! Seu pedido ${numPed(p.numero)} da *RazenLab* foi postado nos Correios. 📦`, "",
@@ -1544,6 +1729,7 @@ async function enviarOrcamento(){
   if(precificar(lerCampos(form)).preco <= 0){ toast("Preencha peso e tempo para calcular o preço antes de enviar."); return; }
   const n = dados.negocio;
   if(!n.pixChave){ toast("Cadastre sua chave Pix em Configurações antes de enviar orçamentos."); return; }
+  if(pedidoAberto.validadeAte && pedidoAberto.validadeAte < hoje()) delete pedidoAberto.validadeAte;   // reenviar renova a validade
   const p = await salvarPedido(true, "orcamento"); if(!p) return;
   abrirWhats(p.contato, textoOrcamento(p));
   desenharPedido(); render();
@@ -1622,10 +1808,17 @@ async function abrirArquivo(caminho){
   catch(e){ if(w) w.close(); falhou(e, "abrir o arquivo"); }
 }
 
-function gerarOrcamento(){
-  const p = { ...pedidoAberto, ...montarPedido() };
+async function gerarOrcamento(){
+  // a janela abre antes de salvar, senão o navegador bloqueia como pop-up
+  const w = window.open("", "_blank");
+  if(!w){ toast("O navegador bloqueou a janela. Libere pop-ups para este site."); return; }
+  w.document.write('<p style="font-family:sans-serif;padding:40px;color:#56708F">Gerando orçamento…</p>');
+  // todo orçamento emitido é salvo: ganha número, fica registrado para quem foi e entra na análise
+  const st = document.querySelector('#ped-form [name="status"]').value;
+  const p = await salvarPedido(true, st === "solicitado" ? "orcamento" : undefined);
+  if(!p){ w.close(); return; }
+  desenharPedido(); render();
   const c = precificar(p), n = dados.negocio;
-  const val = new Date(Date.now() + (num(n.validadeDias)||7)*86400000);
   const cont = [n.whatsapp && `WhatsApp ${esc(n.whatsapp)}`, n.instagram && `@${esc(n.instagram.replace(/^@/,""))}`, n.email && esc(n.email), n.cidade && esc(n.cidade)].filter(Boolean);
   const pecas = c.preco * c.qtd;
   const logoMarca = new URL("assets/logo.jpg", location.href).href;   // logo original da RazenLab
@@ -1707,7 +1900,7 @@ function gerarOrcamento(){
       <div class="meta">
         <div><span class="lb">Cliente</span><b>${esc(p.cliente||"—")}</b>${p.contato?`<span class="sub">${esc(p.contato)}</span>`:""}</div>
         <div><span class="lb">Prazo</span><b>${p.prazo?dataBR(p.prazo):"A combinar"}</b></div>
-        <div><span class="lb">Válido até</span><b>${dataBR(iso(val))}</b></div>
+        <div><span class="lb">Válido até</span><b>${dataBR(p.validadeAte || somaDias(hoje(), num(n.validadeDias)||7))}</b></div>
       </div>
       <div class="sec"><span class="lb">Itens</span></div>
       <table>
@@ -1732,8 +1925,6 @@ function gerarOrcamento(){
     </div>
   </div>
   <script>window.addEventListener("load",()=>setTimeout(()=>window.print(),600));<\/script></body></html>`;
-  const w = window.open("", "_blank");
-  if(!w){ toast("O navegador bloqueou a janela. Libere pop-ups para este site."); return; }
   w.document.open(); w.document.write(html); w.document.close();
 }
 
@@ -1812,9 +2003,9 @@ function caminhoVitrine(url){ const i = url.indexOf("/vitrine/"); return i >= 0 
 /* ================================================================
    13. CÓPIA, IMPORTAÇÃO E MIGRAÇÃO DOS DADOS DESTE APARELHO
    ================================================================ */
-function baixar(nome, conteudo){
+function baixar(nome, conteudo, tipo = "application/json"){
   const a = document.createElement("a");
-  a.href = URL.createObjectURL(new Blob([conteudo],{type:"application/json"})); a.download = nome;
+  a.href = URL.createObjectURL(new Blob([conteudo],{type:tipo})); a.download = nome;
   document.body.appendChild(a); a.click(); a.remove(); setTimeout(()=>URL.revokeObjectURL(a.href),1500);
 }
 function exportar(){
@@ -1953,6 +2144,7 @@ document.addEventListener("click", async e => {
   if((el = t.closest("[data-status]"))){
     const f = document.getElementById("ped-form");
     f.querySelector('[name="status"]').value = el.dataset.status;
+    const perda = document.getElementById("perda"); if(perda) perda.hidden = el.dataset.status !== "perdido";
     f.querySelectorAll("[data-status]").forEach(b => b.classList.toggle("on", b === el));
     return;
   }
@@ -1962,6 +2154,7 @@ document.addEventListener("click", async e => {
     try{ await navigator.clipboard.writeText(el.dataset.copiar); toast("Link copiado."); }catch(err){ prompt("Copie o link:", el.dataset.copiar); }
     return;
   }
+  if((el = t.closest("[data-periodo]"))){ periodoAnalise = +el.dataset.periodo; render(); return; }
   if((el = t.closest("[data-dia]"))){ diaSel = el.dataset.dia; document.getElementById("cal").innerHTML = calendario(); return; }
   if((el = t.closest("[data-mes]"))){ calRef = new Date(calRef.getFullYear(), calRef.getMonth() + (+el.dataset.mes), 1); document.getElementById("cal").innerHTML = calendario(); return; }
   if((el = t.closest("[data-cliente]"))){ busca = el.dataset.cliente; filtroStatus = "todos"; ir("pedidos"); return; }
@@ -1993,6 +2186,7 @@ document.addEventListener("click", async e => {
     case "marcar-enviado": marcarEnviado(); break;
     case "avisar-envio": abrirWhats(pedidoAberto.contato, textoEnvio(pedidoAberto)); break;
     case "gerar-orcamento": gerarOrcamento(); break;
+    case "exportar-csv": exportarCSV(); break;
     case "duplicar": {
       const c = {...montarPedido(), id:null, numero:null, token:null, status:"orcamento", prazo:"", rastreio:""};
       ["dataPago","dataEnviado","dataEntregue","criadoEm","estoqueBaixado","comprovante","comprovanteEm","pedidoCliente","anexo","origem"].forEach(k => delete c[k]);
