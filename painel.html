@@ -1629,77 +1629,78 @@ function gerarOrcamento(){
   const val = new Date(Date.now() + (num(n.validadeDias)||7)*86400000);
   const cont = [n.whatsapp && `WhatsApp ${esc(n.whatsapp)}`, n.instagram && `@${esc(n.instagram.replace(/^@/,""))}`, n.email && esc(n.email), n.cidade && esc(n.cidade)].filter(Boolean);
   const pecas = c.preco * c.qtd;
+  const logoMarca = new URL("assets/logo.jpg", location.href).href;   // logo original da RazenLab
   const temAjuste = c.desconto > 0 || c.entrega > 0;   // só mostra a conta quando há algo além das peças
   const html = `<!DOCTYPE html><html lang="pt-BR"><head><meta charset="utf-8">
   <title>Orçamento ${p.numero?numPed(p.numero):""} — ${esc(p.cliente||"RazenLab")}</title>
-  <link href="https://fonts.googleapis.com/css2?family=Rajdhani:wght@500;600;700&family=Manrope:wght@400;500;600;700&display=swap" rel="stylesheet">
+  <link href="https://fonts.googleapis.com/css2?family=Chakra+Petch:wght@500;600;700&family=Manrope:wght@400;500;600;700&display=swap" rel="stylesheet">
   <style>
   @page{size:A4;margin:0}
   *{box-sizing:border-box;-webkit-print-color-adjust:exact;print-color-adjust:exact}
-  body{margin:0;background:#dfe5ea;font-family:Manrope,"Segoe UI",sans-serif;color:#13232f;font-size:13px;line-height:1.5}
+  body{margin:0;background:#dfe5ea;font-family:Manrope,"Segoe UI",sans-serif;color:#0B1733;font-size:13px;line-height:1.5}
   .pg{width:210mm;min-height:297mm;margin:0 auto;background:#fff;display:flex;flex-direction:column;position:relative}
-  .hud{font-family:Rajdhani,"Segoe UI",sans-serif}
+  .hud{font-family:"Chakra Petch","Segoe UI",sans-serif}
   /* cabeçalho */
-  .hd{position:relative;overflow:hidden;background:#0a141f;color:#fff;padding:30px 40px 28px;display:flex;align-items:center;gap:18px}
+  .hd{position:relative;overflow:hidden;background:#030C2B;color:#fff;padding:30px 40px 28px;display:flex;align-items:center;gap:18px}
   .hd::before{content:"";position:absolute;inset:0;background:
-      radial-gradient(260px 200px at 88% 20%,rgba(79,217,236,.20),transparent 70%),
-      repeating-linear-gradient(90deg,rgba(129,239,247,.05) 0 1px,transparent 1px 28px),
-      repeating-linear-gradient(0deg,rgba(129,239,247,.05) 0 1px,transparent 1px 28px)}
-  .hd::after{content:"";position:absolute;left:0;right:0;bottom:0;height:3px;background:linear-gradient(90deg,#4fd9ec 0 72%,#e5815d 72% 80%,#4fd9ec 80%)}
+      radial-gradient(260px 200px at 88% 20%,rgba(30,155,255,.38),transparent 70%),
+      repeating-linear-gradient(90deg,rgba(92,225,255,.05) 0 1px,transparent 1px 28px),
+      repeating-linear-gradient(0deg,rgba(92,225,255,.05) 0 1px,transparent 1px 28px)}
+  .hd::after{content:"";position:absolute;left:0;right:0;bottom:0;height:3px;background:linear-gradient(90deg,#1E9BFF 0 72%,#F28A14 72% 80%,#1E9BFF 80%)}
   .hd>*{position:relative;z-index:1}
-  .hd img{width:62px;height:62px;border-radius:50%;box-shadow:0 0 0 1px rgba(129,239,247,.45),0 0 26px rgba(79,217,236,.35)}
+  .hd img{width:68px;height:68px;border-radius:50%;object-fit:cover;box-shadow:0 0 0 1px rgba(92,225,255,.45),0 0 30px rgba(30,155,255,.5)}
   .marca b{display:block;font-size:30px;font-weight:700;letter-spacing:5px;line-height:1}
-  .marca b span{color:#4fd9ec}
-  .marca small{display:block;color:#9fb9c4;font-size:11.5px;margin-top:5px;letter-spacing:.2px}
+  .marca b span{color:#1E9BFF}
+  .marca small{display:block;color:#8FA8C8;font-size:11.5px;margin-top:5px;letter-spacing:.2px}
   .doc{margin-left:auto;text-align:right}
-  .doc .rot{font-size:12px;letter-spacing:4px;color:#4fd9ec;font-weight:600}
+  .doc .rot{font-size:12px;letter-spacing:4px;color:#5CE1FF;font-weight:600}
   .doc .num{font-size:40px;font-weight:700;line-height:1;letter-spacing:1px;margin:2px 0 4px}
-  .doc .em{font-size:11.5px;color:#9fb9c4}
+  .doc .em{font-size:11.5px;color:#8FA8C8}
   /* corpo */
   .bd{padding:30px 40px 24px;flex:1}
-  .meta{display:grid;grid-template-columns:1.4fr 1fr 1fr;border:1px solid #d6e0e6;margin-bottom:30px}
-  .meta>div{padding:14px 16px;border-left:1px solid #d6e0e6;position:relative}
+  .meta{display:grid;grid-template-columns:1.4fr 1fr 1fr;border:1px solid #D8E2F0;margin-bottom:30px}
+  .meta>div{padding:14px 16px;border-left:1px solid #D8E2F0;position:relative}
   .meta>div:first-child{border-left:none}
-  .meta>div::before{content:"";position:absolute;left:-1px;top:-1px;width:10px;height:10px;border-top:2px solid #1d9db3;border-left:2px solid #1d9db3}
-  .lb{display:block;font-family:Rajdhani,"Segoe UI",sans-serif;font-size:11px;font-weight:600;letter-spacing:2.2px;color:#5f7886;text-transform:uppercase;margin-bottom:3px}
+  .meta>div::before{content:"";position:absolute;left:-1px;top:-1px;width:10px;height:10px;border-top:2px solid #1E9BFF;border-left:2px solid #1E9BFF}
+  .lb{display:block;font-family:"Chakra Petch","Segoe UI",sans-serif;font-size:11px;font-weight:600;letter-spacing:2.2px;color:#56708F;text-transform:uppercase;margin-bottom:3px}
   .meta b{font-size:15px;font-weight:600}
-  .meta .sub{display:block;color:#5f7886;font-size:12px;margin-top:1px}
+  .meta .sub{display:block;color:#56708F;font-size:12px;margin-top:1px}
   .sec{display:flex;align-items:center;gap:10px;margin:0 0 10px}
   .sec .lb{margin:0}
-  .sec::after{content:"";flex:1;height:1px;background:#d6e0e6}
+  .sec::after{content:"";flex:1;height:1px;background:#D8E2F0}
   table{width:100%;border-collapse:collapse}
-  th{font-family:Rajdhani,"Segoe UI",sans-serif;font-weight:600;font-size:11px;letter-spacing:1.8px;text-transform:uppercase;color:#5f7886;text-align:left;padding:0 0 9px;border-bottom:2px solid #13232f}
-  td{padding:16px 0;border-bottom:1px solid #e3e9ed;vertical-align:top}
+  th{font-family:"Chakra Petch","Segoe UI",sans-serif;font-weight:600;font-size:11px;letter-spacing:1.8px;text-transform:uppercase;color:#56708F;text-align:left;padding:0 0 9px;border-bottom:2px solid #0B1733}
+  td{padding:16px 0;border-bottom:1px solid #E3EAF5;vertical-align:top}
   .r{text-align:right}
   .item b{font-size:15px;font-weight:600;display:block}
-  .item span{color:#5f7886;font-size:12px}
+  .item span{color:#56708F;font-size:12px}
   .tot{display:flex;justify-content:flex-end;margin-top:22px}
   .tot-in{width:300px}
-  .linha{display:flex;justify-content:space-between;padding:5px 2px;color:#3b5361}
-  .linha span:last-child{color:#13232f;font-weight:600}
-  .total{margin-top:10px;background:#0a141f;color:#fff;padding:16px 20px;display:flex;align-items:center;justify-content:space-between;position:relative}
-  .total::before{content:"";position:absolute;left:0;top:0;bottom:0;width:4px;background:#4fd9ec}
-  .total .lb{color:#4fd9ec;margin:0}
-  .total .v{font-family:Rajdhani,"Segoe UI",sans-serif;font-size:32px;font-weight:700;letter-spacing:.5px;line-height:1}
-  .obs{margin-top:30px;border-left:3px solid #1d9db3;background:#f3f7f9;padding:14px 18px}
+  .linha{display:flex;justify-content:space-between;padding:5px 2px;color:#3D5275}
+  .linha span:last-child{color:#0B1733;font-weight:600}
+  .total{margin-top:10px;background:#030C2B;color:#fff;padding:16px 20px;display:flex;align-items:center;justify-content:space-between;position:relative}
+  .total::before{content:"";position:absolute;left:0;top:0;bottom:0;width:4px;background:#1E9BFF}
+  .total .lb{color:#5CE1FF;margin:0}
+  .total .v{font-family:"Chakra Petch","Segoe UI",sans-serif;font-size:32px;font-weight:700;letter-spacing:.5px;line-height:1}
+  .obs{margin-top:30px;border-left:3px solid #1E9BFF;background:#F2F6FD;padding:14px 18px}
   .obs p{margin:4px 0 0;white-space:pre-line}
   /* rodapé */
-  .ft{padding:18px 40px 22px;display:flex;align-items:center;gap:14px;border-top:1px solid #d6e0e6;font-size:11.5px;color:#5f7886}
-  .ft img{width:26px;height:26px;border-radius:50%}
+  .ft{padding:18px 40px 22px;display:flex;align-items:center;gap:14px;border-top:1px solid #D8E2F0;font-size:11.5px;color:#56708F}
+  .ft img{width:30px;height:30px;border-radius:50%;object-fit:cover}
   .ft .ct{flex:1}
-  .ft .ct b{display:block;font-family:Rajdhani,"Segoe UI",sans-serif;color:#13232f;font-size:13px;letter-spacing:2px}
-  .ft .cod{font-family:Rajdhani,"Segoe UI",sans-serif;letter-spacing:2px}
+  .ft .ct b{display:block;font-family:"Chakra Petch","Segoe UI",sans-serif;color:#0B1733;font-size:13px;letter-spacing:2px}
+  .ft .cod{font-family:"Chakra Petch","Segoe UI",sans-serif;letter-spacing:2px}
   /* botões na tela */
   .np{position:fixed;top:14px;right:14px;display:flex;gap:8px;z-index:9}
-  .np button{font-family:Manrope,sans-serif;font-size:13px;font-weight:700;letter-spacing:.5px;text-transform:uppercase;padding:11px 16px;border-radius:3px;border:1px solid #4fd9ec;cursor:pointer;background:#4fd9ec;color:#07121b}
-  .np button.s{background:#0a141f;color:#e9f5f8;border-color:#2c4655}
+  .np button{font-family:Manrope,sans-serif;font-size:13px;font-weight:700;letter-spacing:.5px;text-transform:uppercase;padding:11px 16px;border-radius:3px;border:1px solid #1E9BFF;cursor:pointer;background:#1E9BFF;color:#fff}
+  .np button.s{background:#030C2B;color:#EEF4FF;border-color:#1A3366}
   @media print{body{background:#fff}.np{display:none}}
   @media screen{.pg{box-shadow:0 10px 40px rgba(10,20,31,.25);margin:24px auto}}
   </style></head><body>
   <div class="np"><button onclick="window.print()">Salvar em PDF</button><button class="s" onclick="window.close()">Fechar</button></div>
   <div class="pg">
     <div class="hd">
-      <img src="${LOGO}" alt="">
+      <img src="${logoMarca}" alt="RazenLab">
       <div class="marca hud"><b>RAZEN<span>LAB</span></b><small>Transformando ideias em realidade, camada por camada.</small></div>
       <div class="doc hud">${p.numero ? `<div class="rot">ORÇAMENTO</div><div class="num">${numPed(p.numero)}</div>` : `<div class="num" style="font-size:28px;letter-spacing:5px">ORÇAMENTO</div>`}<div class="em">Emitido em ${dataBR(hoje())}</div></div>
     </div>
@@ -1726,7 +1727,7 @@ function gerarOrcamento(){
       ${p.recado?`<div class="obs"><span class="lb">Observações</span><p>${esc(p.recado)}</p></div>`:""}
     </div>
     <div class="ft">
-      <img src="${LOGO}" alt="">
+      <img src="${logoMarca}" alt="">
       <div class="ct"><b>RAZENLAB</b>${cont.join("  ·  ") || "Impressão 3D sob encomenda"}</div>
       <span class="cod">${p.numero?numPed(p.numero):""}</span>
     </div>
