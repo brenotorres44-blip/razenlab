@@ -1624,40 +1624,114 @@ async function abrirArquivo(caminho){
 }
 
 function gerarOrcamento(){
-  const f = document.getElementById("ped-form");
   const p = { ...pedidoAberto, ...montarPedido() };
   const c = precificar(p), n = dados.negocio;
   const val = new Date(Date.now() + (num(n.validadeDias)||7)*86400000);
-  const cont = [n.whatsapp && ("WhatsApp " + n.whatsapp), n.instagram && ("@" + n.instagram.replace(/^@/,"")), n.email, n.cidade].filter(Boolean);
-  const html = `<!DOCTYPE html><html lang="pt-BR"><head><meta charset="utf-8"><title>Orçamento ${numPed(p.numero)} — ${esc(p.cliente||"cliente")}</title>
-  <link href="https://fonts.googleapis.com/css2?family=Rajdhani:wght@600;700&family=Manrope:wght@400;500;600&display=swap" rel="stylesheet">
-  <style>@page{size:A4;margin:0}*{box-sizing:border-box;-webkit-print-color-adjust:exact;print-color-adjust:exact}
-  body{margin:0;font-family:Manrope,sans-serif;color:#1a2d3a;font-size:13px;line-height:1.5}.pg{width:210mm;min-height:297mm;margin:0 auto;display:flex;flex-direction:column}
-  .hd{background:#0d1925;color:#fff;padding:26px 36px;display:flex;align-items:center;gap:18px;position:relative;overflow:hidden}
-  .hd::after{content:"";position:absolute;right:-60px;top:-80px;width:280px;height:280px;border-radius:50%;background:radial-gradient(circle,rgba(71,216,236,.22),transparent 65%)}
-  .hd img{width:74px;height:74px;border-radius:8px;position:relative;z-index:1}.hd h1{font-family:Rajdhani,sans-serif;font-size:24px;margin:0;letter-spacing:3px}.hd h1 span{color:#cf634d}
-  .hd p{margin:2px 0 0;color:#b2cad2;font-size:12px}.doc{margin-left:auto;text-align:right;position:relative;z-index:1}.doc b{font-family:Rajdhani,sans-serif;font-size:15px;letter-spacing:1px;display:block}
-  .bd{padding:30px 36px;flex:1}.meta{display:grid;grid-template-columns:1fr 1fr 1fr;gap:18px;margin-bottom:26px}.meta small{display:block;color:#56708F;font-size:11px;text-transform:uppercase;letter-spacing:.6px}.meta b{font-size:14px}
-  table{width:100%;border-collapse:collapse;margin-bottom:18px}th{text-align:left;font-size:11px;color:#56708F;text-transform:uppercase;letter-spacing:.6px;padding:10px 0;border-bottom:2px solid #1a2d3a}
-  td{padding:14px 0;border-bottom:1px solid #DDE5F2;vertical-align:top}.r{text-align:right}.tot{margin-left:auto;width:280px}.tot div{display:flex;justify-content:space-between;padding:6px 0}
-  .tot .f{border-top:2px solid #1a2d3a;margin-top:6px;padding-top:12px;font-family:Rajdhani,sans-serif;font-size:21px}.tot .f span:last-child{color:#1d8fab}
-  .box{background:#F2F6FD;border-radius:3px;padding:16px 18px;margin-top:22px}.box h3{font-family:Rajdhani,sans-serif;font-size:13px;margin:0 0 6px;letter-spacing:1px}.box p{margin:0;white-space:pre-line;word-break:break-all}
-  .ft{padding:16px 36px;border-top:4px solid #cf634d;display:flex;justify-content:space-between;gap:12px;font-size:11px;color:#4A5E86}
-  .np{position:fixed;top:14px;right:14px;display:flex;gap:8px}.np button{font-family:Manrope,sans-serif;font-size:14px;padding:10px 16px;border-radius:10px;border:none;cursor:pointer;background:#cf634d;color:#fff;font-weight:600}
-  .np button.s{background:#E5ECF8;color:#1a2d3a}@media print{.np{display:none}}</style></head><body>
+  const cont = [n.whatsapp && `WhatsApp ${esc(n.whatsapp)}`, n.instagram && `@${esc(n.instagram.replace(/^@/,""))}`, n.email && esc(n.email), n.cidade && esc(n.cidade)].filter(Boolean);
+  const pecas = c.preco * c.qtd;
+  const temAjuste = c.desconto > 0 || c.entrega > 0;   // só mostra a conta quando há algo além das peças
+  const html = `<!DOCTYPE html><html lang="pt-BR"><head><meta charset="utf-8">
+  <title>Orçamento ${p.numero?numPed(p.numero):""} — ${esc(p.cliente||"RazenLab")}</title>
+  <link href="https://fonts.googleapis.com/css2?family=Rajdhani:wght@500;600;700&family=Manrope:wght@400;500;600;700&display=swap" rel="stylesheet">
+  <style>
+  @page{size:A4;margin:0}
+  *{box-sizing:border-box;-webkit-print-color-adjust:exact;print-color-adjust:exact}
+  body{margin:0;background:#dfe5ea;font-family:Manrope,"Segoe UI",sans-serif;color:#13232f;font-size:13px;line-height:1.5}
+  .pg{width:210mm;min-height:297mm;margin:0 auto;background:#fff;display:flex;flex-direction:column;position:relative}
+  .hud{font-family:Rajdhani,"Segoe UI",sans-serif}
+  /* cabeçalho */
+  .hd{position:relative;overflow:hidden;background:#0a141f;color:#fff;padding:30px 40px 28px;display:flex;align-items:center;gap:18px}
+  .hd::before{content:"";position:absolute;inset:0;background:
+      radial-gradient(260px 200px at 88% 20%,rgba(79,217,236,.20),transparent 70%),
+      repeating-linear-gradient(90deg,rgba(129,239,247,.05) 0 1px,transparent 1px 28px),
+      repeating-linear-gradient(0deg,rgba(129,239,247,.05) 0 1px,transparent 1px 28px)}
+  .hd::after{content:"";position:absolute;left:0;right:0;bottom:0;height:3px;background:linear-gradient(90deg,#4fd9ec 0 72%,#e5815d 72% 80%,#4fd9ec 80%)}
+  .hd>*{position:relative;z-index:1}
+  .hd img{width:62px;height:62px;border-radius:50%;box-shadow:0 0 0 1px rgba(129,239,247,.45),0 0 26px rgba(79,217,236,.35)}
+  .marca b{display:block;font-size:30px;font-weight:700;letter-spacing:5px;line-height:1}
+  .marca b span{color:#4fd9ec}
+  .marca small{display:block;color:#9fb9c4;font-size:11.5px;margin-top:5px;letter-spacing:.2px}
+  .doc{margin-left:auto;text-align:right}
+  .doc .rot{font-size:12px;letter-spacing:4px;color:#4fd9ec;font-weight:600}
+  .doc .num{font-size:40px;font-weight:700;line-height:1;letter-spacing:1px;margin:2px 0 4px}
+  .doc .em{font-size:11.5px;color:#9fb9c4}
+  /* corpo */
+  .bd{padding:30px 40px 24px;flex:1}
+  .meta{display:grid;grid-template-columns:1.4fr 1fr 1fr;border:1px solid #d6e0e6;margin-bottom:30px}
+  .meta>div{padding:14px 16px;border-left:1px solid #d6e0e6;position:relative}
+  .meta>div:first-child{border-left:none}
+  .meta>div::before{content:"";position:absolute;left:-1px;top:-1px;width:10px;height:10px;border-top:2px solid #1d9db3;border-left:2px solid #1d9db3}
+  .lb{display:block;font-family:Rajdhani,"Segoe UI",sans-serif;font-size:11px;font-weight:600;letter-spacing:2.2px;color:#5f7886;text-transform:uppercase;margin-bottom:3px}
+  .meta b{font-size:15px;font-weight:600}
+  .meta .sub{display:block;color:#5f7886;font-size:12px;margin-top:1px}
+  .sec{display:flex;align-items:center;gap:10px;margin:0 0 10px}
+  .sec .lb{margin:0}
+  .sec::after{content:"";flex:1;height:1px;background:#d6e0e6}
+  table{width:100%;border-collapse:collapse}
+  th{font-family:Rajdhani,"Segoe UI",sans-serif;font-weight:600;font-size:11px;letter-spacing:1.8px;text-transform:uppercase;color:#5f7886;text-align:left;padding:0 0 9px;border-bottom:2px solid #13232f}
+  td{padding:16px 0;border-bottom:1px solid #e3e9ed;vertical-align:top}
+  .r{text-align:right}
+  .item b{font-size:15px;font-weight:600;display:block}
+  .item span{color:#5f7886;font-size:12px}
+  .tot{display:flex;justify-content:flex-end;margin-top:22px}
+  .tot-in{width:300px}
+  .linha{display:flex;justify-content:space-between;padding:5px 2px;color:#3b5361}
+  .linha span:last-child{color:#13232f;font-weight:600}
+  .total{margin-top:10px;background:#0a141f;color:#fff;padding:16px 20px;display:flex;align-items:center;justify-content:space-between;position:relative}
+  .total::before{content:"";position:absolute;left:0;top:0;bottom:0;width:4px;background:#4fd9ec}
+  .total .lb{color:#4fd9ec;margin:0}
+  .total .v{font-family:Rajdhani,"Segoe UI",sans-serif;font-size:32px;font-weight:700;letter-spacing:.5px;line-height:1}
+  .obs{margin-top:30px;border-left:3px solid #1d9db3;background:#f3f7f9;padding:14px 18px}
+  .obs p{margin:4px 0 0;white-space:pre-line}
+  /* rodapé */
+  .ft{padding:18px 40px 22px;display:flex;align-items:center;gap:14px;border-top:1px solid #d6e0e6;font-size:11.5px;color:#5f7886}
+  .ft img{width:26px;height:26px;border-radius:50%}
+  .ft .ct{flex:1}
+  .ft .ct b{display:block;font-family:Rajdhani,"Segoe UI",sans-serif;color:#13232f;font-size:13px;letter-spacing:2px}
+  .ft .cod{font-family:Rajdhani,"Segoe UI",sans-serif;letter-spacing:2px}
+  /* botões na tela */
+  .np{position:fixed;top:14px;right:14px;display:flex;gap:8px;z-index:9}
+  .np button{font-family:Manrope,sans-serif;font-size:13px;font-weight:700;letter-spacing:.5px;text-transform:uppercase;padding:11px 16px;border-radius:3px;border:1px solid #4fd9ec;cursor:pointer;background:#4fd9ec;color:#07121b}
+  .np button.s{background:#0a141f;color:#e9f5f8;border-color:#2c4655}
+  @media print{body{background:#fff}.np{display:none}}
+  @media screen{.pg{box-shadow:0 10px 40px rgba(10,20,31,.25);margin:24px auto}}
+  </style></head><body>
   <div class="np"><button onclick="window.print()">Salvar em PDF</button><button class="s" onclick="window.close()">Fechar</button></div>
-  <div class="pg"><div class="hd"><img src="${LOGO}" alt=""><div><h1>RAZEN<span>LAB</span></h1><p>Transformando ideias em realidade, camada por camada.</p></div>
-  <div class="doc"><b>ORÇAMENTO ${p.numero?numPed(p.numero):""}</b><p>Emitido em ${dataBR(hoje())}</p></div></div>
-  <div class="bd"><div class="meta"><div><small>Cliente</small><b>${esc(p.cliente||"—")}</b>${p.contato?`<br>${esc(p.contato)}`:""}</div>
-  <div><small>Prazo</small><b>${p.prazo?dataBR(p.prazo):"A combinar"}</b></div><div><small>Válido até</small><b>${dataBR(iso(val))}</b></div></div>
-  <table><thead><tr><th>Descrição</th><th class="r">Qtd.</th><th class="r">Unitário</th><th class="r">Subtotal</th></tr></thead>
-  <tbody><tr><td><b>${esc(p.peca||"Peça impressa em 3D")}</b>${p.materialTexto?`<br><span style="color:#56708F">Material: ${esc(p.materialTexto)}</span>`:""}</td><td class="r">${c.qtd}</td><td class="r">${brl(c.preco)}</td><td class="r">${brl(c.preco*c.qtd)}</td></tr></tbody></table>
-  <div class="tot"><div><span>Subtotal</span><span>${brl(c.preco*c.qtd)}</span></div>${c.desconto>0?`<div><span>Desconto</span><span>− ${brl(c.desconto)}</span></div>`:""}
-  ${c.entrega>0?`<div><span>Frete${p.freteServico?` · ${esc(p.freteServico)}`:""}</span><span>${brl(c.entrega)}</span></div>`:""}<div class="f"><span>Total</span><span>${brl(c.total)}</span></div></div>
-  ${p.recado?`<div class="box"><h3>OBSERVAÇÕES</h3><p>${esc(p.recado)}</p></div>`:""}
-  <div class="box"><h3>PAGAMENTO</h3><p>${esc(n.pagamento||"Pix.")}${n.pixChave?`\nChave Pix: ${esc(n.pixChave)}`:""}${p.token?`\nPague e acompanhe em: ${esc(linkCliente(p))}`:""}</p></div></div>
-  <div class="ft"><span>${esc(cont.join("  ·  "))}</span><span>${p.numero?numPed(p.numero):""}</span></div></div>
-  <script>window.addEventListener("load",()=>setTimeout(()=>window.print(),500));<\/script></body></html>`;
+  <div class="pg">
+    <div class="hd">
+      <img src="${LOGO}" alt="">
+      <div class="marca hud"><b>RAZEN<span>LAB</span></b><small>Transformando ideias em realidade, camada por camada.</small></div>
+      <div class="doc hud">${p.numero ? `<div class="rot">ORÇAMENTO</div><div class="num">${numPed(p.numero)}</div>` : `<div class="num" style="font-size:28px;letter-spacing:5px">ORÇAMENTO</div>`}<div class="em">Emitido em ${dataBR(hoje())}</div></div>
+    </div>
+    <div class="bd">
+      <div class="meta">
+        <div><span class="lb">Cliente</span><b>${esc(p.cliente||"—")}</b>${p.contato?`<span class="sub">${esc(p.contato)}</span>`:""}</div>
+        <div><span class="lb">Prazo</span><b>${p.prazo?dataBR(p.prazo):"A combinar"}</b></div>
+        <div><span class="lb">Válido até</span><b>${dataBR(iso(val))}</b></div>
+      </div>
+      <div class="sec"><span class="lb">Itens</span></div>
+      <table>
+        <thead><tr><th>Descrição</th><th class="r">Qtd.</th><th class="r">Unitário</th><th class="r">Total</th></tr></thead>
+        <tbody><tr>
+          <td class="item"><b>${esc(p.peca||"Peça impressa em 3D")}</b>${p.materialTexto?`<span>${esc(p.materialTexto)}</span>`:`<span>Impressão 3D sob medida</span>`}</td>
+          <td class="r">${c.qtd}</td><td class="r">${brl(c.preco)}</td><td class="r"><b>${brl(pecas)}</b></td>
+        </tr></tbody>
+      </table>
+      <div class="tot"><div class="tot-in">
+        ${temAjuste ? `<div class="linha"><span>Peças</span><span>${brl(pecas)}</span></div>
+          ${c.desconto>0?`<div class="linha"><span>Desconto</span><span>− ${brl(c.desconto)}</span></div>`:""}
+          ${c.entrega>0?`<div class="linha"><span>Frete${p.freteServico?` · ${esc(p.freteServico)}`:""}</span><span>${brl(c.entrega)}</span></div>`:""}` : ""}
+        <div class="total"><span class="lb">Total</span><span class="v">${brl(c.total)}</span></div>
+      </div></div>
+      ${p.recado?`<div class="obs"><span class="lb">Observações</span><p>${esc(p.recado)}</p></div>`:""}
+    </div>
+    <div class="ft">
+      <img src="${LOGO}" alt="">
+      <div class="ct"><b>RAZENLAB</b>${cont.join("  ·  ") || "Impressão 3D sob encomenda"}</div>
+      <span class="cod">${p.numero?numPed(p.numero):""}</span>
+    </div>
+  </div>
+  <script>window.addEventListener("load",()=>setTimeout(()=>window.print(),600));<\/script></body></html>`;
   const w = window.open("", "_blank");
   if(!w){ toast("O navegador bloqueou a janela. Libere pop-ups para este site."); return; }
   w.document.open(); w.document.write(html); w.document.close();
