@@ -14,9 +14,13 @@ Impressão 3D sob encomenda: site para clientes, página de acompanhamento do pe
 | `supabase/02_admin.sql` | Libera o seu e-mail como administrador |
 | `supabase/functions/frete` | Cotação de frete pelo Melhor Envio (opcional) |
 | `supabase/functions/avisar` | Aviso de pedido e comprovante no Telegram (opcional) |
-| `assets/`, `manifest.json`, `sw.js` | Logo, ícones e instalação do painel como app |
+| `assets/`, `styles/`, `manifest.json`, `sw.js` | Reator arc original, identidade visual, ícones e instalação do painel como app |
 | `vitrine.json` | Reserva usada só se o Supabase não estiver configurado |
 
 **Para colocar no ar, siga o [INSTALACAO.md](INSTALACAO.md).**
 
 A regra de preço está na função `precificar()` do `painel.html`.
+
+## Visual ARC SYSTEM
+
+Tema escuro com interface de comando, elementos militares, reator central e acentos em ciano e vermelho metálico. As páginas `index.html`, `painel.html`, `pedido.html`, `privacidade.html` e `404.html` carregam os estilos da pasta `styles/`. O logotipo antigo fica preservado em `assets/logo.jpg`. A lógica de pedidos e a configuração do Supabase foram mantidas.

@@ -1,0 +1,10 @@
+/* RAZENLAB // ARC SYSTEM · páginas de pedido, privacidade e erro */
+:root{--abyss:#080d15;--navy:#0e1622;--panel:#101c2b;--line:#2f4856;--electric:#66dfed;--cyan:#83f0fa;--spark:#e5815d;--mint:#53d6ac;--red:#f16c77;--text:#eaf6fa;--muted:#a2b9c3;--faint:#79939f;--display:"Rajdhani","Segoe UI",sans-serif;--body:"Manrope","Segoe UI",sans-serif}
+body{background:#080d15;background-image:radial-gradient(ellipse 70% 480px at 80% -5%,rgba(46,175,198,.12),transparent),linear-gradient(rgba(88,214,236,.018) 1px,transparent 1px);background-size:auto,48px 48px;color:var(--text);font-family:var(--body)}.wrap{max-width:780px}.top{border-bottom:1px solid #31505d;padding-bottom:23px}.top img{border-radius:8px!important;box-shadow:0 0 0 1px #4d8693,0 0 18px rgba(90,224,240,.16)!important;width:42px;height:42px}.top b{font-family:var(--display);font-size:24px!important;letter-spacing:1px}.top b span{color:#6de2ef}
+h1,h2{font-family:var(--display);text-transform:uppercase;letter-spacing:.1px}h1{font-size:clamp(36px,5vw,50px);line-height:1}h2{font-size:24px}p,li{color:var(--muted)}a{color:#8aeff9}.btn,.btn-main,.btn-line{border-radius:3px;text-transform:uppercase;font-weight:800;letter-spacing:.5px}.btn-main{background:#6ee5f1;color:#071a23;box-shadow:0 0 20px rgba(80,218,235,.15)}.btn-line{background:#142633;border:1px solid #466879;color:#d7f0f4}.btn-main:hover{background:#b4faff}.btn-line:hover{border-color:#88edf6}
+.card,.box,.painel,.aviso,.etapa,.resumo{border-color:#355160!important}.cc{background:#0a1823!important;border-color:#406070!important;color:#a4c4cd!important}.g{border-radius:8px!important;box-shadow:0 0 0 1px rgba(107,229,243,.35),0 0 35px rgba(107,229,243,.12)!important}.c{min-height:100vh}.c h1{margin-top:15px}.c p{max-width:520px;margin-left:auto;margin-right:auto}footer{border-color:#2d4551;color:#7895a2}footer a{color:#92eef8!important}
+@media(max-width:600px){.wrap{padding-left:19px;padding-right:19px}}
+
+/* cantos no mesmo padrão angular do painel e do site */
+.card,.aviso,.recado,.cc,.arquivo,.pix .qr{border-radius:4px}
+.pill{border-radius:3px}

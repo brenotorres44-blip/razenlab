@@ -1,0 +1,10 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 96 96" role="img" aria-label="RazenLab">
+<defs><radialGradient id="g"><stop stop-color="#eaffff"/><stop offset=".56" stop-color="#56dff6"/><stop offset="1" stop-color="#177d9d"/></radialGradient></defs>
+<rect width="96" height="96" rx="19" fill="#101a28"/>
+<circle cx="48" cy="48" r="36" fill="none" stroke="#355a68" stroke-width="2" stroke-dasharray="16 5"/>
+<circle cx="48" cy="48" r="29" fill="none" stroke="#5de6f9" stroke-width="3"/>
+<circle cx="48" cy="48" r="24" fill="none" stroke="#173749" stroke-width="6"/>
+<circle cx="48" cy="48" r="18" fill="url(#g)"/>
+<path d="M48 34 61 57H35Z" fill="#e8feff" stroke="#177e9b" stroke-width="2" stroke-linejoin="round"/>
+<path d="M43 7h10M43 89h10" stroke="#e77758" stroke-width="4"/>
+</svg>
