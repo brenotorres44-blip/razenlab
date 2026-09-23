@@ -4,10 +4,19 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
 <title>RazenLab — Impressão 3D sob medida</title>
-<meta name="description" content="Peças sob medida impressas em 3D. Transformando ideias em realidade, camada por camada.">
+<meta name="description" content="Peças personalizadas impressas em 3D sob encomenda. Orçamento com frete, pagamento por Pix e envio pelos Correios para todo o Brasil.">
+<link rel="canonical" href="https://brenotorres44-blip.github.io/razenlab/">
+<meta property="og:type" content="website">
+<meta property="og:url" content="https://brenotorres44-blip.github.io/razenlab/">
+<meta property="og:site_name" content="RazenLab">
+<meta property="og:locale" content="pt_BR">
 <meta property="og:title" content="RazenLab — Impressão 3D sob medida">
-<meta property="og:description" content="Transformando ideias em realidade, camada por camada.">
-<meta property="og:image" content="assets/logo.jpg">
+<meta property="og:description" content="Peças personalizadas impressas em 3D. Orçamento com frete, pagamento por Pix e envio para todo o Brasil.">
+<meta property="og:image" content="https://brenotorres44-blip.github.io/razenlab/assets/icon-512.png">
+<meta property="og:image:width" content="512">
+<meta property="og:image:height" content="512">
+<meta name="twitter:card" content="summary">
+<script type="application/ld+json">{"@context":"https://schema.org","@type":"Store","name":"RazenLab","description":"Impressão 3D sob encomenda com envio para todo o Brasil.","url":"https://brenotorres44-blip.github.io/razenlab/","image":"https://brenotorres44-blip.github.io/razenlab/assets/icon-512.png","slogan":"Transformando ideias em realidade, camada por camada.","areaServed":{"@type":"Country","name":"Brasil"},"paymentAccepted":"Pix","currenciesAccepted":"BRL"}</script>
 <meta name="theme-color" content="#030C2B">
 <link rel="icon" type="image/png" href="assets/favicon.png">
 <link rel="apple-touch-icon" href="assets/apple-touch-icon.png">
@@ -114,6 +123,15 @@ h2{font-family:var(--display);font-weight:600;font-size:clamp(28px,3.6vw,40px);l
 .form textarea{min-height:110px;resize:vertical}
 .form .row2{display:grid;gap:14px;grid-template-columns:1fr 1fr}
 .form .note{font-size:13px;color:var(--faint);margin:6px 0 0}
+.form .aceite{display:flex;gap:10px;align-items:flex-start;cursor:pointer}
+.form .aceite input{width:18px;height:18px;flex:0 0 auto;margin-top:2px;accent-color:var(--electric)}
+.form .aceite span{display:inline;margin:0;font-size:13px;color:var(--muted);font-weight:500}
+.form input[type=file]{padding:10px;font-size:14px;color:var(--muted)}
+.ok-box h3{font-family:var(--display);font-size:26px;margin:6px 0 10px;letter-spacing:-.5px}
+.ok-box p{color:var(--muted);margin:0 0 18px}
+.ok-box .btn{width:100%;justify-content:center;margin-bottom:10px}
+.meus{margin-top:18px;font-size:14px;color:var(--muted)}
+.meus a{color:var(--cyan)}
 .channels{display:grid;gap:12px;margin-top:24px}
 .channel{display:flex;align-items:center;gap:14px;background:rgba(11,28,64,.6);border:1px solid var(--line);border-radius:14px;padding:14px 16px;text-decoration:none}
 .channel:hover{border-color:var(--electric)}
@@ -163,7 +181,7 @@ footer{border-top:1px solid var(--line);padding:32px 0;color:var(--faint);font-s
   <div class="layers"></div>
   <div class="wrap hero-in">
     <div>
-      <div class="eyebrow"><i></i><span id="cidade-hero">Impressão 3D sob encomenda</span></div>
+      <div class="eyebrow"><i></i><span id="cidade-hero">Impressão 3D sob encomenda · envio para todo o Brasil</span></div>
       <h1>Sua ideia, impressa <em>camada por camada.</em></h1>
       <p class="lead" id="slogan">Peças personalizadas, presentes, protótipos e reposições. Você manda a ideia ou o arquivo, eu cuido do resto.</p>
       <div class="hero-cta">
@@ -193,10 +211,10 @@ footer{border-top:1px solid var(--line);padding:32px 0;color:var(--faint);font-s
   <div class="wrap">
     <div class="sec-head"><h2>Como funciona</h2></div>
     <div class="steps">
-      <div class="step"><h3>Você conta a ideia</h3><p>Uma foto de referência, um desenho, medidas ou o arquivo STL. Pode ser só a descrição.</p></div>
-      <div class="step"><h3>Recebe o orçamento</h3><p>Preço, material, cor e prazo definidos antes de começar. Sem surpresa.</p></div>
-      <div class="step"><h3>A peça é impressa</h3><p>Impressão, retirada de suportes e acabamento feitos com cuidado.</p></div>
-      <div class="step"><h3>Chega até você</h3><p>Retirada combinada ou envio para sua cidade.</p></div>
+      <div class="step"><h3>Você conta a ideia</h3><p>Descreva a peça e, se tiver, mande uma foto de referência ou o arquivo 3D.</p></div>
+      <div class="step"><h3>Recebe o orçamento</h3><p>Preço, material, prazo e frete pelo seu CEP. Chega no WhatsApp com um link só seu.</p></div>
+      <div class="step"><h3>Paga por Pix</h3><p>QR Code pronto no link. Enviou o comprovante, a peça entra em produção.</p></div>
+      <div class="step"><h3>Recebe pelos Correios</h3><p>Enviamos para todo o Brasil, com código de rastreio no mesmo link.</p></div>
     </div>
   </div>
 </section>
@@ -208,22 +226,37 @@ footer{border-top:1px solid var(--line);padding:32px 0;color:var(--faint);font-s
       <p class="sec-sub" id="sobre">Preencha o que souber. A mensagem vai pronta para o WhatsApp e eu respondo com o orçamento.</p>
       <div class="channels" id="canais"></div>
     </div>
+    <div id="caixa-form">
     <form class="form" id="form-orc" novalidate>
-      <label><span>Seu nome</span><input name="nome" autocomplete="name" required></label>
-      <label><span>O que você precisa?</span><textarea name="ideia" placeholder="Ex.: suporte de headset com meu nome, na cor preta" required></textarea></label>
+      <label><span>Seu nome</span><input name="nome" autocomplete="name" maxlength="120"></label>
       <div class="row2">
-        <label><span>Quantidade</span><input name="qtd" inputmode="numeric" value="1"></label>
-        <label><span>Para quando?</span><input name="quando" placeholder="Sem pressa, dia 15…"></label>
+        <label><span>WhatsApp</span><input name="contato" type="tel" inputmode="tel" autocomplete="tel" placeholder="(11) 90000-0000" maxlength="20"></label>
+        <label><span>E-mail · opcional</span><input name="email" type="email" autocomplete="email" maxlength="160"></label>
       </div>
-      <label><span>Já tem o arquivo 3D?</span>
-        <select name="arquivo">
-          <option>Não, só a ideia</option>
-          <option>Tenho uma foto de referência</option>
-          <option>Sim, tenho o arquivo (STL/3MF)</option>
-        </select></label>
-      <button class="btn btn-main" type="submit" style="width:100%;justify-content:center">Enviar pelo WhatsApp</button>
-      <p class="note" id="form-nota">Fotos e arquivos você manda direto na conversa.</p>
+      <label><span>O que você precisa?</span><textarea name="ideia" maxlength="3000" placeholder="Ex.: suporte de headset com meu nome, na cor preta, uns 20 cm de altura"></textarea></label>
+      <div class="row2">
+        <label><span>Quantidade</span><input name="qtd" inputmode="numeric" value="1" maxlength="5"></label>
+        <label><span>Para quando?</span><input name="quando" placeholder="Sem pressa, dia 15…" maxlength="120"></label>
+      </div>
+      <label><span>Foto de referência ou arquivo 3D · opcional</span><input type="file" name="anexo" accept="image/*,.stl,.3mf,.obj,.step,.stp,.zip"></label>
+      <div class="row2">
+        <label><span>CEP de entrega</span><input name="cep" inputmode="numeric" autocomplete="postal-code" placeholder="00000-000" maxlength="9"></label>
+        <label><span>Número</span><input name="numero" maxlength="20"></label>
+      </div>
+      <label><span>Rua</span><input name="rua" autocomplete="address-line1" maxlength="160"></label>
+      <div class="row2">
+        <label><span>Bairro</span><input name="bairro" maxlength="100"></label>
+        <label><span>Complemento · opcional</span><input name="complemento" maxlength="100"></label>
+      </div>
+      <div class="row2">
+        <label><span>Cidade</span><input name="cidade" autocomplete="address-level2" maxlength="100"></label>
+        <label><span>UF</span><input name="uf" autocomplete="address-level1" maxlength="2" style="text-transform:uppercase"></label>
+      </div>
+      <label class="aceite"><input type="checkbox" name="aceite"><span>Autorizo o uso destes dados só para o orçamento e a entrega deste pedido, conforme a <a href="privacidade.html" target="_blank" style="color:var(--cyan)">política de privacidade</a>.</span></label>
+      <button class="btn btn-main" type="submit" id="btn-orc" style="width:100%;justify-content:center">Pedir orçamento</button>
+      <p class="note" id="form-nota">Enviamos para todo o Brasil pelos Correios. O frete vem calculado no orçamento.</p>
     </form>
+    </div>
   </div>
 </section>
 </main>
@@ -231,14 +264,18 @@ footer{border-top:1px solid var(--line);padding:32px 0;color:var(--faint);font-s
 <footer>
   <div class="wrap foot">
     <span>© <span id="ano"></span> RazenLab · Transformando ideias em realidade, camada por camada.</span>
-    <span id="rodape-contato"></span>
+    <span><span id="rodape-contato"></span> · <a href="privacidade.html" style="color:inherit">Privacidade e termos</a></span>
   </div>
 </footer>
 
 <div id="modal"></div>
 
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.117.1/dist/umd/supabase.js"></script>
+<script src="config.js"></script>
 <script>
 "use strict";
+const CFG = window.RAZENLAB_CONFIG || {};
+const sb = (window.supabase && CFG.url && CFG.anonKey && !/COLE-AQUI/.test(CFG.url + CFG.anonKey)) ? window.supabase.createClient(CFG.url, CFG.anonKey) : null;
 let V = { negocio:{}, itens:[] };
 let filtro = "Todos";
 
@@ -260,9 +297,18 @@ function abrirWhats(msg){
 async function iniciar(){
   document.getElementById("ano").textContent = new Date().getFullYear();
   try{
-    const r = await fetch("vitrine.json?v=" + Date.now(), {cache:"no-store"});
-    if(r.ok) V = await r.json();
-  }catch(e){ /* sem vitrine publicada ainda */ }
+    if(sb){
+      // dados ao vivo do Supabase: o que você salva no painel aparece aqui na hora
+      const [site, vit] = await Promise.all([
+        sb.from("site").select("dados").eq("id",1).maybeSingle(),
+        sb.from("vitrine").select("id,destaque,dados,fotos,criado_em").eq("visivel",true).order("criado_em",{ascending:false})
+      ]);
+      V = { negocio:(site.data && site.data.dados) || {}, itens:(vit.data || []).map(r => ({ ...r.dados, id:r.id, destaque:r.destaque, fotos:r.fotos || [] })) };
+    }else{
+      const r = await fetch("vitrine.json?v=" + Date.now(), {cache:"no-store"});
+      if(r.ok) V = await r.json();
+    }
+  }catch(e){ /* sem vitrine ainda */ }
   V.negocio = V.negocio || {};
   V.itens = (V.itens || []).filter(i => i.visivel !== false);
   preencherNegocio();
@@ -274,7 +320,7 @@ function preencherNegocio(){
   const n = V.negocio;
   if(n.slogan) document.getElementById("slogan").textContent = n.slogan;
   if(n.sobre) document.getElementById("sobre").textContent = n.sobre;
-  if(n.cidade) document.getElementById("cidade-hero").textContent = "Impressão 3D sob encomenda · " + n.cidade;
+  if(n.cidade) document.getElementById("cidade-hero").textContent = "Impressão 3D sob encomenda · de " + n.cidade + " para todo o Brasil";
 
   const qtd = V.itens.length;
   const cats = new Set(V.itens.map(i=>i.categoria).filter(Boolean)).size;
@@ -297,7 +343,7 @@ function preencherNegocio(){
   if(n.email) canais.push(`<a class="channel" href="mailto:${esc(n.email)}">
       <span class="ic"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#5CE1FF" stroke-width="2"><rect x="3" y="5" width="18" height="14" rx="2"/><path d="m3 7 9 6 9-6"/></svg></span>
       <span><small>E-mail</small>${esc(n.email)}</span></a>`);
-  document.getElementById("canais").innerHTML = canais.join("");
+  document.getElementById("canais").innerHTML = canais.join("") + meusPedidos();
   document.getElementById("rodape-contato").textContent = [n.cidade, n.instagram && ("@"+n.instagram.replace(/^@/,""))].filter(Boolean).join(" · ");
 }
 
@@ -375,32 +421,105 @@ document.addEventListener("click", e => {
   }
   const q = t.closest("[data-quero]");
   if(q){
+    // leva o cliente para o formulário já com a referência preenchida
     const i = V.itens.find(x => x.id === q.dataset.quero);
-    abrirWhats(`Olá! Vi o trabalho "${i.titulo}" no site da RazenLab e quero um orçamento de algo parecido.`);
+    fecharModal();
+    const ideia = document.querySelector('#form-orc [name="ideia"]');
+    if(ideia){
+      ideia.value = `Quero algo parecido com "${i.titulo}" que vi na vitrine.\n`;
+      document.getElementById("orcamento").scrollIntoView({behavior:"smooth"});
+      setTimeout(() => { ideia.focus(); ideia.setSelectionRange(ideia.value.length, ideia.value.length); }, 500);
+    }
     return;
   }
   if(t.hasAttribute("data-fechar")) fecharModal();
 });
 document.addEventListener("keydown", e => { if(e.key === "Escape") fecharModal(); });
 
-document.getElementById("form-orc").addEventListener("submit", e => {
+/* ---------- pedidos feitos neste aparelho ---------- */
+function lerMeus(){ try{ return JSON.parse(localStorage.getItem("razenlab-meus-pedidos") || "[]"); }catch(e){ return []; } }
+function meusPedidos(){
+  const l = lerMeus();
+  if(!l.length) return "";
+  return `<p class="meus">Seus pedidos: ${l.slice(0,5).map(x => `<a href="pedido.html?t=${encodeURIComponent(x.token)}">#${String(x.numero).padStart(4,"0")}</a>`).join(" · ")}</p>`;
+}
+
+/* ---------- endereço pelo CEP ---------- */
+document.addEventListener("input", async e => {
+  if(e.target.name !== "cep") return;
+  const d = e.target.value.replace(/\D/g,"");
+  if(d.length === 8) e.target.value = d.slice(0,5) + "-" + d.slice(5);
+  if(d.length !== 8) return;
+  try{
+    const r = await fetch(`https://viacep.com.br/ws/${d}/json/`), j = await r.json();
+    if(j.erro) return nota("CEP não encontrado. Confira ou preencha o endereço à mão.", true);
+    const f = document.getElementById("form-orc");
+    [["rua",j.logradouro],["bairro",j.bairro],["cidade",j.localidade],["uf",j.uf]].forEach(([k,v]) => { if(v) f.querySelector(`[name="${k}"]`).value = v; });
+    nota("Endereço encontrado. Confira e informe o número.");
+    f.querySelector('[name="numero"]').focus();
+  }catch(err){ /* sem internet para buscar o CEP: o cliente digita */ }
+});
+function nota(msg, erro){
+  const n = document.getElementById("form-nota");
+  n.textContent = msg; n.style.color = erro ? "#F28A14" : "";
+}
+
+/* ---------- pedido de orçamento ---------- */
+document.getElementById("form-orc").addEventListener("submit", async e => {
   e.preventDefault();
-  const f = Object.fromEntries(new FormData(e.target));
-  if(!f.nome.trim() || !f.ideia.trim()){
-    document.getElementById("form-nota").textContent = "Preencha seu nome e o que você precisa.";
-    document.getElementById("form-nota").style.color = "#F28A14";
-    return;
+  const form = e.target, f = Object.fromEntries(new FormData(form));
+  const v = k => String(f[k] || "").trim();
+  if(!v("nome") || !v("ideia")) return nota("Preencha seu nome e o que você precisa.", true);
+  if(v("contato").replace(/\D/g,"").length < 10) return nota("Informe seu WhatsApp com DDD.", true);
+
+  // sem banco configurado, cai no WhatsApp como antes
+  if(!sb){
+    return abrirWhats(["Olá! Quero um orçamento pela RazenLab.", "", `*Nome:* ${v("nome")}`, `*O que preciso:* ${v("ideia")}`,
+      `*Quantidade:* ${v("qtd") || 1}`, v("quando") ? `*Para quando:* ${v("quando")}` : null, v("cep") ? `*CEP:* ${v("cep")}` : null].filter(Boolean).join("\n"));
   }
-  const msg = [
-    "Olá! Quero um orçamento pela RazenLab.",
-    "",
-    `*Nome:* ${f.nome.trim()}`,
-    `*O que preciso:* ${f.ideia.trim()}`,
-    `*Quantidade:* ${f.qtd || 1}`,
-    f.quando.trim() ? `*Para quando:* ${f.quando.trim()}` : null,
-    `*Arquivo:* ${f.arquivo}`
-  ].filter(x => x !== null).join("\n");
-  abrirWhats(msg);
+  if(v("cep").replace(/\D/g,"").length !== 8 || !v("rua") || !v("numero") || !v("cidade") || v("uf").length !== 2)
+    return nota("Preencha o endereço completo: CEP, rua, número, cidade e UF.", true);
+  if(!f.aceite) return nota("Marque a autorização de uso dos dados para continuar.", true);
+
+  const btn = document.getElementById("btn-orc");
+  btn.disabled = true; btn.textContent = "Enviando…"; nota("");
+  try{
+    let anexo = null;
+    const arq = form.querySelector('[name="anexo"]').files[0];
+    if(arq){
+      if(arq.size > 25*1024*1024) throw new Error("O arquivo passa de 25 MB. Mande pelo WhatsApp depois.");
+      const ext = ((arq.name.split(".").pop() || "bin").toLowerCase().replace(/[^a-z0-9]/g,"") || "bin").slice(0,5);
+      const nome = `${crypto.randomUUID()}.${ext}`;
+      const up = await sb.storage.from("anexos").upload(nome, arq, { contentType: arq.type || "application/octet-stream", upsert:false });
+      if(up.error) throw up.error;
+      anexo = "anexos/" + nome;
+    }
+    const r = await sb.rpc("solicitar_orcamento", {
+      p_nome:v("nome"), p_contato:v("contato"), p_email:v("email"), p_descricao:v("ideia"), p_qtd:parseInt(v("qtd"),10) || 1,
+      p_quando:v("quando"), p_cep:v("cep"),
+      p_endereco:{ rua:v("rua"), numero:v("numero"), complemento:v("complemento"), bairro:v("bairro"), cidade:v("cidade"), uf:v("uf").toUpperCase() },
+      p_anexo:anexo
+    });
+    if(r.error) throw r.error;
+    const { numero, token } = r.data;
+    sb.functions.invoke("avisar", { body:{ token, evento:"novo" } }).catch(() => {});   // aviso no Telegram, se configurado
+    const l = lerMeus(); l.unshift({ numero, token }); localStorage.setItem("razenlab-meus-pedidos", JSON.stringify(l.slice(0,20)));
+    const link = new URL(`pedido.html?t=${token}`, location.href).href;
+    const zap = linkWhats(`Olá! Acabei de pedir um orçamento no site da RazenLab (pedido #${String(numero).padStart(4,"0")}).\n${link}`);
+    document.getElementById("caixa-form").innerHTML = `
+      <div class="form ok-box">
+        <div class="eyebrow"><i></i>PEDIDO #${String(numero).padStart(4,"0")} RECEBIDO</div>
+        <h3>Obrigado, ${esc(v("nome").split(" ")[0])}!</h3>
+        <p>O orçamento com o frete chega no seu WhatsApp. Pelo link abaixo você acompanha tudo e faz o pagamento quando estiver pronto.</p>
+        <a class="btn btn-main" href="${link}">Acompanhar meu pedido</a>
+        ${zap ? `<a class="btn btn-ghost" href="${zap}" target="_blank" rel="noopener">Avisar no WhatsApp</a>` : ""}
+        <p class="note">Salve este link. Ele também fica guardado neste aparelho.</p>
+      </div>`;
+    document.getElementById("canais").innerHTML += "";
+  }catch(err){
+    nota("Não foi possível enviar: " + ((err && err.message) || err) , true);
+    btn.disabled = false; btn.textContent = "Pedir orçamento";
+  }
 });
 
 iniciar();
