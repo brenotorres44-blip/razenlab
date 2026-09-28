@@ -118,7 +118,7 @@ h2{font-family:var(--display);font-weight:600;font-size:clamp(28px,3.6vw,40px);l
 .form{background:var(--panel);border:1px solid var(--line);border-radius:20px;padding:26px}
 .form label{display:block;margin-bottom:14px}
 .form span{display:block;font-size:13px;color:var(--muted);margin-bottom:6px;font-weight:500}
-.form input,.form textarea,.form select{width:100%;background:var(--abyss);border:1px solid var(--line);border-radius:12px;color:var(--text);padding:12px 14px;font-size:15px;font-family:var(--body);outline:none}
+.form input,.form textarea,.form select{width:100%;background:var(--abyss);border:1px solid var(--line);border-radius:12px;color:var(--text);padding:12px 14px;font-size:16px;font-family:var(--body);outline:none}
 .form input:focus,.form textarea:focus,.form select:focus{border-color:var(--electric)}
 .form textarea{min-height:110px;resize:vertical}
 .form .row2{display:grid;gap:14px;grid-template-columns:1fr 1fr}
@@ -502,7 +502,6 @@ document.getElementById("form-orc").addEventListener("submit", async e => {
     });
     if(r.error) throw r.error;
     const { numero, token } = r.data;
-    sb.functions.invoke("avisar", { body:{ token, evento:"novo" } }).catch(() => {});   // aviso no Telegram, se configurado
     const l = lerMeus(); l.unshift({ numero, token }); localStorage.setItem("razenlab-meus-pedidos", JSON.stringify(l.slice(0,20)));
     const link = new URL(`pedido.html?t=${token}`, location.href).href;
     const zap = linkWhats(`Olá! Acabei de pedir um orçamento no site da RazenLab (pedido #${String(numero).padStart(4,"0")}).\n${link}`);

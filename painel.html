@@ -348,9 +348,24 @@ textarea{resize:vertical;min-height:74px}
   .core{width:min(300px,86vw)}
   .g2,.g3{grid-template-columns:1fr}
   .preco-big{font-size:36px}
-  .ov{padding:0;align-items:flex-end}
-  .md{max-width:none}
-  .md>.pn{border-radius:18px 18px 0 0;padding-bottom:calc(18px + env(safe-area-inset-bottom,0px))}
+  /* janela no celular: abre pelo topo (senão a parte de cima fica inalcançável) e encosta no rodapé quando é curta */
+  .ov{padding:calc(10px + env(safe-area-inset-top,0px)) 0 0;align-items:flex-start}
+  .md{max-width:none;margin-top:auto}
+  .md>.pn{border-radius:18px 18px 0 0;padding-bottom:0}
+  .md-h{position:sticky;top:calc(-10px - env(safe-area-inset-top,0px));z-index:3;margin:-18px -18px 14px;padding:16px 18px 12px;background:rgba(8,24,50,.97);border-bottom:1px solid var(--line);border-radius:18px 18px 0 0}
+  .acoes{position:sticky;bottom:0;z-index:3;margin:18px -18px 0;padding:12px 18px calc(12px + env(safe-area-inset-bottom,0px));background:rgba(8,24,50,.97);border-top:1px solid var(--line)}
+  .acoes .tb{flex:1 1 auto}
+  .acoes .tb.pri{flex-basis:100%}
+  /* situações: uma faixa que desliza para o lado */
+  .fluxo{flex-wrap:nowrap;overflow-x:auto;scrollbar-width:none;margin-left:-18px;margin-right:-18px;padding:0 18px}
+  .fluxo::-webkit-scrollbar{display:none}
+  .fluxo button{flex:0 0 auto;min-width:0;padding:10px 12px}
+  /* 16px evita o zoom automático do iPhone ao tocar num campo */
+  input,select,textarea,input.num{font-size:16px}
+  /* colunas encolhem em vez de empurrar a tela para o lado (tabelas e textos longos rolam dentro do quadro) */
+  .baixo,.meio,.md-grid,.g2,.g3{grid-template-columns:minmax(0,1fr)}
+  .pn,.md-grid>*{min-width:0}
+  .tb{min-height:44px}
 }
 @media (min-width:1025px){ .marca-m{display:none} }
 @media (prefers-reduced-motion:reduce){
@@ -445,7 +460,8 @@ const NEGOCIO_PADRAO = {
   pagamento:"Pix. A produção começa após a confirmação do pagamento.",
   validadeDias:7, entregas:"",
   pixTipo:"celular", pixChave:"", pixNome:"", pixCidade:"",
-  cepOrigem:""
+  cepOrigem:"",
+  mpAtivo:false, acrescimoCartao:5, parcelasMax:12   // cartão e boleto pelo Mercado Pago
 };
 const STATUS = {
   solicitado: { rotulo:"Solicitado",  cor:"#3FE0FF" },
@@ -565,6 +581,7 @@ function ligarTempoReal(){
       const n = ev.new || {};
       if(ev.eventType === "INSERT" && n.status === "solicitado") toast(`Nova solicitação ${numPed(n.numero)} — ${n.cliente || "cliente"}.`);
       if(ev.eventType === "UPDATE" && n.status === "comprovante" && ev.old && ev.old.status !== "comprovante") toast(`Comprovante recebido no pedido ${numPed(n.numero)}.`);
+      if(ev.eventType === "UPDATE" && n.status === "pago" && n.dados && n.dados.formaPagamento && !(ev.old && ev.old.status === "pago")) toast(`Pagamento aprovado no Mercado Pago · pedido ${numPed(n.numero)}.`);
       clearTimeout(tRecarga);
       tRecarga = setTimeout(async () => {
         try{ await recarregarPedidos(); if(!document.querySelector("#modal .ov")) render(); else desenharNav(); }catch(e){}
@@ -1211,9 +1228,13 @@ TELAS.orcar = () => `
     <div class="pn rv" style="--d:60ms" id="sim-form">
       <div class="ph"><h2>Novo orçamento</h2><span class="cod">CALC-01</span></div>
       <p class="muted p13" style="margin:-4px 0 16px">Tudo começa zerado. Nada é salvo até você transformar em pedido.</p>
+      <div class="grid g2" style="margin-bottom:14px">
+        <label class="f"><span>Para quem</span><input name="cliente" value="${esc(simulacao.cliente||"")}" placeholder="Nome do cliente" autocomplete="off"></label>
+        <label class="f"><span>WhatsApp</span><input name="contato" type="tel" inputmode="tel" value="${esc(simulacao.contato||"")}" placeholder="(11) 90000-0000"></label>
+      </div>
       ${camposPeca(simulacao)}
       <div class="row" style="margin-top:18px">
-        <button class="tb pri" data-acao="simular-para-pedido">Transformar em pedido</button>
+        <button class="tb pri" data-acao="simular-para-pedido">Criar orçamento</button>
         <button class="tb" data-acao="zerar">Zerar</button>
       </div>
     </div>
@@ -1414,11 +1435,11 @@ function exportarCSV(){
   const cel = v => { const t = String(v == null ? "" : v); return /[;"\n\r]/.test(t) ? `"${t.replace(/"/g,'""')}"` : t; };
   const RES = { fechado:"Fechado", perdido:"Não fechou", aberto:"Em aberto", cancelado:"Cancelado" };
   const cab = ["Número","Data do orçamento","Válido até","Cliente","WhatsApp","Cidade","UF","Origem","Peça","Material","Quantidade",
-    "Total (R$)","Frete (R$)","Custo (R$)","Lucro (R$)","Situação","Resultado","Motivo (não fechou)","Detalhe","Data do pagamento","Dias até fechar"];
+    "Total (R$)","Frete (R$)","Custo (R$)","Lucro (R$)","Situação","Resultado","Motivo (não fechou)","Detalhe","Data do pagamento","Forma de pagamento","Dias até fechar"];
   const linhas = l.map(p => { const e = p.endereco || {}, r = resultado(p); return [
     p.numero, dataBR(dataOrc(p)), p.validadeAte ? dataBR(p.validadeAte) : "", p.cliente, p.contato, e.cidade, e.uf, p.origem === "site" ? "Site" : "Painel",
     p.peca, p.materialTexto, p.qtd, n2(p.total), n2(p.entrega), n2(p.custoTotal), n2(p.lucroTotal), (STATUS[p.status] || {}).rotulo || p.status,
-    RES[r], p.motivoPerda, p.notaPerda, p.dataPago ? dataBR(p.dataPago) : "", r === "fechado" ? (difDias(dataOrc(p), p.dataPago) ?? "") : ""
+    RES[r], p.motivoPerda, p.notaPerda, p.dataPago ? dataBR(p.dataPago) : "", r === "fechado" ? (p.formaPagamento || "Pix") : "", r === "fechado" ? (difDias(dataOrc(p), p.dataPago) ?? "") : ""
   ].map(cel).join(";"); });
   baixar(`razenlab-orcamentos-${hoje()}.csv`, "\ufeff" + [cab.join(";"), ...linhas].join("\r\n"), "text/csv;charset=utf-8");
   toast(`${l.length} orçamentos exportados. Abre direto no Excel ou no Google Planilhas.`);
@@ -1485,6 +1506,14 @@ TELAS.config = () => {
       ${tx("pixNome","Nome do recebedor",n.pixNome,"Como aparece no seu banco. Até 25 letras.")}
       ${tx("pixCidade","Cidade do recebedor",n.pixCidade,"Até 15 letras, sem acento.")}
     </div>
+    <div class="sep"></div>
+    <div class="ph" style="margin-bottom:10px"><h2>Cartão e boleto (Mercado Pago)</h2><span class="cod">CONFIRMAÇÃO AUTOMÁTICA</span></div>
+    <label class="chk" style="margin-bottom:12px"><input type="checkbox" name="mpAtivo" ${n.mpAtivo===true||n.mpAtivo==="true"?"checked":""}> Oferecer cartão e boleto no link do cliente</label>
+    <div class="grid g2">
+      ${cn("acrescimoCartao","Acréscimo no cartão e boleto",n.acrescimoCartao,"%","Cobre a taxa do Mercado Pago. O Pix continua sem acréscimo.")}
+      ${cn("parcelasMax","Parcelas no cartão",n.parcelasMax,"x","Até 12. Os juros do parcelamento ficam com o cliente.")}
+    </div>
+    <p class="dica">Só funciona depois de publicar as funções "pagamento" e "mp-webhook" no Supabase (veja o guia).</p>
     <button class="tb pri" style="margin-top:16px" data-acao="salvar-negocio">Salvar dados do negócio</button>
   </div>
   <div class="pn rv" style="--d:120ms;margin-bottom:16px" id="cfg-form">
@@ -1573,6 +1602,14 @@ function desenharPedido(){
             ${p.anexo?`<button type="button" class="tb min" data-arquivo="${esc(p.anexo)}">Abrir anexo do cliente</button>`:`<span class="faint">Sem anexo</span>`}</div>
         </div>` : ""}
 
+        ${p.formaPagamento || p.mpStatus ? `<div class="req" style="border-color:rgba(30,155,255,.5);background:rgba(30,155,255,.07)">
+          <div class="lbl" style="color:var(--cyan)">MERCADO PAGO</div>
+          <p>${p.formaPagamento ? `<b>${esc(p.formaPagamento)}</b> · recebido ${brl(num(p.valorRecebido))} · taxa ${brl(num(p.taxaMercadoPago))} · líquido <b>${brl(num(p.liquidoRecebido))}</b>`
+            : p.mpStatus === "pending" ? "Pagamento em processamento (boleto ou análise do cartão)."
+            : p.mpStatus === "valor_divergente" ? `<span class="dn">Pagamento aprovado com valor menor que o combinado. Confira no Mercado Pago antes de produzir.</span>`
+            : `Última tentativa: ${esc(p.mpStatus)}${p.mpStatusDetalhe ? ` (${esc(p.mpStatusDetalhe)})` : ""}`}</p>
+        </div>` : ""}
+
         ${p.comprovante ? `<div class="req" style="border-color:rgba(242,193,78,.5);background:rgba(242,193,78,.07)">
           <div class="lbl" style="color:#F2C14E">COMPROVANTE DE PIX ENVIADO</div>
           <div class="row" style="margin-top:8px"><button type="button" class="tb min" data-arquivo="${esc(p.comprovante)}">Ver comprovante</button>
@@ -1619,7 +1656,7 @@ function desenharPedido(){
             ${p.id ? `<div class="pn" style="margin-top:14px;background:rgba(2,8,20,.45)"><div class="lbl" style="margin-bottom:8px">HISTÓRICO</div><div id="historico" class="p13 muted">Carregando…</div></div>` : ""}
           </div>
         </div>
-        <div class="row" style="margin-top:18px">
+        <div class="row acoes" style="margin-top:18px">
           ${acaoPrincipal(p)}
           <button class="tb ${acaoPrincipal(p)?"":"pri"}" data-acao="salvar-pedido">${p.id?"Salvar":"Criar pedido"}</button>
           <button class="tb" data-acao="gerar-orcamento">PDF</button>
@@ -1718,7 +1755,7 @@ function textoOrcamento(p){
   const c = precificar(p);
   return [`Olá, ${(p.cliente||"").split(" ")[0] || "tudo bem"}! Aqui é da *RazenLab*.`, "", `Seu orçamento ${numPed(p.numero)} está pronto:`,
     `${p.peca} — ${c.qtd} un.`, `Valor: ${brl(c.preco*c.qtd - c.desconto)}`, c.entrega>0?`Frete (${p.freteServico || "Correios"}): ${brl(c.entrega)}`:null, `*Total: ${brl(c.total)}*`,
-    p.prazo?`Prazo: ${dataBR(p.prazo)}`:null, p.validadeAte?`Válido até ${dataBR(p.validadeAte)}.`:null, "", "Pelo link abaixo você vê os detalhes, paga por Pix e envia o comprovante:", linkCliente(p)].filter(x => x !== null).join("\n");
+    p.prazo?`Prazo: ${dataBR(p.prazo)}`:null, p.validadeAte?`Válido até ${dataBR(p.validadeAte)}.`:null, "", (dados.negocio.mpAtivo===true||dados.negocio.mpAtivo==="true") ? "Pelo link abaixo você vê os detalhes e paga por Pix (sem taxa) ou cartão/boleto:" : "Pelo link abaixo você vê os detalhes, paga por Pix e envia o comprovante:", linkCliente(p)].filter(x => x !== null).join("\n");
 }
 function textoEnvio(p){
   return [`Olá, ${(p.cliente||"").split(" ")[0] || "tudo bem"}! Seu pedido ${numPed(p.numero)} da *RazenLab* foi postado nos Correios. 📦`, "",
@@ -2174,8 +2211,9 @@ document.addEventListener("click", async e => {
     case "zerar": simulacao = {...PECA_ZERO}; render(); break;
     case "simular-para-pedido": {
       const v = lerCampos(document.getElementById("sim-form"));
+      if(!String(v.cliente||"").trim()){ toast("Informe para quem é o orçamento."); document.querySelector('#sim-form [name="cliente"]').focus(); break; }
       if(precificar(v).preco <= 0){ toast("Preencha peso e tempo antes de criar o pedido."); break; }
-      abrirPedido({ ...PECA_ZERO, ...v, id:null, cliente:"", contato:"", email:"", status:"orcamento", prazo:"", obs:"", recado:"", precoManual:"", desconto:0, cep:"", endereco:{}, rastreio:"" });
+      abrirPedido({ ...PECA_ZERO, ...v, id:null, email:"", status:"orcamento", prazo:"", obs:"", recado:"", precoManual:"", desconto:0, cep:"", endereco:{}, rastreio:"" });
       simulacao = {...PECA_ZERO};
       break;
     }
@@ -2265,7 +2303,10 @@ document.addEventListener("click", async e => {
     case "salvar-negocio": {
       const v = lerCampos(document.getElementById("neg-form"));
       const antes = { ...dados.negocio };
-      Object.keys(v).forEach(k => { dados.negocio[k] = k === "validadeDias" ? num(v[k]) : String(v[k]).trim(); });
+      Object.keys(v).forEach(k => {
+        const x = v[k];
+        dados.negocio[k] = typeof x === "boolean" ? x : ["validadeDias","acrescimoCartao","parcelasMax"].includes(k) ? num(x) : String(x).trim();
+      });
       dados.negocio.pixChave = normalizarChave(dados.negocio.pixTipo, dados.negocio.pixChave);
       try{ await gravarConfig(); render(); toast("Dados salvos. O site já mostra as mudanças."); }catch(err){ dados.negocio = antes; falhou(err, "salvar os dados"); }
       break;

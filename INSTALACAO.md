@@ -1,6 +1,6 @@
 # RazenLab — guia de instalação
 
-Siga na ordem. As etapas 1 a 6 são obrigatórias; 7 e 8 (Telegram e frete automático) são opcionais e podem ser feitas depois.
+Siga na ordem. As etapas 1 a 6 são obrigatórias; 7 (frete automático) e 8 (cartão e boleto) são opcionais e podem ser feitas depois.
 
 ---
 
@@ -53,48 +53,60 @@ Pronto: a partir daqui o celular e o computador mostram os mesmos pedidos.
 
 ---
 
-## 7. Aviso de pedido no Telegram (opcional, grátis)
-
-**Criar o robô**
-1. No Telegram, procure **@BotFather** → envie `/newbot` → escolha um nome (ex.: RazenLab Avisos) e um usuário terminado em `bot`.
-2. Ele responde com um **token** parecido com `123456:ABC-...`. Guarde.
-3. Abra a conversa com o seu robô novo e mande qualquer mensagem (ex.: "oi").
-4. No navegador, abra `https://api.telegram.org/botSEU_TOKEN/getUpdates` (troque `SEU_TOKEN`). Procure `"chat":{"id":` e copie o número que vem depois. Esse é o **chat id**.
-
-**Publicar a função**
-1. No Supabase, menu **Edge Functions → Deploy a new function → Via Editor**.
-2. Nome: `avisar`. Apague o código de exemplo, cole o conteúdo de `supabase/functions/avisar/index.ts` e clique em **Deploy**.
-3. Nos detalhes da função, **desligue a verificação de JWT** (opção *Verify JWT* / *Enforce JWT verification*). A própria função confere o pedido.
-4. Em **Edge Functions → Secrets**, adicione:
-   - `TELEGRAM_BOT_TOKEN` = o token do BotFather
-   - `TELEGRAM_CHAT_ID` = o número do chat
-   - `PAINEL_URL` = `https://brenotorres44-blip.github.io/razenlab/painel.html`
-
-A partir daí, cada pedido novo e cada comprovante chegam como mensagem no seu Telegram.
-
-## 8. Frete automático pelo Melhor Envio (opcional)
+## 7. Frete automático pelo Melhor Envio
 
 **Gerar o token**
 1. Crie uma conta em **melhorenvio.com.br** (é grátis; você só paga as etiquetas que comprar).
-2. Na sua conta, procure a área de **Integrações / Permissões de acesso / Tokens** e gere um **token pessoal** com pelo menos a permissão de **cálculo de frete** (`shipping-calculate`). Copie o token (é longo).
+2. Na sua conta, procure a área de **Integrações / Permissões de acesso / Tokens** e gere um **token pessoal** com a permissão de **cálculo de frete** (`shipping-calculate`). Copie o token (é longo).
 
 **Publicar a função**
-1. **Edge Functions → Deploy a new function → Via Editor** → nome `frete` → cole `supabase/functions/frete/index.ts` → **Deploy**.
-2. Desligue a verificação de JWT, como na etapa 7. A função confere sozinha se quem chamou é administrador.
-3. Em **Secrets**, adicione:
+1. No Supabase: **Edge Functions → Deploy a new function → Via Editor**.
+2. Nome: `frete`. Apague o código de exemplo, cole o conteúdo de `supabase/functions/frete/index.ts` e clique em **Deploy**.
+3. Nos detalhes da função, **desligue a verificação de JWT** (*Verify JWT* / *Enforce JWT verification*). A função confere sozinha se quem chamou é administrador.
+4. Em **Edge Functions → Secrets**, adicione:
    - `MELHOR_ENVIO_TOKEN` = o token
    - `MELHOR_ENVIO_EMAIL` = seu e-mail
 
-No painel, dentro de um pedido, o botão **Cotar frete pelo CEP** passa a mostrar Correios PAC, SEDEX e outras transportadoras com preço e prazo. Um toque preenche o frete.
+**Usar**
+1. No painel, **Configurações → Seu negócio**: preencha o **CEP de onde você envia**.
+2. Em **Custos da oficina**, ajuste a **caixa padrão** (medidas e peso da embalagem que você mais usa).
+3. Dentro de um pedido, toque em **Cotar frete pelo CEP**. Aparecem Correios PAC, SEDEX e outras transportadoras com preço e prazo. Um toque preenche o frete.
 
----
+## 8. Cartão e boleto pelo Mercado Pago
+
+O cliente continua podendo pagar por Pix sem taxa. Com isto ligado, ganha a opção de cartão de crédito (parcelado), débito ou boleto, e o pedido vira **Pago** sozinho quando o Mercado Pago aprova.
+
+**Pegar a credencial**
+1. Entre em **mercadopago.com.br/developers** com a sua conta do Mercado Pago.
+2. **Suas integrações → Criar aplicação**. Nome: `RazenLab`. Escolha pagamentos online com **Checkout Pro**.
+3. Abra a aplicação → **Credenciais de produção**. Copie o **Access Token** (começa com `APP_USR-`).
+   - Se o Mercado Pago pedir para ativar as credenciais de produção, preencha os dados do negócio que ele solicitar.
+   - **Nunca** coloque esse token no site nem mande para ninguém: ele movimenta a sua conta.
+
+**Publicar as duas funções**
+1. **Edge Functions → Deploy a new function → Via Editor** → nome `pagamento` → cole `supabase/functions/pagamento/index.ts` → **Deploy**.
+2. Repita com o nome `mp-webhook` e o arquivo `supabase/functions/mp-webhook/index.ts`.
+3. Nas duas, **desligue a verificação de JWT**. O Mercado Pago não envia login, e a função confirma cada pagamento direto na API dele.
+4. Em **Edge Functions → Secrets**, adicione:
+   - `MP_ACCESS_TOKEN` = o Access Token de produção
+
+**Ligar no painel**
+1. **Configurações → Cartão e boleto (Mercado Pago)**: marque **Oferecer cartão e boleto no link do cliente**.
+2. Defina o **acréscimo** (%) para cobrir a taxa do Mercado Pago. Confira as tarifas na sua conta, porque elas mudam conforme o prazo de recebimento que você escolhe lá.
+3. Defina o número máximo de **parcelas**. Os juros do parcelamento ficam com o cliente.
+4. Salve. Faça um pedido de teste de valor baixo e pague com o seu próprio cartão para ver o ciclo completo.
+
+**Opcional: assinatura dos avisos**
+Na sua aplicação do Mercado Pago, em **Webhooks**, você pode ver a **assinatura secreta**. Cadastre-a como o segredo `MP_WEBHOOK_SECRET`: a partir daí, a função recusa qualquer aviso que não venha do Mercado Pago. Sem ela o sistema já é seguro, porque todo pagamento é conferido direto na API.
 
 ## Como funciona o dia a dia
 
-1. **Cliente pede pelo site** → chega no painel (e no Telegram) como **Solicitado**.
+1. **Cliente pede pelo site** → chega no painel como **Solicitado**.
 2. Você preenche peso e tempo, cota o frete e clica **Enviar orçamento no WhatsApp**. O cliente recebe um link só dele.
-3. No link, o cliente vê o valor, paga com o **QR Code do Pix** e envia o comprovante → o pedido vira **Comprovante**.
-4. Você confere no app do banco e clica **Confirmar pagamento** → **Pago**. Só aqui o valor entra no faturamento.
+3. No link, o cliente escolhe:
+   - **Pix (sem taxa):** paga pelo QR Code e envia o comprovante → **Comprovante**. Você confere no app do banco e clica **Confirmar pagamento** → **Pago**.
+   - **Cartão ou boleto:** paga no Mercado Pago → o pedido vira **Pago** sozinho quando for aprovado.
+4. Só quando vira **Pago** o valor entra no faturamento.
 5. Imprimindo → Pronto → preencha o **código de rastreio** e clique **Marcar como enviado**. O cliente recebe o rastreio no WhatsApp e no link.
 
 ## Onde ficam os dados
@@ -105,7 +117,7 @@ No painel, dentro de um pedido, o botão **Cotar frete pelo CEP** passa a mostra
 | Cada pedido individual | Supabase, pelo link secreto | Só quem tem o link |
 | Vitrine e textos do site | Supabase | Todo mundo |
 | Anexos e comprovantes | Supabase (arquivos privados) | Só você |
-| Tokens do Telegram e Melhor Envio | Segredos das Edge Functions | Ninguém — nem o site |
+| Tokens do Melhor Envio e do Mercado Pago | Segredos das Edge Functions | Ninguém — nem o site |
 
 Use **Configurações → Exportar cópia** de vez em quando para ter um arquivo extra guardado no Drive.
 
@@ -125,7 +137,8 @@ Quando uma atualização mexer no banco, rode de novo o `supabase/01_estrutura.s
 
 - **"O painel ainda não está ligado ao Supabase"** → o `config.js` não foi preenchido ou não foi enviado ao GitHub.
 - **"Esta conta existe, mas ainda não tem acesso"** → falta rodar o `02_admin.sql` com o seu e-mail exato.
-- **Cotar frete diz que a função não foi publicada** → faça a etapa 8.
-- **Não chega mensagem no Telegram** → confira se você mandou "oi" para o robô antes de pegar o chat id, e os dois segredos.
+- **Cotar frete diz que a função não foi publicada** → faça a etapa 7.
+- **"Não foi possível abrir o pagamento"** no link do cliente → confira se a função `pagamento` foi publicada, o segredo `MP_ACCESS_TOKEN` e se a opção está ligada no painel.
+- **Cliente pagou no cartão e o pedido não virou Pago** → confira se a função `mp-webhook` foi publicada **com a verificação de JWT desligada**.
 - **"Falta atualizar o banco"** ao marcar "Não fechou" → rode de novo o `01_estrutura.sql`.
 - **Mudou algo e o celular mostra a versão antiga** → feche e abra o app, ou recarregue a página.

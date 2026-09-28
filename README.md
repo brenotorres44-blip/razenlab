@@ -5,7 +5,7 @@ Impressão 3D sob encomenda: site para clientes, página de acompanhamento do pe
 | Arquivo | O que é |
 |---|---|
 | `index.html` | Site: vitrine de trabalhos e pedido de orçamento |
-| `pedido.html` | Página do cliente: orçamento, Pix com QR Code, comprovante e rastreio |
+| `pedido.html` | Página do cliente: orçamento, Pix com QR Code, cartão/boleto, comprovante e rastreio |
 | `painel.html` | Seu sistema: pedidos, orçamento, clientes, estoque, financeiro, análise, vitrine |
 | `privacidade.html` | Política de privacidade (LGPD) e termos de encomenda |
 | `404.html` | Página de endereço não encontrado |
@@ -13,7 +13,8 @@ Impressão 3D sob encomenda: site para clientes, página de acompanhamento do pe
 | `supabase/01_estrutura.sql` | Tabelas, regras de segurança e funções do banco |
 | `supabase/02_admin.sql` | Libera o seu e-mail como administrador |
 | `supabase/functions/frete` | Cotação de frete pelo Melhor Envio (opcional) |
-| `supabase/functions/avisar` | Aviso de pedido e comprovante no Telegram (opcional) |
+| `supabase/functions/pagamento` | Cria o pagamento com cartão/boleto no Mercado Pago (opcional) |
+| `supabase/functions/mp-webhook` | Recebe a confirmação do Mercado Pago e marca o pedido como Pago (opcional) |
 | `assets/`, `manifest.json`, `sw.js` | Logo, ícones e instalação do painel como app |
 | `vitrine.json` | Reserva usada só se o Supabase não estiver configurado |
 

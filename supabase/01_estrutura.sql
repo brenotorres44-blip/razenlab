@@ -210,6 +210,7 @@ declare
   com_preco boolean;
   v_validade date;
   v_vencido boolean;
+  v_total numeric;
 begin
   select * into r from public.pedidos where token = p_token;
   if not found then return null; end if;
@@ -217,6 +218,7 @@ begin
   com_preco := r.status not in ('solicitado', 'cancelado', 'perdido');
   v_validade := case when (r.dados->>'validadeAte') ~ '^\d{4}-\d{2}-\d{2}$' then (r.dados->>'validadeAte')::date end;
   v_vencido := r.status = 'orcamento' and v_validade is not null and v_validade < current_date;
+  v_total := case when (r.dados->>'total') ~ '^[0-9]+(\.[0-9]+)?$' then (r.dados->>'total')::numeric end;
 
   return json_build_object(
     'numero', r.numero,
@@ -243,6 +245,12 @@ begin
     'vencido', v_vencido,
     'validadeDias', n->'validadeDias',
     'whatsapp', n->>'whatsapp',
+    'formaPagamento', r.dados->>'formaPagamento',
+    'mpStatus', r.dados->>'mpStatus',
+    -- cartão/boleto pelo Mercado Pago: só quando ligado, com o acréscimo definido no painel
+    'cartao', case when (n->>'mpAtivo') = 'true' and r.status = 'orcamento' and not v_vencido and v_total > 0 then json_build_object(
+      'valor', round(v_total * (1 + least(greatest(coalesce((n->>'acrescimoCartao')::numeric, 0), 0), 30) / 100), 2),
+      'parcelas', least(greatest(coalesce((n->>'parcelasMax')::int, 12), 1), 12)) end,
     'pix', case when r.status in ('orcamento', 'comprovante') and not v_vencido then json_build_object(
       'chave', n->>'pixChave', 'nome', n->>'pixNome', 'cidade', n->>'pixCidade') end
   );
