@@ -396,7 +396,7 @@ textarea{resize:vertical;min-height:74px}
     </div>
     <div id="login-campos" class="grid">
       <label class="f"><span>E-mail</span><input type="email" id="login-email" autocomplete="username" required></label>
-      <label class="f"><span>Senha</span><input type="password" id="login-senha" autocomplete="current-password" required></label>
+      <label class="f"><span>Senha</span><div class="campo"><input type="password" id="login-senha" autocomplete="current-password" required><button type="button" id="ver-senha" class="lk" style="text-decoration:none;white-space:nowrap">mostrar</button></div></label>
       <button class="tb pri" type="submit" id="login-btn" style="width:100%;margin-top:4px">Entrar</button>
     </div>
     <p class="login-msg" id="login-msg"></p>
@@ -2156,13 +2156,21 @@ async function iniciarSessao(){
   render();
   inicializar();
 }
+document.getElementById("ver-senha").addEventListener("click", () => {
+  const i = document.getElementById("login-senha"), b = document.getElementById("ver-senha");
+  i.type = i.type === "password" ? "text" : "password"; b.textContent = i.type === "password" ? "mostrar" : "ocultar";
+});
 document.getElementById("login-form").addEventListener("submit", async e => {
   e.preventDefault();
   const btn = document.getElementById("login-btn");
   btn.disabled = true; btn.textContent = "Entrando…";
   const r = await sb.auth.signInWithPassword({ email:document.getElementById("login-email").value.trim(), password:document.getElementById("login-senha").value });
   if(r.error){
-    mostrarLogin(/invalid/i.test(r.error.message) ? "E-mail ou senha incorretos." : erroTexto(r.error), true);
+    const m = r.error.message || "";
+    mostrarLogin(/invalid login credentials/i.test(m) ? "E-mail ou senha incorretos. Toque em <b>mostrar</b> para conferir o que foi digitado."
+      : /email not confirmed/i.test(m) ? "Este e-mail ainda não foi confirmado no Supabase (Authentication → Users)."
+      : /api key/i.test(m) ? "A chave do Supabase no config.js não foi aceita."
+      : erroTexto(r.error), true);
   }else{
     try{ await iniciarSessao(); }catch(err){ mostrarLogin(erroTexto(err), true); }
   }
