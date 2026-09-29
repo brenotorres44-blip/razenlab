@@ -1659,7 +1659,7 @@ function desenharPedido(){
         <div class="row acoes" style="margin-top:18px">
           ${acaoPrincipal(p)}
           <button class="tb ${acaoPrincipal(p)?"":"pri"}" data-acao="salvar-pedido">${p.id?"Salvar":"Criar pedido"}</button>
-          <button class="tb" data-acao="gerar-orcamento">PDF</button>
+          <button class="tb" data-acao="gerar-orcamento">Enviar PDF</button>
           ${p.id?`<button class="tb" data-acao="duplicar">Duplicar</button>
             ${["enviado","entregue"].includes(p.status)?`<button class="tb" data-acao="para-vitrine">Mostrar na vitrine</button>`:""}
             <button class="tb perigo dir" data-acao="excluir-pedido">Excluir</button>`:""}
@@ -1845,124 +1845,156 @@ async function abrirArquivo(caminho){
   catch(e){ if(w) w.close(); falhou(e, "abrir o arquivo"); }
 }
 
-async function gerarOrcamento(){
-  // a janela abre antes de salvar, senão o navegador bloqueia como pop-up
-  const w = window.open("", "_blank");
-  if(!w){ toast("O navegador bloqueou a janela. Libere pop-ups para este site."); return; }
-  w.document.write('<p style="font-family:sans-serif;padding:40px;color:#56708F">Gerando orçamento…</p>');
-  // todo orçamento emitido é salvo: ganha número, fica registrado para quem foi e entra na análise
+/* ---------- orçamento em PDF: arquivo de verdade, pronto para enviar no WhatsApp ---------- */
+let jsPDFcarregando = null;
+function carregarJsPDF(){
+  if(window.jspdf) return Promise.resolve(window.jspdf.jsPDF);
+  if(jsPDFcarregando) return jsPDFcarregando;
+  jsPDFcarregando = new Promise((ok, erro) => {
+    const sc = document.createElement("script");
+    sc.src = "https://cdn.jsdelivr.net/npm/jspdf@4.2.1/dist/jspdf.umd.min.js";
+    sc.onload = () => window.jspdf ? ok(window.jspdf.jsPDF) : erro(new Error("biblioteca de PDF"));
+    sc.onerror = () => { jsPDFcarregando = null; erro(new Error("Sem internet para gerar o PDF.")); };
+    document.head.appendChild(sc);
+  });
+  return jsPDFcarregando;
+}
+async function logoParaPDF(){
+  const b = await (await fetch(new URL("assets/logo.jpg", location.href))).blob();
+  return await new Promise(ok => { const f = new FileReader(); f.onload = () => ok(f.result); f.readAsDataURL(b); });
+}
+function montarPDF(jsPDF, p, logo){
+  const doc = new jsPDF({ unit:"mm", format:"a4" });
+  const c = precificar(p), n = dados.negocio, W = 210, M = 16;
+  // a fonte padrão do PDF só tem letras latinas: troca símbolos e tira emojis
+  const t = v => String(v == null ? "" : v).replace(/\u00a0/g, " ").replace(/[\u2212\u2013\u2014]/g, "-").replace(/[\u201c\u201d]/g, '"').replace(/[\u2018\u2019]/g, "'")
+    .replace(/[^\n\x20-\x7e\u00a0-\u00ff]/g, "").trim();
+  const R = v => t(brl(v));
+  const hex = h => [1,3,5].map(k => parseInt(h.slice(k, k+2), 16));
+  const fundo = h => doc.setFillColor(...hex(h)), letra = h => doc.setTextColor(...hex(h)), traco = h => doc.setDrawColor(...hex(h));
+  const fonte = (peso, tam) => { doc.setFont("helvetica", peso); doc.setFontSize(tam); };
+
+  // cabeçalho
+  fundo("#030C2B"); doc.rect(0, 0, W, 40, "F");
+  try{ doc.setGState(new doc.GState({ opacity:.16 })); fundo("#1E9BFF"); doc.circle(188, 4, 36, "F"); doc.setGState(new doc.GState({ opacity:1 })); }catch(e){}
+  if(logo) doc.addImage(logo, "JPEG", M, 8, 24, 24);
+  const xm = M + (logo ? 30 : 0);
+  fonte("bold", 22); letra("#FFFFFF"); doc.text("RAZEN", xm, 20.5);
+  const wR = doc.getTextWidth("RAZEN"); letra("#1E9BFF"); doc.text("LAB", xm + wR, 20.5);
+  fonte("normal", 8.5); letra("#8FA8C8"); doc.text("Transformando ideias em realidade, camada por camada.", xm, 27);
+  fonte("bold", 8.5); letra("#5CE1FF"); doc.text("ORÇAMENTO", W - M, 14.5, { align:"right" });
+  fonte("bold", 24); letra("#FFFFFF"); doc.text(numPed(p.numero), W - M, 25.5, { align:"right" });
+  fonte("normal", 8); letra("#8FA8C8"); doc.text(`Emitido em ${dataBR(hoje())}`, W - M, 31.5, { align:"right" });
+  fundo("#1E9BFF"); doc.rect(0, 40, W, 1.2, "F"); fundo("#F28A14"); doc.rect(150, 40, 16, 1.2, "F");
+
+  // cliente, prazo e validade
+  let y = 50; const bw = W - 2*M, cols = [bw*.44, bw*.28, bw*.28];
+  traco("#D8E2F0"); doc.setLineWidth(.3); doc.rect(M, y, bw, 20);
+  const quadros = [["CLIENTE", p.cliente || "-", p.contato || ""], ["PRAZO", p.prazo ? dataBR(p.prazo) : "A combinar", ""],
+                   ["VÁLIDO ATÉ", dataBR(p.validadeAte || somaDias(hoje(), num(n.validadeDias) || 7)), ""]];
+  let x = M;
+  quadros.forEach(([rot, val, sub], k) => {
+    if(k){ traco("#D8E2F0"); doc.line(x, y, x, y + 20); }
+    fundo("#1E9BFF"); doc.rect(x, y, 3.5, .7, "F"); doc.rect(x, y, .7, 3.5, "F");
+    fonte("bold", 7); letra("#56708F"); doc.text(rot, x + 4, y + 6.5);
+    fonte("bold", 11); letra("#0B1733"); doc.text(doc.splitTextToSize(t(val), cols[k] - 8)[0], x + 4, y + 12.5);
+    if(sub){ fonte("normal", 8.5); letra("#56708F"); doc.text(t(sub), x + 4, y + 17); }
+    x += cols[k];
+  });
+
+  // itens
+  y = 82; fonte("bold", 7.5); letra("#56708F"); doc.text("ITENS", M, y); traco("#D8E2F0"); doc.line(M + 12, y - 1, W - M, y - 1);
+  y += 8; const cQ = W - M - 78, cU = W - M - 40, cT = W - M;
+  fonte("bold", 7); doc.text("DESCRIÇÃO", M, y); doc.text("QTD.", cQ, y, { align:"right" }); doc.text("UNITÁRIO", cU, y, { align:"right" }); doc.text("TOTAL", cT, y, { align:"right" });
+  traco("#0B1733"); doc.setLineWidth(.6); doc.line(M, y + 2.5, W - M, y + 2.5);
+  y += 9;
+  fonte("bold", 11); letra("#0B1733");
+  const desc = doc.splitTextToSize(t(p.peca || "Peça impressa em 3D"), cQ - M - 20).slice(0, 3);   // quebra com a fonte certa
+  doc.text(desc, M, y);
+  const fimDesc = y + (desc.length - 1) * 4.6;
+  fonte("normal", 8.5); letra("#56708F"); doc.text(t(p.materialTexto || "Impressão 3D sob medida"), M, fimDesc + 5);
+  fonte("normal", 10.5); letra("#0B1733"); doc.text(String(c.qtd), cQ, y, { align:"right" }); doc.text(R(c.preco), cU, y, { align:"right" });
+  fonte("bold", 10.5); doc.text(R(c.preco * c.qtd), cT, y, { align:"right" });
+  y = fimDesc + 11; traco("#E3EAF5"); doc.setLineWidth(.3); doc.line(M, y, W - M, y);
+
+  // totais: a conta só aparece quando há algo além das peças
+  y += 9; const tx = W - M - 80;
+  if(c.desconto > 0 || c.entrega > 0){
+    const linha = (a, b) => { fonte("normal", 9.5); letra("#3D5275"); doc.text(doc.splitTextToSize(t(a), 52)[0], tx, y); fonte("bold", 9.5); letra("#0B1733"); doc.text(t(b), W - M, y, { align:"right" }); y += 6; };
+    linha("Peças", R(c.preco * c.qtd));
+    if(c.desconto > 0) linha("Desconto", "- " + R(c.desconto));
+    if(c.entrega > 0) linha("Frete" + (p.freteServico ? " · " + p.freteServico : ""), R(c.entrega));
+    y += 1;
+  }
+  fundo("#030C2B"); doc.rect(tx, y, W - M - tx, 15, "F"); fundo("#1E9BFF"); doc.rect(tx, y, 1.2, 15, "F");
+  fonte("bold", 8); letra("#5CE1FF"); doc.text("TOTAL", tx + 5, y + 9.3);
+  fonte("bold", 18); letra("#FFFFFF"); doc.text(R(c.total), W - M - 4, y + 10.4, { align:"right" });
+  y += 24;
+
+  // observações para o cliente
+  if(p.recado){
+    const linhas = doc.splitTextToSize(t(p.recado), W - 2*M - 12).slice(0, 14), h = 11 + linhas.length * 4.6;
+    fundo("#F2F6FD"); doc.rect(M, y, W - 2*M, h, "F"); fundo("#1E9BFF"); doc.rect(M, y, 1, h, "F");
+    fonte("bold", 7); letra("#56708F"); doc.text("OBSERVAÇÕES", M + 6, y + 6.5);
+    fonte("normal", 9.5); letra("#0B1733"); doc.text(linhas, M + 6, y + 12);
+  }
+
+  // rodapé com contatos
+  const fy = 281; traco("#D8E2F0"); doc.setLineWidth(.3); doc.line(M, fy - 6, W - M, fy - 6);
+  if(logo) doc.addImage(logo, "JPEG", M, fy - 3.5, 9, 9);
+  const xf = M + (logo ? 12 : 0);
+  fonte("bold", 8.5); letra("#0B1733"); doc.text("RAZENLAB", xf, fy + .5);
+  const cont = [n.whatsapp && "WhatsApp " + n.whatsapp, n.instagram && "@" + String(n.instagram).replace(/^@/, ""), n.email, n.cidade].filter(Boolean).join("  ·  ");
+  fonte("normal", 7.5); letra("#56708F"); doc.text(t(cont || "Impressão 3D sob encomenda"), xf, fy + 4.6);
+  doc.text(numPed(p.numero), W - M, fy + 2.5, { align:"right" });
+  doc.setProperties({ title:`Orçamento ${numPed(p.numero)} - RazenLab`, author:"RazenLab", subject:t(p.cliente) });
+  return doc;
+}
+async function gerarOrcamento(botao){
+  // todo orçamento em PDF é salvo antes: ganha número, fica registrado para quem foi e entra na análise
   const st = document.querySelector('#ped-form [name="status"]').value;
-  const p = await salvarPedido(true, st === "solicitado" ? "orcamento" : undefined);
-  if(!p){ w.close(); return; }
-  desenharPedido(); render();
-  const c = precificar(p), n = dados.negocio;
-  const cont = [n.whatsapp && `WhatsApp ${esc(n.whatsapp)}`, n.instagram && `@${esc(n.instagram.replace(/^@/,""))}`, n.email && esc(n.email), n.cidade && esc(n.cidade)].filter(Boolean);
-  const pecas = c.preco * c.qtd;
-  const logoMarca = new URL("assets/logo.jpg", location.href).href;   // logo original da RazenLab
-  const temAjuste = c.desconto > 0 || c.entrega > 0;   // só mostra a conta quando há algo além das peças
-  const html = `<!DOCTYPE html><html lang="pt-BR"><head><meta charset="utf-8">
-  <title>Orçamento ${p.numero?numPed(p.numero):""} — ${esc(p.cliente||"RazenLab")}</title>
-  <link href="https://fonts.googleapis.com/css2?family=Chakra+Petch:wght@500;600;700&family=Manrope:wght@400;500;600;700&display=swap" rel="stylesheet">
-  <style>
-  @page{size:A4;margin:0}
-  *{box-sizing:border-box;-webkit-print-color-adjust:exact;print-color-adjust:exact}
-  body{margin:0;background:#dfe5ea;font-family:Manrope,"Segoe UI",sans-serif;color:#0B1733;font-size:13px;line-height:1.5}
-  .pg{width:210mm;min-height:297mm;margin:0 auto;background:#fff;display:flex;flex-direction:column;position:relative}
-  .hud{font-family:"Chakra Petch","Segoe UI",sans-serif}
-  /* cabeçalho */
-  .hd{position:relative;overflow:hidden;background:#030C2B;color:#fff;padding:30px 40px 28px;display:flex;align-items:center;gap:18px}
-  .hd::before{content:"";position:absolute;inset:0;background:
-      radial-gradient(260px 200px at 88% 20%,rgba(30,155,255,.38),transparent 70%),
-      repeating-linear-gradient(90deg,rgba(92,225,255,.05) 0 1px,transparent 1px 28px),
-      repeating-linear-gradient(0deg,rgba(92,225,255,.05) 0 1px,transparent 1px 28px)}
-  .hd::after{content:"";position:absolute;left:0;right:0;bottom:0;height:3px;background:linear-gradient(90deg,#1E9BFF 0 72%,#F28A14 72% 80%,#1E9BFF 80%)}
-  .hd>*{position:relative;z-index:1}
-  .hd img{width:68px;height:68px;border-radius:50%;object-fit:cover;box-shadow:0 0 0 1px rgba(92,225,255,.45),0 0 30px rgba(30,155,255,.5)}
-  .marca b{display:block;font-size:30px;font-weight:700;letter-spacing:5px;line-height:1}
-  .marca b span{color:#1E9BFF}
-  .marca small{display:block;color:#8FA8C8;font-size:11.5px;margin-top:5px;letter-spacing:.2px}
-  .doc{margin-left:auto;text-align:right}
-  .doc .rot{font-size:12px;letter-spacing:4px;color:#5CE1FF;font-weight:600}
-  .doc .num{font-size:40px;font-weight:700;line-height:1;letter-spacing:1px;margin:2px 0 4px}
-  .doc .em{font-size:11.5px;color:#8FA8C8}
-  /* corpo */
-  .bd{padding:30px 40px 24px;flex:1}
-  .meta{display:grid;grid-template-columns:1.4fr 1fr 1fr;border:1px solid #D8E2F0;margin-bottom:30px}
-  .meta>div{padding:14px 16px;border-left:1px solid #D8E2F0;position:relative}
-  .meta>div:first-child{border-left:none}
-  .meta>div::before{content:"";position:absolute;left:-1px;top:-1px;width:10px;height:10px;border-top:2px solid #1E9BFF;border-left:2px solid #1E9BFF}
-  .lb{display:block;font-family:"Chakra Petch","Segoe UI",sans-serif;font-size:11px;font-weight:600;letter-spacing:2.2px;color:#56708F;text-transform:uppercase;margin-bottom:3px}
-  .meta b{font-size:15px;font-weight:600}
-  .meta .sub{display:block;color:#56708F;font-size:12px;margin-top:1px}
-  .sec{display:flex;align-items:center;gap:10px;margin:0 0 10px}
-  .sec .lb{margin:0}
-  .sec::after{content:"";flex:1;height:1px;background:#D8E2F0}
-  table{width:100%;border-collapse:collapse}
-  th{font-family:"Chakra Petch","Segoe UI",sans-serif;font-weight:600;font-size:11px;letter-spacing:1.8px;text-transform:uppercase;color:#56708F;text-align:left;padding:0 0 9px;border-bottom:2px solid #0B1733}
-  td{padding:16px 0;border-bottom:1px solid #E3EAF5;vertical-align:top}
-  .r{text-align:right}
-  .item b{font-size:15px;font-weight:600;display:block}
-  .item span{color:#56708F;font-size:12px}
-  .tot{display:flex;justify-content:flex-end;margin-top:22px}
-  .tot-in{width:300px}
-  .linha{display:flex;justify-content:space-between;padding:5px 2px;color:#3D5275}
-  .linha span:last-child{color:#0B1733;font-weight:600}
-  .total{margin-top:10px;background:#030C2B;color:#fff;padding:16px 20px;display:flex;align-items:center;justify-content:space-between;position:relative}
-  .total::before{content:"";position:absolute;left:0;top:0;bottom:0;width:4px;background:#1E9BFF}
-  .total .lb{color:#5CE1FF;margin:0}
-  .total .v{font-family:"Chakra Petch","Segoe UI",sans-serif;font-size:32px;font-weight:700;letter-spacing:.5px;line-height:1}
-  .obs{margin-top:30px;border-left:3px solid #1E9BFF;background:#F2F6FD;padding:14px 18px}
-  .obs p{margin:4px 0 0;white-space:pre-line}
-  /* rodapé */
-  .ft{padding:18px 40px 22px;display:flex;align-items:center;gap:14px;border-top:1px solid #D8E2F0;font-size:11.5px;color:#56708F}
-  .ft img{width:30px;height:30px;border-radius:50%;object-fit:cover}
-  .ft .ct{flex:1}
-  .ft .ct b{display:block;font-family:"Chakra Petch","Segoe UI",sans-serif;color:#0B1733;font-size:13px;letter-spacing:2px}
-  .ft .cod{font-family:"Chakra Petch","Segoe UI",sans-serif;letter-spacing:2px}
-  /* botões na tela */
-  .np{position:fixed;top:14px;right:14px;display:flex;gap:8px;z-index:9}
-  .np button{font-family:Manrope,sans-serif;font-size:13px;font-weight:700;letter-spacing:.5px;text-transform:uppercase;padding:11px 16px;border-radius:3px;border:1px solid #1E9BFF;cursor:pointer;background:#1E9BFF;color:#fff}
-  .np button.s{background:#030C2B;color:#EEF4FF;border-color:#1A3366}
-  @media print{body{background:#fff}.np{display:none}}
-  @media screen{.pg{box-shadow:0 10px 40px rgba(10,20,31,.25);margin:24px auto}}
-  </style></head><body>
-  <div class="np"><button onclick="window.print()">Salvar em PDF</button><button class="s" onclick="window.close()">Fechar</button></div>
-  <div class="pg">
-    <div class="hd">
-      <img src="${logoMarca}" alt="RazenLab">
-      <div class="marca hud"><b>RAZEN<span>LAB</span></b><small>Transformando ideias em realidade, camada por camada.</small></div>
-      <div class="doc hud">${p.numero ? `<div class="rot">ORÇAMENTO</div><div class="num">${numPed(p.numero)}</div>` : `<div class="num" style="font-size:28px;letter-spacing:5px">ORÇAMENTO</div>`}<div class="em">Emitido em ${dataBR(hoje())}</div></div>
+  if(botao){ botao.disabled = true; botao.textContent = "Gerando…"; }
+  try{
+    const p = await salvarPedido(true, st === "solicitado" ? "orcamento" : undefined);
+    if(!p) return;
+    const [jsPDF, logo] = await Promise.all([carregarJsPDF(), logoParaPDF().catch(() => null)]);
+    const doc = montarPDF(jsPDF, p, logo);
+    const cliente = String(p.cliente || "cliente").normalize("NFD").replace(/[\u0300-\u036f]/g, "").replace(/[^A-Za-z0-9]+/g, "-").replace(/^-|-$/g, "").slice(0, 30);
+    const arquivo = new File([doc.output("blob")], `Orcamento-${String(p.numero).padStart(4,"0")}-${cliente}.pdf`, { type:"application/pdf" });
+    desenharPedido(); render();
+    mostrarPDFPronto(arquivo, p);
+  }catch(e){ falhou(e, "gerar o PDF"); }
+  finally{ const b = document.querySelector('[data-acao="gerar-orcamento"]'); if(b){ b.disabled = false; b.textContent = "Enviar PDF"; } }
+}
+function mostrarPDFPronto(arquivo, p){
+  document.querySelector("[data-pdf-pronto]")?.remove();
+  const podeEnviar = !!(navigator.canShare && navigator.canShare({ files:[arquivo] }));
+  const url = URL.createObjectURL(arquivo);
+  const caixa = document.createElement("div");
+  caixa.className = "ov"; caixa.style.zIndex = 95; caixa.setAttribute("data-pdf-pronto", "");
+  caixa.innerHTML = `<div class="md est" style="margin:auto;max-width:460px"><div class="pn">
+    <div class="md-h"><h2>PDF PRONTO</h2><button class="x" data-pdf-fechar aria-label="Fechar">&times;</button></div>
+    <p class="muted p13" style="margin:0">${esc(arquivo.name)} · ${dec(arquivo.size/1024,0)} KB</p>
+    <div class="row" style="margin-top:16px">
+      ${podeEnviar ? `<button class="tb pri" data-pdf-enviar style="flex:1 1 100%">Enviar pelo WhatsApp</button>` : ""}
+      <button class="tb ${podeEnviar ? "" : "pri"}" data-pdf-baixar style="flex:1">Baixar PDF</button>
+      <button class="tb" data-pdf-abrir style="flex:1">Ver</button>
     </div>
-    <div class="bd">
-      <div class="meta">
-        <div><span class="lb">Cliente</span><b>${esc(p.cliente||"—")}</b>${p.contato?`<span class="sub">${esc(p.contato)}</span>`:""}</div>
-        <div><span class="lb">Prazo</span><b>${p.prazo?dataBR(p.prazo):"A combinar"}</b></div>
-        <div><span class="lb">Válido até</span><b>${dataBR(p.validadeAte || somaDias(hoje(), num(n.validadeDias)||7))}</b></div>
-      </div>
-      <div class="sec"><span class="lb">Itens</span></div>
-      <table>
-        <thead><tr><th>Descrição</th><th class="r">Qtd.</th><th class="r">Unitário</th><th class="r">Total</th></tr></thead>
-        <tbody><tr>
-          <td class="item"><b>${esc(p.peca||"Peça impressa em 3D")}</b>${p.materialTexto?`<span>${esc(p.materialTexto)}</span>`:`<span>Impressão 3D sob medida</span>`}</td>
-          <td class="r">${c.qtd}</td><td class="r">${brl(c.preco)}</td><td class="r"><b>${brl(pecas)}</b></td>
-        </tr></tbody>
-      </table>
-      <div class="tot"><div class="tot-in">
-        ${temAjuste ? `<div class="linha"><span>Peças</span><span>${brl(pecas)}</span></div>
-          ${c.desconto>0?`<div class="linha"><span>Desconto</span><span>− ${brl(c.desconto)}</span></div>`:""}
-          ${c.entrega>0?`<div class="linha"><span>Frete${p.freteServico?` · ${esc(p.freteServico)}`:""}</span><span>${brl(c.entrega)}</span></div>`:""}` : ""}
-        <div class="total"><span class="lb">Total</span><span class="v">${brl(c.total)}</span></div>
-      </div></div>
-      ${p.recado?`<div class="obs"><span class="lb">Observações</span><p>${esc(p.recado)}</p></div>`:""}
-    </div>
-    <div class="ft">
-      <img src="${logoMarca}" alt="">
-      <div class="ct"><b>RAZENLAB</b>${cont.join("  ·  ") || "Impressão 3D sob encomenda"}</div>
-      <span class="cod">${p.numero?numPed(p.numero):""}</span>
-    </div>
-  </div>
-  <script>window.addEventListener("load",()=>setTimeout(()=>window.print(),600));<\/script></body></html>`;
-  w.document.open(); w.document.write(html); w.document.close();
+    <p class="dica">${podeEnviar ? "Na tela que abrir, escolha o WhatsApp e depois a conversa do cliente. O PDF vai como documento."
+      : "Depois de baixar, na conversa do WhatsApp toque no clipe → Documento e escolha o arquivo."}</p>
+  </div></div>`;
+  document.body.appendChild(caixa);
+  const fechar = () => { caixa.remove(); setTimeout(() => URL.revokeObjectURL(url), 60000); };
+  caixa.addEventListener("click", async e => {
+    const t = e.target;
+    if(t === caixa || t.closest("[data-pdf-fechar]")) return fechar();
+    if(t.closest("[data-pdf-enviar]")){
+      try{ await navigator.share({ files:[arquivo], title:`Orçamento ${numPed(p.numero)}`, text:`Orçamento ${numPed(p.numero)} da RazenLab` }); fechar(); }
+      catch(err){ if(err.name !== "AbortError") toast("O celular não deixou compartilhar. Use Baixar PDF."); }
+    }
+    if(t.closest("[data-pdf-baixar]")){ const a = document.createElement("a"); a.href = url; a.download = arquivo.name; document.body.appendChild(a); a.click(); a.remove(); }
+    if(t.closest("[data-pdf-abrir]")) window.open(url, "_blank");
+  });
 }
 
 /* ================================================================
@@ -2231,7 +2263,7 @@ document.addEventListener("click", async e => {
     case "confirmar-pagamento": confirmarPagamento(); break;
     case "marcar-enviado": marcarEnviado(); break;
     case "avisar-envio": abrirWhats(pedidoAberto.contato, textoEnvio(pedidoAberto)); break;
-    case "gerar-orcamento": gerarOrcamento(); break;
+    case "gerar-orcamento": gerarOrcamento(el); break;
     case "exportar-csv": exportarCSV(); break;
     case "duplicar": {
       const c = {...montarPedido(), id:null, numero:null, token:null, status:"orcamento", prazo:"", rastreio:""};
