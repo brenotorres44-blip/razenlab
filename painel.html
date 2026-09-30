@@ -810,8 +810,8 @@ function desenharNav(){
 
 function ir(id){
   if(id === "mais"){ abrirFolhaMais(); return; }
+  if(fecharModal() === false) return;
   aba = id;
-  fecharModal();
   render();
   window.scrollTo({top:0, behavior: reduzMov ? "auto" : "smooth"});
 }
@@ -1606,6 +1606,7 @@ TELAS.config = () => {
    11. JANELA DE PEDIDO
    ================================================================ */
 let pedidoAberto = null, ocupado = false;
+let formSujo = false;   // há alteração no pedido aberto que ainda não foi salva
 const ENDERECO_CAMPOS = [["rua","Rua"],["numero","Número"],["complemento","Complemento"],["bairro","Bairro"],["cidade","Cidade"],["uf","UF"]];
 
 function abrirPedido(p){
@@ -1616,9 +1617,12 @@ function abrirPedido(p){
     const q = Math.max(1, num(pa.qtd) || 1);
     pa.precoManual = Math.round((num(pa.precoUn) > 0 ? num(pa.precoUn) : (num(pa.total) - num(pa.entrega) + num(pa.desconto)) / q) * 100) / 100;
   }
+  formSujo = false;
   desenharPedido();
 }
-function fecharModal(){
+function fecharModal(forcar){
+  if(!forcar && formSujo && document.getElementById("ped-form") && !confirm("Você alterou este pedido e não salvou.\n\nOK = sair sem salvar\nCancelar = continuar editando")) return false;
+  formSujo = false;
   pedidoAberto = null; trabalhoAberto = null;
   document.getElementById("modal").innerHTML = "";
   document.body.style.overflow = "";
@@ -1819,7 +1823,7 @@ async function salvarPedido(silencioso, mudarStatus){
       if(!e.conflito) throw e;
       const atual = await buscarPedido(p.id);
       const sobrescrever = confirm(`Este pedido foi alterado em outro lugar enquanto você editava (situação agora: ${STATUS[atual.status]?.rotulo || atual.status}).\n\nOK = salvar o que você digitou, mantendo comprovante e dados enviados pelo cliente.\nCancelar = descartar e ver a versão mais recente.`);
-      if(!sobrescrever){ pedidoAberto = atual; await carregarTudo(); desenharPedido(); toast("Mostrando a versão mais recente."); return null; }
+      if(!sobrescrever){ pedidoAberto = atual; formSujo = false; await carregarTudo(); desenharPedido(); toast("Mostrando a versão mais recente."); return null; }
       ["comprovante","comprovanteEm","avisadoNovo","avisadoComprovante"].forEach(k => { if(atual[k] !== undefined) p[k] = atual[k]; });
       if(atual.status === "comprovante" && p.status === "orcamento") p.status = "comprovante";
       p.atualizadoEm = atual.atualizadoEm;
@@ -1828,9 +1832,9 @@ async function salvarPedido(silencioso, mudarStatus){
     for(const f of mudou) await gravarFilamento(f);
     const i = dados.pedidos.findIndex(x => x.id === salvo.id);
     if(i >= 0) dados.pedidos[i] = salvo; else dados.pedidos.unshift(salvo);
-    pedidoAberto = salvo;
+    pedidoAberto = salvo; formSujo = false;
     const baixo = mudou.find(f => num(f.estoque) <= num(f.minimo));
-    if(!silencioso){ fecharModal(); render(); toast(`${["solicitado","orcamento","perdido"].includes(salvo.status) ? "Orçamento" : "Pedido"} ${numPed(salvo.numero)} salvo.` + (baixo ? ` Atenção: ${baixo.nome} com estoque baixo.` : "")); }
+    if(!silencioso){ fecharModal(true); render(); toast(`${["solicitado","orcamento","perdido"].includes(salvo.status) ? "Orçamento" : "Pedido"} ${numPed(salvo.numero)} salvo.` + (baixo ? ` Atenção: ${baixo.nome} com estoque baixo.` : "")); }
     return salvo;
   }catch(e){
     if(/pedidos_status_check/.test(e && e.message || "")) toast('Falta atualizar o banco: rode de novo o 01_estrutura.sql no Supabase para liberar "Não fechou".');
@@ -2325,6 +2329,15 @@ document.addEventListener("click", async e => {
       if(FATURADO.includes(st) && campo("f_forma") && !campo("f_forma").value) campo("f_forma").value = "Pix";
     }
     f.querySelectorAll("[data-status]").forEach(b => b.classList.toggle("on", b === el));
+    formSujo = true;
+    if(pedidoAberto && pedidoAberto.id && st !== "perdido"){
+      if(st === "cancelado" && !confirm("Cancelar este pedido?")){ return; }
+      const salvo = await salvarPedido(true);
+      if(salvo){ desenharPedido(); render(); toast(`${numPed(salvo.numero)}: situação alterada para ${STATUS[salvo.status].rotulo}.`); }
+    }else if(st === "perdido" && pedidoAberto && pedidoAberto.id){
+      toast('Escolha o motivo de não ter fechado — ao escolher, fica gravado.');
+      f.querySelector('[name="motivoPerda"]')?.focus();
+    }
     return;
   }
   if((el = t.closest("[data-arquivo]"))){ abrirArquivo(el.dataset.arquivo); return; }
@@ -2389,7 +2402,7 @@ document.addEventListener("click", async e => {
           const r = await sb.from("pedidos").delete().eq("id", p.id); if(r.error) throw r.error;
           for(const f of mudou) await gravarFilamento(f);
           dados.pedidos = dados.pedidos.filter(x => x.id !== p.id);
-          fecharModal(); render(); toast("Pedido excluído.");
+          fecharModal(true); render(); toast("Pedido excluído.");
         }catch(err){ falhou(err, "excluir o pedido"); await carregarTudo(); }
       }
       break;
@@ -2486,13 +2499,21 @@ function normalizarChave(tipo, chave){
 document.addEventListener("input", e => {
   if(e.target.id === "busca"){ busca = e.target.value; document.getElementById("lista-pedidos").innerHTML = listaPedidos(); return; }
   if(e.target.closest("#ped-form")){
+    formSujo = true;
     if(e.target.name === "entrega" && e.isTrusted){ const h = document.querySelector('#ped-form [name="freteServico"]'); if(h) h.value = ""; const s = document.getElementById("frete-escolhido"); if(s) s.textContent = "Frete digitado à mão."; }
     atualizarPedido();
   }
   if(e.target.closest("#sim-form")) atualizarSimulador();
 });
 document.addEventListener("change", async e => {
-  if(e.target.closest("#ped-form")) atualizarPedido();
+  if(e.target.closest("#ped-form")){
+    formSujo = true; atualizarPedido();
+    // escolher o motivo de "Não fechou" já grava
+    if(e.target.name === "motivoPerda" && e.target.value && pedidoAberto && pedidoAberto.id && document.querySelector('#ped-form [name="status"]').value === "perdido"){
+      const salvo = await salvarPedido(true);
+      if(salvo){ desenharPedido(); render(); toast(`${numPed(salvo.numero)} marcado como Não fechou.`); }
+    }
+  }
   if(e.target.closest("#sim-form")) atualizarSimulador();
   if(e.target.matches("[data-cep]")){
     const f = document.getElementById("ped-form");
