@@ -77,7 +77,7 @@ Deno.serve(async (req) => {
       novo.valorRecebido = Number(pg.transaction_amount);
       novo.taxaMercadoPago = Math.round(taxa * 100) / 100;
       novo.liquidoRecebido = Number(pg.transaction_details?.net_received_amount ?? (pg.transaction_amount - taxa));
-      if (["solicitado", "orcamento", "comprovante"].includes(p.status)) {
+      if (["solicitado", "orcamento", "aprovado", "comprovante"].includes(p.status)) {
         status = "pago";
         novo.dataPago = d.dataPago ?? hojeSP();
       }

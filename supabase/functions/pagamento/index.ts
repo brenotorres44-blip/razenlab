@@ -46,7 +46,7 @@ Deno.serve(async (req) => {
   const d = p.dados ?? {}, n = c?.dados?.negocio ?? {};
 
   if (n.mpAtivo !== true && n.mpAtivo !== "true") return resposta({ erro: "Pagamento por cartão não está disponível no momento." }, 400);
-  if (p.status !== "orcamento") return resposta({ erro: "Este pedido não está aguardando pagamento." }, 400);
+  if (!["orcamento", "aprovado"].includes(p.status)) return resposta({ erro: "Este pedido não está aguardando pagamento." }, 400);
   if (d.validadeAte && d.validadeAte < hojeSP()) return resposta({ erro: "Este orçamento venceu. Fale com a gente para atualizar." }, 400);
   const total = Number(d.total);
   if (!(total > 0)) return resposta({ erro: "Orçamento sem valor." }, 400);

@@ -305,6 +305,10 @@ textarea{resize:vertical;min-height:74px}
 /* pedido vindo do site */
 .req{background:rgba(242,138,20,.06);border:1px solid rgba(242,138,20,.32);border-radius:12px;padding:14px 16px;margin-bottom:16px}
 .req p{margin:6px 0 0;white-space:pre-line}
+.linha-tempo{position:relative;padding-left:4px}
+.lt-it{display:flex;gap:12px;align-items:flex-start;padding:6px 0;position:relative}
+.lt-it>i{width:9px;height:9px;border-radius:50%;flex:0 0 auto;margin-top:6px;position:relative;z-index:1}
+.lt-it:not(:last-child)::after{content:"";position:absolute;left:4px;top:18px;bottom:-8px;width:1px;background:var(--line2)}
 .link-cli{display:flex;gap:8px;align-items:center;background:rgba(2,8,20,.7);border:1px dashed var(--line2);border-radius:10px;padding:8px 10px;margin-top:14px}
 .link-cli code{flex:1;min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;font-family:var(--hud);font-size:12px;color:var(--muted)}
 .acao-dest{border-color:var(--spark)!important;box-shadow:0 0 18px rgba(242,138,20,.35)!important}
@@ -466,6 +470,7 @@ const NEGOCIO_PADRAO = {
 const STATUS = {
   solicitado: { rotulo:"Solicitado",  cor:"#3FE0FF" },
   orcamento:  { rotulo:"Orçamento",   cor:"#8FA8C8" },
+  aprovado:   { rotulo:"Aprovado",    cor:"#2BC0E4" },
   comprovante:{ rotulo:"Comprovante", cor:"#F2C14E" },
   pago:       { rotulo:"Pago",        cor:"#1E9BFF" },
   imprimindo: { rotulo:"Imprimindo",  cor:"#F28A14" },
@@ -476,10 +481,10 @@ const STATUS = {
   perdido:    { rotulo:"Não fechou",  cor:"#B07A8C" }
 };
 const MOTIVOS_PERDA = ["Preço acima do esperado","Prazo não atendeu","Cliente não respondeu","Fechou com outra empresa","Desistiu do projeto","Inviável de produzir","Outro"];
-const FLUXO = ["solicitado","orcamento","comprovante","pago","imprimindo","pronto","enviado","entregue"];
+const FLUXO = ["solicitado","orcamento","aprovado","comprovante","pago","imprimindo","pronto","enviado","entregue"];
 const CONSOME_FILAMENTO = ["imprimindo","pronto","enviado","entregue"];
 const FATURADO = ["pago","imprimindo","pronto","enviado","entregue"];     // já recebeu o dinheiro
-const AGUARDA_PAGAMENTO = ["orcamento","comprovante"];
+const AGUARDA_PAGAMENTO = ["orcamento","aprovado","comprovante"];
 const ENCERRADO = ["entregue","cancelado","perdido"];
 
 /* resultado comercial de um orçamento: base de toda a análise */
@@ -762,6 +767,7 @@ const I = {
   site:'<circle cx="12" cy="12" r="10"/><path d="M2 12h20M12 2a15 15 0 0 1 0 20M12 2a15 15 0 0 0 0 20"/>',
   seta:'<path d="m15 18-6-6 6-6"/>',
   seta2:'<path d="m9 18 6-6-6-6"/>',
+  historico:'<circle cx="12" cy="12" r="9"/><path d="M12 7v5l3 2"/>',
   analise:'<path d="M21.2 15.9A10 10 0 1 1 8 2.8"/><path d="M22 12A10 10 0 0 0 12 2v10z"/>',
   sair:'<path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"/><path d="m16 17 5-5-5-5M21 12H9"/>'
 };
@@ -778,6 +784,7 @@ const PAGINAS = [
   { id:"estoque",    nome:"Estoque",       ico:"estoque" },
   { id:"financeiro", nome:"Financeiro",    ico:"financeiro" },
   { id:"analise",    nome:"Análise",       ico:"analise" },
+  { id:"movimentacoes", nome:"Movimentações", ico:"historico" },
   { id:"vitrine",    nome:"Vitrine",       ico:"vitrine" },
   { id:"config",     nome:"Configurações", ico:"config" }
 ];
@@ -805,7 +812,7 @@ function desenharNav(){
   const mob = [["painel","Início","painel"],["pedidos","Pedidos","pedidos"],["orcar","Orçar","mais2"],["estoque","Estoque","estoque"],["mais","Mais","mais"]];
   document.getElementById("bnav").innerHTML = mob.map(([id,n,ic]) => id==="orcar"
     ? `<button class="fab ${aba===id?"on":""}" data-ir="${id}"><span class="c">${ico(ic)}</span>${n}</button>`
-    : `<button class="${(aba===id)||(id==="mais"&&["clientes","financeiro","analise","vitrine","config"].includes(aba))?"on":""}" data-ir="${id}">${ico(ic)}${n}</button>`).join("");
+    : `<button class="${(aba===id)||(id==="mais"&&["clientes","financeiro","analise","movimentacoes","vitrine","config"].includes(aba))?"on":""}" data-ir="${id}">${ico(ic)}${n}</button>`).join("");
 }
 
 function ir(id){
@@ -820,7 +827,7 @@ function abrirFolhaMais(){
     <div class="ov" data-fechar style="align-items:flex-end;padding:0">
       <div class="folha" style="width:100%">
         <div class="lbl" style="padding:4px 6px 10px">MÓDULOS</div>
-        ${["clientes","financeiro","analise","vitrine","config"].map(id => { const p = PAGINAS.find(x=>x.id===id);
+        ${["clientes","financeiro","analise","movimentacoes","vitrine","config"].map(id => { const p = PAGINAS.find(x=>x.id===id);
           return `<button class="nav-it ${aba===id?"on":""}" data-ir="${id}" style="padding:14px 12px">${ico(p.ico)}<span>${p.nome}</span></button>`; }).join("")}
         <a class="nav-it" href="index.html" target="_blank" rel="noopener" style="padding:14px 12px;text-decoration:none">${ico("site")}<span>Abrir o site</span></a>
         <button class="nav-it" data-acao="sair" style="padding:14px 12px">${ico("sair")}<span>Sair</span></button>
@@ -1046,6 +1053,7 @@ function render(){
   graficos = {};
   v.innerHTML = `<div class="pg-in">${TELAS[aba]()}</div>`;
   if(aba === "orcar") atualizarSimulador();
+  if(aba === "movimentacoes") carregarMovs();
   animarNumeros(v);
   const arco = document.getElementById("arco-ocup");
   if(arco) setTimeout(() => { arco.style.strokeDashoffset = arco.dataset.alvo; }, 60);
@@ -1498,6 +1506,70 @@ function exportarCSV(){
   toast(`${l.length} orçamentos exportados. Abre direto no Excel ou no Google Planilhas.`);
 }
 
+/* ---------- movimentações: histórico de todos os pedidos ---------- */
+let movs = null, movTipo = "todas", movPer = 30, movBusca = "";
+const TIPOS_MOV = [["todas","Todas",null],["novos","Novos pedidos",["solicitado","orcamento"]],["aprovacoes","Aprovações",["aprovado"]],
+  ["pagamentos","Pagamentos",["comprovante","pago"]],["producao","Produção",["imprimindo","pronto"]],["envios","Envios",["enviado"]],
+  ["entregas","Entregas",["entregue"]],["perdas","Não fechou / cancelados",["perdido","cancelado"]]];
+TELAS.movimentacoes = () => `
+  <div class="row rv" style="--d:30ms;margin-bottom:12px">
+    <input id="mov-busca" placeholder="Buscar por cliente, peça ou número" value="${esc(movBusca)}" style="flex:1;min-width:200px">
+    <button class="tb" data-acao="exportar-movs">Exportar planilha</button>
+  </div>
+  <div class="chips rv" style="--d:60ms;margin-bottom:8px">${[[7,"7 dias"],[30,"30 dias"],[90,"90 dias"],[0,"Tudo"]].map(([d,r]) => `<button class="chip ${movPer===d?"on":""}" data-movper="${d}">${r}</button>`).join("")}</div>
+  <div class="chips rv" style="--d:90ms;margin-bottom:14px">${TIPOS_MOV.map(([k,r]) => `<button class="chip ${movTipo===k?"on":""}" data-movtipo="${k}">${r}</button>`).join("")}</div>
+  <div class="pn rv" style="--d:120ms"><div id="mov-lista"><div class="vazio">Carregando movimentações…</div></div></div>`;
+async function carregarMovs(){
+  try{
+    const r = await sb.from("pedidos_historico").select("pedido_id,de,para,em,quem").order("em", { ascending:false }).limit(5000);
+    if(r.error) throw r.error;
+    movs = r.data || [];
+  }catch(e){ movs = null; const el = document.getElementById("mov-lista"); if(el) el.innerHTML = `<div class="vazio"><span class="lbl">SEM HISTÓRICO</span>Rode de novo o 01_estrutura.sql no Supabase para ativar o registro de movimentações.</div>`; return; }
+  desenharMovs();
+}
+function movsFiltradas(){
+  if(!movs) return [];
+  const desde = movPer ? somaDias(hoje(), -movPer) : "0000-00-00", tipos = (TIPOS_MOV.find(x => x[0] === movTipo) || [])[2];
+  const q = movBusca.trim().toLowerCase().replace("#",""), pid = {}; dados.pedidos.forEach(p => pid[p.id] = p);
+  return movs.map(h => ({ ...h, p: pid[h.pedido_id], dia: iso(new Date(h.em)) }))
+    .filter(h => h.p && h.dia >= desde && (!tipos || tipos.includes(h.para))
+      && (!q || (h.p.cliente||"").toLowerCase().includes(q) || (h.p.peca||"").toLowerCase().includes(q) || String(h.p.numero).includes(q)));
+}
+function detalheMov(h){
+  const p = h.p, info = [];
+  const dataInformada = { pago:p.dataPago, aprovado:p.dataAprovado, imprimindo:p.dataInicio, enviado:p.dataEnviado, entregue:p.dataEntregue }[h.para];
+  if(dataInformada && dataInformada !== h.dia) info.push(`data informada ${dataBR(dataInformada)}`);
+  if(h.para === "pago") info.push(`${p.formaPagamento || "Pix"} · ${brl(recebido(p))}`);
+  if(h.para === "enviado" && p.rastreio) info.push(`rastreio ${p.rastreio}`);
+  if(h.para === "perdido" && p.motivoPerda) info.push(p.motivoPerda);
+  return info.join(" · ");
+}
+function desenharMovs(){
+  const el = document.getElementById("mov-lista"); if(!el) return;
+  const l = movsFiltradas();
+  if(!l.length){ el.innerHTML = `<div class="vazio"><span class="lbl">NADA NO PERÍODO</span>Nenhuma movimentação com esses filtros.</div>`; return; }
+  let diaAtual = "";
+  el.innerHTML = l.slice(0, 400).map(h => {
+    const cab = h.dia !== diaAtual ? (diaAtual = h.dia, `<div class="lbl" style="padding:14px 12px 6px">${new Date(h.dia+"T12:00:00").toLocaleDateString("pt-BR",{weekday:"long",day:"2-digit",month:"2-digit",year:"numeric"}).toUpperCase()}</div>`) : "";
+    const det = detalheMov(h);
+    return cab + `<div class="fila-it" data-abrir="${h.p.id}">
+      <div class="hr">${new Date(h.em).toLocaleTimeString("pt-BR",{hour:"2-digit",minute:"2-digit"})}</div>
+      <div class="g"><div class="n"><span class="nr">${numPed(h.p.numero)}</span>${esc(h.p.cliente||"Sem cliente")} <span class="faint p13">· ${esc(h.p.peca||"")}</span></div>
+        <div class="s">${h.de ? `${(STATUS[h.de]||{}).rotulo||h.de} → ` : "Criado como "}<b style="color:var(--text)">${(STATUS[h.para]||{}).rotulo||h.para}</b> · ${quemMoveu(h)}${det ? ` · ${esc(det)}` : ""}</div></div>
+      ${stLed(h.para)}</div>`;
+  }).join("") + (l.length > 400 ? `<p class="dica" style="padding:10px 12px">Mostrando as 400 mais recentes. Use os filtros ou exporte a planilha para ver todas.</p>` : "");
+}
+function exportarMovs(){
+  const l = movsFiltradas();
+  if(!l.length){ toast("Nenhuma movimentação com esses filtros."); return; }
+  const cel = v => { const t = String(v == null ? "" : v); return /[;"\n\r]/.test(t) ? `"${t.replace(/"/g,'""')}"` : t; };
+  const cab = ["Data","Hora","Número","Cliente","Peça","De","Para","Quem","Detalhe","Total do pedido (R$)"];
+  const linhas = l.map(h => [dataBR(h.dia), new Date(h.em).toLocaleTimeString("pt-BR",{hour:"2-digit",minute:"2-digit"}), h.p.numero, h.p.cliente, h.p.peca,
+    h.de ? (STATUS[h.de]||{}).rotulo || h.de : "", (STATUS[h.para]||{}).rotulo || h.para, quemMoveu(h), detalheMov(h), (Math.round(num(h.p.total)*100)/100).toFixed(2).replace(".",",")].map(cel).join(";"));
+  baixar(`razenlab-movimentacoes-${hoje()}.csv`, "\ufeff" + [cab.join(";"), ...linhas].join("\r\n"), "text/csv;charset=utf-8");
+  toast(`${l.length} movimentações exportadas.`);
+}
+
 /* ---------- vitrine ---------- */
 function pesoVitrine(){
   const b = vitrine.reduce((s,v)=>s+(v.fotos||[]).reduce((a,f)=>a+f.length*.75,0),0);
@@ -1628,7 +1700,7 @@ function fecharModal(forcar){
   document.body.style.overflow = "";
 }
 function acaoPrincipal(p){
-  if(["solicitado","orcamento"].includes(p.status)) return `<button class="tb pri acao-dest" data-acao="enviar-orcamento">Enviar orçamento no WhatsApp</button>`;
+  if(["solicitado","orcamento","aprovado"].includes(p.status)) return `<button class="tb pri acao-dest" data-acao="enviar-orcamento">Enviar orçamento no WhatsApp</button>`;
   if(p.status === "comprovante") return `<button class="tb pri acao-dest" data-acao="confirmar-pagamento">Confirmar pagamento</button>`;
   if(["pago","imprimindo","pronto"].includes(p.status)) return `<button class="tb pri" data-acao="marcar-enviado">Marcar como enviado</button>`;
   if(p.status === "enviado") return `<button class="tb" data-acao="avisar-envio">Reenviar rastreio no WhatsApp</button>`;
@@ -1669,15 +1741,17 @@ function desenharPedido(){
           <div class="lbl" style="margin-bottom:10px">PAGAMENTO E DATAS</div>
           <div class="grid g3">
             <label class="f"><span>Data do orçamento</span><input type="date" name="f_dataOrcamento" value="${p.dataOrcamento||""}"></label>
+            <label class="f"><span>Data de aprovação</span><input type="date" name="f_dataAprovado" value="${p.dataAprovado||""}"></label>
             <label class="f"><span>Data do pagamento</span><input type="date" name="f_dataPago" value="${p.dataPago||""}"></label>
             <label class="f"><span>Forma de pagamento</span><select name="f_forma"><option value="">—</option>${
               [...new Set(["Pix","Dinheiro","Cartão na maquininha","Transferência","Outro", p.formaPagamento].filter(Boolean))].map(o => `<option ${p.formaPagamento===o?"selected":""}>${esc(o)}</option>`).join("")}</select></label>
             <label class="f"><span>Valor recebido</span><div class="campo"><span class="u">R$</span><input class="num" name="f_valorRecebido" inputmode="decimal" value="${p.valorRecebido ? dec(num(p.valorRecebido),2) : ""}" placeholder="${esc(dec(num(p.total),2))}"></div><span class="dica">Vazio = o total do pedido.</span></label>
             <label class="f"><span>Taxa descontada</span><div class="campo"><span class="u">R$</span><input class="num" name="f_taxa" inputmode="decimal" value="${taxaRec(p) ? dec(taxaRec(p),2) : ""}" placeholder="0,00"></div><span class="dica">Maquininha ou Mercado Pago.</span></label>
+            <label class="f"><span>Início da produção</span><input type="date" name="f_dataInicio" value="${p.dataInicio||""}"></label>
             <label class="f"><span>Data de envio</span><input type="date" name="f_dataEnviado" value="${p.dataEnviado||""}"></label>
             <label class="f"><span>Data de entrega</span><input type="date" name="f_dataEntregue" value="${p.dataEntregue||""}"></label>
           </div>
-          <p class="dica" style="margin-top:8px">Informar a data do pagamento marca o pedido como <b>Pago</b>; a de envio, como <b>Enviado</b>; a de entrega, como <b>Entregue</b>. O relatório financeiro usa a data do pagamento.</p>
+          <p class="dica" style="margin-top:8px">Cada data preenchida avança o pedido para a etapa dela (Aprovado, Pago, Imprimindo, Enviado, Entregue). O relatório financeiro usa a data do pagamento.</p>
         </div>
 
         ${p.mpPagamentoId || p.mpStatus ? `<div class="req" style="border-color:rgba(30,155,255,.5);background:rgba(30,155,255,.07)">
@@ -1731,7 +1805,7 @@ function desenharPedido(){
             <div class="pn" style="background:rgba(2,8,20,.55)" id="ped-res">${blocoResultado(c)}</div>
             ${p.token ? `<div class="link-cli"><code>${esc(linkCliente(p))}</code><button type="button" class="tb min" data-copiar="${esc(linkCliente(p))}">Copiar link</button></div>
               <p class="dica">Link do cliente: mostra o orçamento, o Pix e o andamento.</p>` : `<p class="dica" style="margin-top:12px">O link do cliente aparece depois de salvar.</p>`}
-            ${p.id ? `<div class="pn" style="margin-top:14px;background:rgba(2,8,20,.45)"><div class="lbl" style="margin-bottom:8px">HISTÓRICO</div><div id="historico" class="p13 muted">Carregando…</div></div>` : ""}
+            ${p.id ? `<div class="pn" style="margin-top:14px;background:rgba(2,8,20,.45)"><div class="lbl" style="margin-bottom:10px">LINHA DO TEMPO</div><div id="historico" class="p13 muted">Carregando…</div></div>` : ""}
           </div>
         </div>
         <div class="row acoes" style="margin-top:18px">
@@ -1748,15 +1822,50 @@ function desenharPedido(){
   document.body.style.overflow = "hidden";
   if(p.id) carregarHistorico(p.id);
 }
+/* quem fez cada movimentação */
+function quemMoveu(h){
+  if(h.quem) return "você";
+  if(h.para === "solicitado") return "cliente (site)";
+  if(h.para === "comprovante") return "cliente";
+  if(h.para === "pago") return "Mercado Pago";
+  return "sistema";
+}
+const MARCOS = [
+  ["criado",      "Pedido criado",         p => (p.criadoEm||"").slice(0,10), p => p.origem === "site" ? "pelo site" : "no painel"],
+  ["orcamento",   "Orçamento emitido",     p => p.dataOrcamento,             p => p.validadeAte ? `válido até ${dataBR(p.validadeAte)}` : ""],
+  ["aprovado",    "Aprovado pelo cliente", p => p.dataAprovado,              () => ""],
+  ["comprovante", "Comprovante recebido",  p => (p.comprovanteEm||"").slice(0,10), () => ""],
+  ["pago",        "Pagamento recebido",    p => p.dataPago,                  p => [p.formaPagamento, p.dataPago ? brl(recebido(p)) : ""].filter(Boolean).join(" · ")],
+  ["imprimindo",  "Produção iniciada",     p => p.dataInicio,                () => ""],
+  ["pronto",      "Peça pronta",           () => null,                       () => ""],
+  ["enviado",     "Enviado",               p => p.dataEnviado,               p => p.rastreio ? `rastreio ${p.rastreio}` : ""],
+  ["entregue",    "Entregue",              p => p.dataEntregue,              () => ""],
+  ["perdido",     "Não fechou",            p => p.dataPerdido,               p => p.motivoPerda || ""],
+  ["cancelado",   "Cancelado",             () => null,                       () => ""]
+];
 async function carregarHistorico(id){
   const el = () => document.getElementById("historico");
+  let hist = [];
   try{
-    const r = await sb.from("pedidos_historico").select("de,para,em").eq("pedido_id", id).order("em");
+    const r = await sb.from("pedidos_historico").select("de,para,em,quem").eq("pedido_id", id).order("em");
     if(r.error) throw r.error;
-    if(!el()) return;
-    el().innerHTML = r.data.length ? r.data.map(h => `<div class="li" style="padding:3px 0"><span>${h.de ? "→ " : "Criado · "}${stLed(h.para)}</span><span>${new Date(h.em).toLocaleString("pt-BR",{day:"2-digit",month:"2-digit",hour:"2-digit",minute:"2-digit"})}</span></div>`).join("")
-      : "Sem registros ainda.";
-  }catch(e){ if(el()) el().textContent = "O histórico aparece depois de rodar o 01_estrutura.sql atualizado."; }
+    hist = r.data || [];
+  }catch(e){ /* sem histórico: a linha do tempo usa só as datas do pedido */ }
+  const p = pedidoAberto; if(!el() || !p || p.id !== id) return;
+  // a data de cada etapa: a informada no pedido; se não houver, a do registro automático
+  const pelaHist = etapa => { const h = hist.find(x => x.para === etapa); return h ? iso(new Date(h.em)) : null; };
+  const itens = MARCOS.map(([k, rot, data, det], ordem) => ({ k, rot, ordem, data: data(p) || (k === "criado" ? null : pelaHist(k)), det: det(p) }))
+    .filter(x => x.data).sort((a,b) => a.data.localeCompare(b.data) || a.ordem - b.ordem);
+  let ant = null;
+  el().innerHTML = (itens.length ? `<div class="linha-tempo">${itens.map(x => {
+      const dias = ant ? difDias(ant, x.data) : null; ant = x.data;
+      const cor = (STATUS[x.k] || {}).cor || "var(--cyan)";
+      return `<div class="lt-it"><i style="background:${cor};box-shadow:0 0 8px ${cor}"></i>
+        <div><b>${x.rot}</b> <span class="hudn">${dataBR(x.data)}</span>${dias ? ` <span class="faint">· ${dias} dia${dias>1?"s":""} depois</span>` : ""}
+        ${x.det ? `<div class="faint p13">${esc(x.det)}</div>` : ""}</div></div>`; }).join("")}</div>`
+    : `<p class="faint p13" style="margin:0">Ainda sem movimentações.</p>`)
+    + (hist.length ? `<details style="margin-top:10px"><summary class="lbl" style="cursor:pointer">REGISTRO COMPLETO (${hist.length})</summary>
+      ${hist.map(h => `<div class="li" style="padding:4px 0"><span>${h.de ? `${(STATUS[h.de]||{}).rotulo||h.de} → ` : ""}${stLed(h.para)}<span class="faint p13"> · ${quemMoveu(h)}</span></span><span class="p13">${new Date(h.em).toLocaleString("pt-BR",{day:"2-digit",month:"2-digit",year:"2-digit",hour:"2-digit",minute:"2-digit"})}</span></div>`).join("")}</details>` : "");
 }
 function atualizarPedido(){
   const f = document.getElementById("ped-form"), r = document.getElementById("ped-res");
@@ -1783,7 +1892,9 @@ function montarPedido(){
   if(!["cancelado","perdido"].includes(p.status)){
     if(v.f_dataEntregue && ordemFluxo(p.status) < ordemFluxo("entregue")) p.status = "entregue";
     else if(v.f_dataEnviado && ordemFluxo(p.status) < ordemFluxo("enviado")) p.status = "enviado";
+    else if(v.f_dataInicio && ordemFluxo(p.status) < ordemFluxo("imprimindo")) p.status = "imprimindo";
     else if(v.f_dataPago && ordemFluxo(p.status) < ordemFluxo("pago")) p.status = "pago";
+    else if(v.f_dataAprovado && ordemFluxo(p.status) < ordemFluxo("aprovado")) p.status = "aprovado";
   }
   if(v.f_dataOrcamento && v.f_dataOrcamento !== p.dataOrcamento){
     p.dataOrcamento = v.f_dataOrcamento;
@@ -1804,6 +1915,10 @@ function montarPedido(){
   if(FATURADO.includes(p.status)) p.dataPago = v.f_dataPago || p.dataPago || hoje(); else delete p.dataPago;
   if(["enviado","entregue"].includes(p.status)) p.dataEnviado = v.f_dataEnviado || p.dataEnviado || hoje(); else delete p.dataEnviado;
   if(p.status === "entregue") p.dataEntregue = v.f_dataEntregue || p.dataEntregue || hoje(); else delete p.dataEntregue;
+  // aprovação e início da produção: guardam a data informada; somem se o pedido voltar para antes dessas etapas
+  const antes = etapa => !["cancelado","perdido"].includes(p.status) && FLUXO.indexOf(p.status) < FLUXO.indexOf(etapa);
+  if(antes("aprovado")) delete p.dataAprovado; else { const d = v.f_dataAprovado || p.dataAprovado || (p.status === "aprovado" ? hoje() : ""); if(d) p.dataAprovado = d; else delete p.dataAprovado; }
+  if(antes("imprimindo")) delete p.dataInicio; else { const d = v.f_dataInicio || p.dataInicio || (p.status === "imprimindo" ? hoje() : ""); if(d) p.dataInicio = d; else delete p.dataInicio; }
   return p;
 }
 async function salvarPedido(silencioso, mudarStatus){
@@ -1837,7 +1952,7 @@ async function salvarPedido(silencioso, mudarStatus){
     if(!silencioso){ fecharModal(true); render(); toast(`${["solicitado","orcamento","perdido"].includes(salvo.status) ? "Orçamento" : "Pedido"} ${numPed(salvo.numero)} salvo.` + (baixo ? ` Atenção: ${baixo.nome} com estoque baixo.` : "")); }
     return salvo;
   }catch(e){
-    if(/pedidos_status_check/.test(e && e.message || "")) toast('Falta atualizar o banco: rode de novo o 01_estrutura.sql no Supabase para liberar "Não fechou".');
+    if(/pedidos_status_check/.test(e && e.message || "")) toast('Falta atualizar o banco: rode de novo o 01_estrutura.sql no Supabase para liberar as situações novas (Aprovado e Não fechou).');
     else falhou(e, "salvar o pedido");
     try{ await carregarTudo(); }catch(_){}
     return null;
@@ -1865,7 +1980,8 @@ async function enviarOrcamento(){
   const n = dados.negocio;
   if(!n.pixChave){ toast("Cadastre sua chave Pix em Configurações antes de enviar orçamentos."); return; }
   if(pedidoAberto.validadeAte && pedidoAberto.validadeAte < hoje()) delete pedidoAberto.validadeAte;   // reenviar renova a validade
-  const p = await salvarPedido(true, "orcamento"); if(!p) return;
+  const atual = document.querySelector('#ped-form [name="status"]').value;
+  const p = await salvarPedido(true, atual === "solicitado" ? "orcamento" : undefined); if(!p) return;
   abrirWhats(p.contato, textoOrcamento(p));
   desenharPedido(); render();
 }
@@ -2326,6 +2442,9 @@ document.addEventListener("click", async e => {
       liga("f_dataPago", FATURADO.includes(st));
       liga("f_dataEnviado", ["enviado","entregue"].includes(st));
       liga("f_dataEntregue", st === "entregue");
+      // aprovação e início: preenche ao tocar na etapa; limpa só se voltar para antes dela
+      const marco = (n, etapa) => { const c = campo(n); if(!c) return; if(st === etapa && !c.value) c.value = hoje(); if(FLUXO.indexOf(st) < FLUXO.indexOf(etapa)) c.value = ""; };
+      marco("f_dataAprovado", "aprovado"); marco("f_dataInicio", "imprimindo");
       if(FATURADO.includes(st) && campo("f_forma") && !campo("f_forma").value) campo("f_forma").value = "Pix";
     }
     f.querySelectorAll("[data-status]").forEach(b => b.classList.toggle("on", b === el));
@@ -2346,6 +2465,8 @@ document.addEventListener("click", async e => {
     try{ await navigator.clipboard.writeText(el.dataset.copiar); toast("Link copiado."); }catch(err){ prompt("Copie o link:", el.dataset.copiar); }
     return;
   }
+  if((el = t.closest("[data-movper]"))){ movPer = +el.dataset.movper; document.querySelectorAll("[data-movper]").forEach(b => b.classList.toggle("on", b === el)); desenharMovs(); return; }
+  if((el = t.closest("[data-movtipo]"))){ movTipo = el.dataset.movtipo; document.querySelectorAll("[data-movtipo]").forEach(b => b.classList.toggle("on", b === el)); desenharMovs(); return; }
   if((el = t.closest("[data-finper]"))){ finPer.modo = el.dataset.finper; render(); return; }
   if((el = t.closest("[data-periodo]"))){ periodoAnalise = +el.dataset.periodo; render(); return; }
   if((el = t.closest("[data-dia]"))){ diaSel = el.dataset.dia; document.getElementById("cal").innerHTML = calendario(); return; }
@@ -2382,6 +2503,7 @@ document.addEventListener("click", async e => {
     case "gerar-orcamento": gerarOrcamento(el); break;
     case "exportar-csv": exportarCSV(); break;
     case "exportar-fin": exportarFinanceiro(); break;
+    case "exportar-movs": exportarMovs(); break;
     case "duplicar": {
       const c = {...montarPedido(), id:null, numero:null, token:null, status:"orcamento", prazo:"", rastreio:""};
       ["dataPago","dataEnviado","dataEntregue","criadoEm","estoqueBaixado","comprovante","comprovanteEm","pedidoCliente","anexo","origem"].forEach(k => delete c[k]);
@@ -2498,6 +2620,7 @@ function normalizarChave(tipo, chave){
 
 document.addEventListener("input", e => {
   if(e.target.id === "busca"){ busca = e.target.value; document.getElementById("lista-pedidos").innerHTML = listaPedidos(); return; }
+  if(e.target.id === "mov-busca"){ movBusca = e.target.value; desenharMovs(); return; }
   if(e.target.closest("#ped-form")){
     formSujo = true;
     if(e.target.name === "entrega" && e.isTrusted){ const h = document.querySelector('#ped-form [name="freteServico"]'); if(h) h.value = ""; const s = document.getElementById("frete-escolhido"); if(s) s.textContent = "Frete digitado à mão."; }

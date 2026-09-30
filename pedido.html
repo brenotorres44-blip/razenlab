@@ -2392,9 +2392,9 @@ const numPed = n => "#" + String(n || 0).padStart(4, "0");
 function dataBR(s){ if(!s) return "—"; const [a,m,d] = String(s).slice(0,10).split("-"); return d && m && a ? `${d}/${m}/${a}` : s; }
 
 const ETAPAS = ["Pedido recebido","Orçamento","Pagamento","Produção","Enviado","Entregue"];
-const ETAPA = { solicitado:0, orcamento:1, comprovante:2, pago:3, imprimindo:3, pronto:3, enviado:4, entregue:5, cancelado:-1, perdido:-1 };
-const COR = { solicitado:"#5CE1FF", orcamento:"#F28A14", comprovante:"#F2C14E", pago:"#1E9BFF", imprimindo:"#1E9BFF", pronto:"#1E9BFF", enviado:"#3FD9A4", entregue:"#3FD9A4", cancelado:"#FF5C74", perdido:"#B07A8C" };
-const ROTULO = { solicitado:"Recebido", orcamento:"Aguardando pagamento", comprovante:"Conferindo pagamento", pago:"Pagamento confirmado", imprimindo:"Em produção", pronto:"Pronto para envio", enviado:"A caminho", entregue:"Entregue", cancelado:"Cancelado", perdido:"Orçamento encerrado" };
+const ETAPA = { solicitado:0, orcamento:1, aprovado:2, comprovante:2, pago:3, imprimindo:3, pronto:3, enviado:4, entregue:5, cancelado:-1, perdido:-1 };
+const COR = { solicitado:"#5CE1FF", orcamento:"#F28A14", aprovado:"#2BC0E4", comprovante:"#F2C14E", pago:"#1E9BFF", imprimindo:"#1E9BFF", pronto:"#1E9BFF", enviado:"#3FD9A4", entregue:"#3FD9A4", cancelado:"#FF5C74", perdido:"#B07A8C" };
+const ROTULO = { solicitado:"Recebido", orcamento:"Aguardando pagamento", aprovado:"Aprovado · aguardando pagamento", comprovante:"Conferindo pagamento", pago:"Pagamento confirmado", imprimindo:"Em produção", pronto:"Pronto para envio", enviado:"A caminho", entregue:"Entregue", cancelado:"Cancelado", perdido:"Orçamento encerrado" };
 
 /* ---------- Pix "copia e cola" (padrão BR Code do Banco Central) ---------- */
 function campo(id, v){ return id + String(v.length).padStart(2, "0") + v; }
@@ -2426,6 +2426,7 @@ function mensagem(){
   let m = {
     solicitado: ["Recebemos seu pedido!", "Estamos analisando o que você pediu. O orçamento com frete aparece aqui e chega no seu WhatsApp."],
     orcamento: ["Seu orçamento está pronto", P.cartao ? "Confira os valores e escolha como pagar. A produção começa assim que o pagamento for confirmado." : "Confira os valores abaixo. A produção começa assim que o Pix for confirmado."],
+    aprovado: ["Orçamento aprovado!", P.cartao ? "Agora é só escolher como pagar. A produção começa assim que o pagamento for confirmado." : "Agora é só fazer o Pix. A produção começa assim que o pagamento for confirmado."],
     comprovante: ["Recebemos seu comprovante", "Estamos conferindo o pagamento. Em breve seu pedido entra em produção."],
     pago: ["Pagamento confirmado!", "Seu pedido está na fila de impressão."],
     imprimindo: ["Sua peça está sendo impressa", "Camada por camada. Avisamos quando for postada."],
@@ -2435,9 +2436,9 @@ function mensagem(){
     cancelado: ["Pedido cancelado", "Se tiver alguma dúvida, fale com a gente pelo WhatsApp."],
     perdido: ["Orçamento encerrado", "Se ainda tiver interesse, fale com a gente pelo WhatsApp que preparamos um orçamento atualizado."]
   }[s] || ["Seu pedido", ""];
-  if(s === "orcamento" && P.mpStatus === "pending") m = ["Pagamento em processamento", "Seu boleto ou cartão está sendo processado pelo Mercado Pago. Assim que for aprovado, o pedido entra em produção sozinho."];
-  if(s === "orcamento" && retornoMP === "ok") m = ["Pagamento recebido!", "Estamos confirmando com o Mercado Pago. Esta página atualiza sozinha em alguns segundos."];
-  if(s === "orcamento" && retornoMP === "erro") m = ["O pagamento não foi concluído", "Nada foi cobrado. Tente de novo com outro cartão ou pague pelo Pix abaixo."];
+  if(["orcamento","aprovado"].includes(s) && P.mpStatus === "pending") m = ["Pagamento em processamento", "Seu boleto ou cartão está sendo processado pelo Mercado Pago. Assim que for aprovado, o pedido entra em produção sozinho."];
+  if(["orcamento","aprovado"].includes(s) && retornoMP === "ok") m = ["Pagamento recebido!", "Estamos confirmando com o Mercado Pago. Esta página atualiza sozinha em alguns segundos."];
+  if(["orcamento","aprovado"].includes(s) && retornoMP === "erro") m = ["O pagamento não foi concluído", "Nada foi cobrado. Tente de novo com outro cartão ou pague pelo Pix abaixo."];
   if(s === "pago" && P.formaPagamento) m = ["Pagamento confirmado!", `Recebemos pelo ${P.formaPagamento.replace("Mercado Pago · ", "Mercado Pago (").replace(/$/, ")")}. Seu pedido está na fila de impressão.`];
   if(s === "orcamento" && P.vencido) m = ["Este orçamento venceu", `Ele era válido até ${dataBR(P.validadeAte)}. Fale com a gente pelo WhatsApp que atualizamos os valores para você.`];
   return `<div class="aviso" style="border-color:${COR[s]}55;background:${COR[s]}12"><b>${m[0]}</b><p>${m[1]}</p></div>`;
@@ -2479,7 +2480,7 @@ function render(){
     html += `<div class="card"><h2>O que você pediu</h2><p style="margin:0;white-space:pre-line;color:var(--muted)">${esc(P.pedidoCliente)}</p></div>`;
   }
 
-  if(s === "orcamento" && P.pix && P.pix.chave){
+  if(["orcamento","aprovado"].includes(s) && P.pix && P.pix.chave){
     const valor = Math.round(num(P.total) * 100) / 100;
     const codigo = brCode(P.pix.chave, P.pix.nome, P.pix.cidade, valor, "RZL" + String(P.numero).padStart(6, "0"));
     html += `
@@ -2519,7 +2520,7 @@ function render(){
     </div>`;
   }
 
-  if((s === "orcamento" && !P.vencido) || s === "comprovante"){
+  if((["orcamento","aprovado"].includes(s) && !P.vencido) || s === "comprovante"){
     html += `
     <div class="card">
       <h2>${s === "comprovante" ? "Enviar outro comprovante" : P.cartao ? "Pagou pelo Pix? Envie o comprovante" : "Já pagou? Envie o comprovante"}</h2>
@@ -2617,8 +2618,8 @@ async function carregar(){
   if(!/^[0-9a-f-]{36}$/i.test(token)){ raiz.innerHTML = `<div class="card"><h1>Link incompleto</h1><p class="sub">Abra o link exatamente como recebeu no WhatsApp.</p></div>`; return; }
   try{
     await carregar();
-    if(retornoMP === "ok" && P && P.status === "orcamento"){
-      for(let i = 0; i < 12 && P.status === "orcamento"; i++){ await new Promise(r => setTimeout(r, 3000)); await carregar(); }
+    if(retornoMP === "ok" && P && ["orcamento","aprovado"].includes(P.status)){
+      for(let i = 0; i < 12 && ["orcamento","aprovado"].includes(P.status); i++){ await new Promise(r => setTimeout(r, 3000)); await carregar(); }
     }
   }
   catch(e){ raiz.innerHTML = `<div class="card"><h1>Não conseguimos carregar</h1><p class="sub">Verifique sua internet e recarregue a página.</p></div>`; }
