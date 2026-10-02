@@ -1508,7 +1508,7 @@ function exportarCSV(){
 
 /* ---------- movimentações: histórico de todos os pedidos ---------- */
 let movs = null, movTipo = "todas", movPer = 30, movBusca = "";
-const TIPOS_MOV = [["todas","Todas",null],["novos","Novos pedidos",["solicitado","orcamento"]],["aprovacoes","Aprovações",["aprovado"]],
+const TIPOS_MOV = [["todas","Todas",null],["novos","Novos pedidos",["solicitado","orcamento"]],["orcamentos","Orçamentos enviados",["envio"]],["aprovacoes","Aprovações",["aprovado"]],
   ["pagamentos","Pagamentos",["comprovante","pago"]],["producao","Produção",["imprimindo","pronto"]],["envios","Envios",["enviado"]],
   ["entregas","Entregas",["entregue"]],["perdas","Não fechou / cancelados",["perdido","cancelado"]]];
 TELAS.movimentacoes = () => `
@@ -1531,10 +1531,13 @@ function movsFiltradas(){
   if(!movs) return [];
   const desde = movPer ? somaDias(hoje(), -movPer) : "0000-00-00", tipos = (TIPOS_MOV.find(x => x[0] === movTipo) || [])[2];
   const q = movBusca.trim().toLowerCase().replace("#",""), pid = {}; dados.pedidos.forEach(p => pid[p.id] = p);
-  return movs.map(h => ({ ...h, p: pid[h.pedido_id], dia: iso(new Date(h.em)) }))
+  const envios = [];
+  dados.pedidos.forEach(p => (p.envios || []).forEach(e => envios.push({ pedido_id:p.id, de:null, para:"envio", em:e.em, quem:"voce", via:e.via })));
+  return [...movs, ...envios].sort((a,b) => new Date(b.em) - new Date(a.em)).map(h => ({ ...h, p: pid[h.pedido_id], dia: iso(new Date(h.em)) }))
     .filter(h => h.p && h.dia >= desde && (!tipos || tipos.includes(h.para))
       && (!q || (h.p.cliente||"").toLowerCase().includes(q) || (h.p.peca||"").toLowerCase().includes(q) || String(h.p.numero).includes(q)));
 }
+const rotuloMov = h => h.para === "envio" ? `Orçamento enviado ${h.via === "PDF" ? "em PDF" : "pelo WhatsApp"}` : ((STATUS[h.para]||{}).rotulo || h.para);
 function detalheMov(h){
   const p = h.p, info = [];
   const dataInformada = { pago:p.dataPago, aprovado:p.dataAprovado, imprimindo:p.dataInicio, enviado:p.dataEnviado, entregue:p.dataEntregue }[h.para];
@@ -1555,7 +1558,7 @@ function desenharMovs(){
     return cab + `<div class="fila-it" data-abrir="${h.p.id}">
       <div class="hr">${new Date(h.em).toLocaleTimeString("pt-BR",{hour:"2-digit",minute:"2-digit"})}</div>
       <div class="g"><div class="n"><span class="nr">${numPed(h.p.numero)}</span>${esc(h.p.cliente||"Sem cliente")} <span class="faint p13">· ${esc(h.p.peca||"")}</span></div>
-        <div class="s">${h.de ? `${(STATUS[h.de]||{}).rotulo||h.de} → ` : "Criado como "}<b style="color:var(--text)">${(STATUS[h.para]||{}).rotulo||h.para}</b> · ${quemMoveu(h)}${det ? ` · ${esc(det)}` : ""}</div></div>
+        <div class="s">${h.para === "envio" ? "" : h.de ? `${(STATUS[h.de]||{}).rotulo||h.de} → ` : "Criado como "}<b style="color:var(--text)">${rotuloMov(h)}</b> · ${quemMoveu(h)}${det ? ` · ${esc(det)}` : ""}</div></div>
       ${stLed(h.para)}</div>`;
   }).join("") + (l.length > 400 ? `<p class="dica" style="padding:10px 12px">Mostrando as 400 mais recentes. Use os filtros ou exporte a planilha para ver todas.</p>` : "");
 }
@@ -1565,7 +1568,7 @@ function exportarMovs(){
   const cel = v => { const t = String(v == null ? "" : v); return /[;"\n\r]/.test(t) ? `"${t.replace(/"/g,'""')}"` : t; };
   const cab = ["Data","Hora","Número","Cliente","Peça","De","Para","Quem","Detalhe","Total do pedido (R$)"];
   const linhas = l.map(h => [dataBR(h.dia), new Date(h.em).toLocaleTimeString("pt-BR",{hour:"2-digit",minute:"2-digit"}), h.p.numero, h.p.cliente, h.p.peca,
-    h.de ? (STATUS[h.de]||{}).rotulo || h.de : "", (STATUS[h.para]||{}).rotulo || h.para, quemMoveu(h), detalheMov(h), (Math.round(num(h.p.total)*100)/100).toFixed(2).replace(".",",")].map(cel).join(";"));
+    h.de ? (STATUS[h.de]||{}).rotulo || h.de : "", rotuloMov(h), quemMoveu(h), detalheMov(h), (Math.round(num(h.p.total)*100)/100).toFixed(2).replace(".",",")].map(cel).join(";"));
   baixar(`razenlab-movimentacoes-${hoje()}.csv`, "\ufeff" + [cab.join(";"), ...linhas].join("\r\n"), "text/csv;charset=utf-8");
   toast(`${l.length} movimentações exportadas.`);
 }
@@ -1683,6 +1686,9 @@ const ENDERECO_CAMPOS = [["rua","Rua"],["numero","Número"],["complemento","Comp
 
 function abrirPedido(p){
   pedidoAberto = p ? JSON.parse(JSON.stringify(p)) : { ...PECA_ZERO, id:null, cliente:"", contato:"", email:"", status:"orcamento", prazo:"", obs:"", recado:"", precoManual:"", desconto:0, cep:"", endereco:{}, rastreio:"" };
+  // data do orçamento: hoje num orçamento novo; nos antigos sem data, o dia em que foram criados
+  if(!pedidoAberto.dataOrcamento && pedidoAberto.status !== "solicitado")
+    pedidoAberto.dataOrcamento = pedidoAberto.id ? ((pedidoAberto.criadoEm || "").slice(0,10) || hoje()) : hoje();
   // pedido antigo que só tem o valor (sem peso/tempo): o valor vira "preço combinado" para não ser recalculado para zero
   const pa = pedidoAberto;
   if(pa.id && num(pa.total) > 0 && !(num(pa.precoManual) > 0) && precificar(pa).preco <= 0){
@@ -1854,7 +1860,9 @@ async function carregarHistorico(id){
   const p = pedidoAberto; if(!el() || !p || p.id !== id) return;
   // a data de cada etapa: a informada no pedido; se não houver, a do registro automático
   const pelaHist = etapa => { const h = hist.find(x => x.para === etapa); return h ? iso(new Date(h.em)) : null; };
-  const itens = MARCOS.map(([k, rot, data, det], ordem) => ({ k, rot, ordem, data: data(p) || (k === "criado" ? null : pelaHist(k)), det: det(p) }))
+  const envios = (p.envios || []).map(e => ({ k:"orcamento", rot:`Orçamento enviado ${e.via === "PDF" ? "em PDF" : "pelo WhatsApp"}`, ordem:1.5,
+    data:iso(new Date(e.em)), det:`às ${new Date(e.em).toLocaleTimeString("pt-BR",{hour:"2-digit",minute:"2-digit"})}` }));
+  const itens = MARCOS.map(([k, rot, data, det], ordem) => ({ k, rot, ordem, data: data(p) || (k === "criado" ? null : pelaHist(k)), det: det(p) })).concat(envios)
     .filter(x => x.data).sort((a,b) => a.data.localeCompare(b.data) || a.ordem - b.ordem);
   let ant = null;
   el().innerHTML = (itens.length ? `<div class="linha-tempo">${itens.map(x => {
@@ -1974,15 +1982,25 @@ function textoEnvio(p){
   return [`Olá, ${(p.cliente||"").split(" ")[0] || "tudo bem"}! Seu pedido ${numPed(p.numero)} da *RazenLab* foi postado nos Correios. 📦`, "",
     `Código de rastreio: *${p.rastreio}*`, "", "Acompanhe também pelo link:", linkCliente(p)].join("\n");
 }
+/* antes de gerar o PDF ou mandar no WhatsApp: data do orçamento, validade renovada e registro do envio */
+function prepararEnvio(via){
+  const c = document.querySelector('#ped-form [name="f_dataOrcamento"]');
+  if(c && !c.value) c.value = hoje();
+  const pa = pedidoAberto;
+  if(pa.validadeAte && pa.validadeAte < hoje()) pa.validadeAte = somaDias(hoje(), num(dados.negocio.validadeDias) || 7);   // reenviar renova a validade
+  pa.envios = [...(pa.envios || []), { em:new Date().toISOString(), via }].slice(-30);
+  return () => { pa.envios = (pa.envios || []).slice(0, -1); };   // desfaz se não conseguir salvar
+}
 async function enviarOrcamento(){
   const form = document.getElementById("ped-form");
   if(precificar(lerCampos(form)).preco <= 0){ toast("Preencha peso e tempo para calcular o preço antes de enviar."); return; }
   const n = dados.negocio;
   if(!n.pixChave){ toast("Cadastre sua chave Pix em Configurações antes de enviar orçamentos."); return; }
-  if(pedidoAberto.validadeAte && pedidoAberto.validadeAte < hoje()) delete pedidoAberto.validadeAte;   // reenviar renova a validade
+  const desfaz = prepararEnvio("WhatsApp");
   const atual = document.querySelector('#ped-form [name="status"]').value;
-  const p = await salvarPedido(true, atual === "solicitado" ? "orcamento" : undefined); if(!p) return;
+  const p = await salvarPedido(true, atual === "solicitado" ? "orcamento" : undefined); if(!p){ desfaz(); return; }
   abrirWhats(p.contato, textoOrcamento(p));
+  toast(`Orçamento ${numPed(p.numero)} enviado e registrado em ${dataBR(hoje())}.`);
   desenharPedido(); render();
 }
 async function confirmarPagamento(){
@@ -2168,9 +2186,10 @@ async function gerarOrcamento(botao){
   // todo orçamento em PDF é salvo antes: ganha número, fica registrado para quem foi e entra na análise
   const st = document.querySelector('#ped-form [name="status"]').value;
   if(botao){ botao.disabled = true; botao.textContent = "Gerando…"; }
+  const desfaz = prepararEnvio("PDF");
   try{
     const p = await salvarPedido(true, st === "solicitado" ? "orcamento" : undefined);
-    if(!p) return;
+    if(!p){ desfaz(); return; }
     const [jsPDF, logo] = await Promise.all([carregarJsPDF(), logoParaPDF().catch(() => null)]);
     const doc = montarPDF(jsPDF, p, logo);
     const cliente = String(p.cliente || "cliente").normalize("NFD").replace(/[\u0300-\u036f]/g, "").replace(/[^A-Za-z0-9]+/g, "-").replace(/^-|-$/g, "").slice(0, 30);
