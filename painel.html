@@ -454,7 +454,8 @@ const LOGO = document.getElementById("logo-src").src;
 const CONFIG_PADRAO = {
   precoFilamento: 120, potencia: 200, precoKwh: 0.92, valorImpressora: 2000, vidaUtil: 5000,
   manutencaoHora: 0.5, horaTrabalho: 30, taxaFalha: 8, margem: 60, taxaPagamento: 0, horasDia: 12,
-  embComp: 20, embLarg: 15, embAlt: 10, embPeso: 150   // caixa padrão para cotar frete (cm e gramas)
+  embComp: 20, embLarg: 15, embAlt: 10, embPeso: 150,  // caixa padrão para cotar frete (cm e gramas)
+  tempoAjuste: 100   // % do tempo do MakerWorld (calculado para Bambu Lab) na sua impressora
 };
 const NEGOCIO_PADRAO = {
   nome:"RazenLab",
@@ -1248,6 +1249,7 @@ TELAS.orcar = () => `
         <label class="f"><span>Para quem</span><input name="cliente" value="${esc(simulacao.cliente||"")}" placeholder="Nome do cliente" autocomplete="off"></label>
         <label class="f"><span>WhatsApp</span><input name="contato" type="tel" inputmode="tel" value="${esc(simulacao.contato||"")}" placeholder="(11) 90000-0000"></label>
       </div>
+      ${blocoMakerWorld(simulacao.mwLink, simulacao.modeloJson)}
       ${camposPeca(simulacao)}
       <div class="row" style="margin-top:18px">
         <button class="tb pri" data-acao="simular-para-pedido">Criar orçamento</button>
@@ -1662,6 +1664,7 @@ TELAS.config = () => {
       ${cn("embLarg","Caixa padrão · largura",c.embLarg,"cm")}
       ${cn("embAlt","Caixa padrão · altura",c.embAlt,"cm")}
       ${cn("embPeso","Peso da caixa e proteção",c.embPeso,"g","Somado ao peso das peças.")}
+      ${cn("tempoAjuste","Tempo da sua impressora",c.tempoAjuste,"%","Comparado aos tempos do MakerWorld (Bambu Lab). 100% = igual; se a sua leva o dobro, 200%.")}
     </div>
     <button class="tb pri" style="margin-top:16px" data-acao="salvar-config">Salvar custos</button>
   </div>
@@ -1783,6 +1786,7 @@ function desenharPedido(){
               ${txt("email","E-mail",p.email,"opcional")}
               <label class="f"><span>Prazo de entrega</span><input type="date" name="prazo" value="${p.prazo||""}"></label>
             </div>
+            ${blocoMakerWorld(p.modelo ? p.modelo.url : "", p.modelo ? JSON.stringify(p.modelo) : (p.modeloJson || ""))}
             ${camposPeca(p)}
             <div class="grid g2" style="margin-top:14px">
               <label class="f"><span>Preço combinado por peça</span><div class="campo"><span class="u">R$</span><input class="num" name="precoManual" inputmode="decimal" value="${p.precoManual||""}" placeholder="automático"></div><span class="dica">Vazio = usa o calculado.</span></label>
@@ -1891,6 +1895,9 @@ function montarPedido(){
     materialTexto: c.fil ? [c.fil.material, c.fil.cor].filter(Boolean).join(" ") : "",
     precoUn:c.preco, total:c.total, custoTotal:c.custoTotal, lucroTotal:c.lucroTotal, horasTotal:c.horasTotal, filamentoTotal:c.filamentoTotal };
   delete p.valorPago;
+  // modelo importado do MakerWorld fica registrado no pedido
+  delete p.mwLink; delete p.modeloJson;
+  if(v.modeloJson){ try{ p.modelo = JSON.parse(v.modeloJson); }catch(e){} } else delete p.modelo;
   // pedido antigo sem peso/tempo: mantém o custo que já estava guardado
   if(!num(v.peso) && !num(v.horas) && !num(v.acabamento) && num(pedidoAberto.custoTotal) > num(p.custoTotal)){
     p.custoTotal = num(pedidoAberto.custoTotal); p.lucroTotal = num(p.total) - p.custoTotal;
@@ -2057,6 +2064,93 @@ function escolherFrete(i){
   document.getElementById("frete-escolhido").innerHTML = `Escolhido: <b style="color:var(--text)">${esc(nome)}</b>`;
   f.querySelectorAll("[data-frete-opcao]").forEach(b => b.style.borderColor = +b.dataset.freteOpcao === i ? "var(--cyan)" : "var(--line)");
   atualizarPedido();
+}
+
+
+/* ---------- MakerWorld: colar o link e trazer tempo, peso e licença ---------- */
+const mwDados = {};
+function blocoMakerWorld(link, modeloJson){
+  let m = null; try{ m = modeloJson ? JSON.parse(modeloJson) : null; }catch(e){}
+  return `<div class="pn mw" style="background:rgba(2,8,20,.45);margin-bottom:14px">
+    <div class="lbl" style="margin-bottom:8px">IMPORTAR DO MAKERWORLD</div>
+    <div class="row"><input name="mwLink" inputmode="url" autocomplete="off" placeholder="Cole aqui o link do modelo" value="${esc(link || "")}" style="flex:1;min-width:180px">
+      <button type="button" class="tb" data-acao="avaliar-mw">Avaliar</button></div>
+    <input type="hidden" name="modeloJson" value="${esc(modeloJson || "")}">
+    <div class="mw-res">${m ? resumoModelo(m) : `<p class="dica" style="margin:8px 0 0">O sistema traz tempo, peso e licença do modelo e preenche o orçamento.</p>`}</div>
+  </div>`;
+}
+function seloLicenca(permite, nome){
+  const [cor, txt] = permite === true ? ["var(--mint)", "Venda das impressões permitida"] : permite === false ? ["var(--red)", "Venda das impressões NÃO permitida"] : ["var(--spark)", "Licença a conferir"];
+  return `<span class="st" style="color:${cor};white-space:normal"><i class="led" style="width:7px;height:7px"></i>${txt}</span><div class="p13 faint">${esc(nome || "")}</div>`;
+}
+const hm = min => `${Math.floor(min/60)} h ${String(Math.round(min%60)).padStart(2,"0")} min`;
+function resumoModelo(m){
+  return `<div class="row" style="margin-top:10px;align-items:flex-start;flex-wrap:nowrap">
+      ${m.capa ? `<img src="${esc(m.capa)}" alt="" class="thumb" referrerpolicy="no-referrer">` : ""}
+      <div style="min-width:0;flex:1">
+        <a href="${esc(m.url)}" target="_blank" rel="noopener" style="color:var(--text);font-weight:600;text-decoration:none">${esc(m.titulo)}</a>
+        <div class="p13 muted">por ${esc(m.autor || "—")} · perfil: ${esc(m.perfil || "")}${m.impressora ? ` (${esc(m.impressora)})` : ""}</div>
+        <div class="p13 muted">${dec(num(m.pesoG), num(m.pesoG) % 1 ? 1 : 0)} g · ${hm(m.tempoMin || 0)}${m.tempoAjuste && m.tempoAjuste !== 100 ? ` (original ${hm(m.tempoMinOriginal || 0)}, ajustado ${m.tempoAjuste}%)` : ""}${m.placas ? ` · ${m.placas} placa${m.placas>1?"s":""}` : ""}</div>
+        <div style="margin-top:6px">${seloLicenca(m.permiteVenda, m.licenca)}</div>
+      </div>
+    </div>
+    <div class="row" style="margin-top:8px"><button type="button" class="lk" data-acao="mw-trocar">Trocar perfil</button><button type="button" class="lk perigo" data-acao="mw-remover">Remover modelo</button></div>`;
+}
+async function avaliarMW(botao){
+  const form = botao.closest("#sim-form,#ped-form"), caixa = form.querySelector(".mw-res");
+  const link = form.querySelector('[name="mwLink"]').value.trim();
+  if(!/makerworld\.com/i.test(link)){ toast("Cole o link de um modelo do MakerWorld."); return; }
+  botao.disabled = true; botao.textContent = "Avaliando…";
+  try{
+    const { data, error } = await sb.functions.invoke("makerworld", { body:{ url:link } });
+    if(error){
+      let msg = error.message;
+      try{ const j = await error.context.json(); if(j && j.erro) msg = j.erro; }catch(_){}
+      throw new Error(/Failed to send|fetch/i.test(msg) ? 'A função "makerworld" ainda não foi publicada no Supabase.' : msg);
+    }
+    if(!data.perfis || !data.perfis.length) throw new Error("Esse modelo não tem perfil de impressão com tempo e peso.");
+    mwDados[form.id] = data;
+    mostrarPerfisMW(form);
+  }catch(e){ toast("MakerWorld: " + erroTexto(e)); }
+  finally{ botao.disabled = false; botao.textContent = "Avaliar"; }
+}
+function mostrarPerfisMW(form){
+  const d = mwDados[form.id]; if(!d) return;
+  const ajuste = num(dados.config.tempoAjuste) || 100;
+  const doLink = d.perfis.findIndex(p => p.escolhidoNoLink), doAutor = d.perfis.findIndex(p => p.padrao);
+  const sugerido = doLink >= 0 ? doLink : Math.max(0, doAutor);
+  form.querySelector(".mw-res").innerHTML = `
+    <div class="row" style="margin-top:10px;align-items:flex-start;flex-wrap:nowrap">
+      ${d.capa ? `<img src="${esc(d.capa)}" alt="" class="thumb" referrerpolicy="no-referrer">` : ""}
+      <div style="min-width:0"><a href="${esc(d.link)}" target="_blank" rel="noopener" style="color:var(--text);font-weight:600;text-decoration:none">${esc(d.titulo)}</a>
+        <div class="p13 muted">por ${esc(d.autor || "—")}</div>
+        <div style="margin-top:6px">${seloLicenca(d.permiteVenda, d.licenca)}</div></div>
+    </div>
+    ${d.permiteVenda === false ? `<p class="p13" style="color:var(--red);margin:8px 0 0">O autor não permite vender impressões deste modelo. Para vender, compre a licença comercial dele ou escolha outro modelo.</p>` : ""}
+    <div class="lbl" style="margin:12px 0 6px">ESCOLHA O PERFIL DE IMPRESSÃO</div>
+    ${d.perfis.map((p, i) => `<button type="button" class="it" data-mw-perfil="${i}" style="width:100%;background:rgba(2,8,20,.6);border-color:${i === sugerido ? "var(--cyan)" : "var(--line)"};text-align:left;color:inherit;margin-bottom:6px">
+      <div class="g"><div class="n">${esc(p.titulo)}${p.padrao ? ` <span class="faint p13">· do autor</span>` : ""}${p.escolhidoNoLink ? ` <span class="faint p13">· o do link</span>` : ""}</div>
+        <div class="s">${esc(p.impressora || "")}${p.bico ? ` · bico ${p.bico}` : ""}${p.placas ? ` · ${p.placas} placa${p.placas>1?"s":""}` : ""} · ${p.filamentos.map(f => f.tipo).filter(Boolean).join(" + ") || "filamento"}${p.precisaAms || p.cores > 1 ? ` · <span style="color:var(--spark)">${p.cores} cores</span>` : ""}</div></div>
+      <div class="val"><b>${dec(p.pesoG, 0)} g</b><span class="p13 muted">${hm(p.tempoMin * ajuste / 100)}</span></div></button>`).join("")}
+    ${ajuste !== 100 ? `<p class="dica">Tempos já ajustados para a sua impressora (${ajuste}%).</p>` : `<p class="dica">Tempos calculados pelo MakerWorld para impressoras Bambu Lab. Se a sua for mais lenta, ajuste em Configurações → Tempo da sua impressora.</p>`}`;
+}
+function usarPerfilMW(i, el){
+  const form = el.closest("#sim-form,#ped-form"), d = mwDados[form.id], p = d && d.perfis[i]; if(!p) return;
+  const ajuste = num(dados.config.tempoAjuste) || 100, min = Math.round(p.tempoMin * ajuste / 100);
+  const campo = n => form.querySelector(`[name="${n}"]`);
+  if(!campo("peca").value.trim()) campo("peca").value = d.titulo.replace(/\s*[-–|]\s*(quick ?print|free|remix).*$/i, "").slice(0, 80);
+  campo("peso").value = dec(p.pesoG, p.pesoG % 1 ? 1 : 0);
+  campo("horas").value = Math.floor(min / 60); campo("minutos").value = min % 60;
+  // filamento do catálogo com o mesmo material, se ainda não escolheu
+  const tipo = (p.filamentos[0] || {}).tipo || "", sel = campo("filamentoId");
+  if(sel && !sel.value && tipo){ const f = dados.filamentos.find(x => (x.material || "").toUpperCase() === tipo.toUpperCase()); if(f) sel.value = f.id; }
+  const modelo = { fonte:"MakerWorld", id:d.id, url:d.link, titulo:d.titulo, autor:d.autor, capa:d.capa, licenca:d.licenca, permiteVenda:d.permiteVenda,
+    perfilId:p.id, perfil:p.titulo, impressora:p.impressora, tempoMinOriginal:p.tempoMin, tempoMin:min, tempoAjuste:ajuste, pesoG:p.pesoG,
+    placas:p.placas, filamentos:p.filamentos, cores:p.cores, importadoEm:new Date().toISOString() };
+  campo("modeloJson").value = JSON.stringify(modelo);
+  form.querySelector(".mw-res").innerHTML = resumoModelo(modelo);
+  if(form.id === "ped-form"){ formSujo = true; atualizarPedido(); } else atualizarSimulador();
+  toast(`Perfil aplicado: ${dec(p.pesoG,0)} g · ${hm(min)}.` + (d.permiteVenda === false ? " Atenção: a licença não permite vender." : ""));
 }
 
 /* busca de endereço pelo CEP (ViaCEP, gratuito) */
@@ -2480,6 +2574,7 @@ document.addEventListener("click", async e => {
   }
   if((el = t.closest("[data-arquivo]"))){ abrirArquivo(el.dataset.arquivo); return; }
   if((el = t.closest("[data-frete-opcao]"))){ escolherFrete(+el.dataset.freteOpcao); return; }
+  if((el = t.closest("[data-mw-perfil]"))){ usarPerfilMW(+el.dataset.mwPerfil, el); return; }
   if((el = t.closest("[data-copiar]"))){
     try{ await navigator.clipboard.writeText(el.dataset.copiar); toast("Link copiado."); }catch(err){ prompt("Copie o link:", el.dataset.copiar); }
     return;
@@ -2515,6 +2610,9 @@ document.addEventListener("click", async e => {
     }
     case "salvar-pedido": salvarPedido(false); break;
     case "cotar-frete": cotarFrete(el); break;
+    case "avaliar-mw": avaliarMW(el); break;
+    case "mw-trocar": { const f = el.closest("#sim-form,#ped-form"); if(mwDados[f.id]) mostrarPerfisMW(f); else avaliarMW(f.querySelector('[data-acao="avaliar-mw"]')); break; }
+    case "mw-remover": { const f = el.closest("#sim-form,#ped-form"); f.querySelector('[name="modeloJson"]').value = ""; f.querySelector('[name="mwLink"]').value = ""; f.querySelector(".mw-res").innerHTML = ""; if(f.id === "ped-form") formSujo = true; else atualizarSimulador(); break; }
     case "enviar-orcamento": enviarOrcamento(); break;
     case "confirmar-pagamento": confirmarPagamento(); break;
     case "marcar-enviado": marcarEnviado(); break;

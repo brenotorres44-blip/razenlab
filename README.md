@@ -14,6 +14,7 @@ Impressão 3D sob encomenda: site para clientes, página de acompanhamento do pe
 | `supabase/02_admin.sql` | Libera o seu e-mail como administrador |
 | `supabase/functions/frete` | Cotação de frete pelo Melhor Envio (opcional) |
 | `supabase/functions/pagamento` | Cria o pagamento com cartão/boleto no Mercado Pago (opcional) |
+| `supabase/functions/makerworld` | Lê tempo, peso e licença de um modelo do MakerWorld (opcional) |
 | `supabase/functions/mp-webhook` | Recebe a confirmação do Mercado Pago e marca o pedido como Pago (opcional) |
 | `assets/`, `manifest.json`, `sw.js` | Logo, ícones e instalação do painel como app |
 | `vitrine.json` | Reserva usada só se o Supabase não estiver configurado |

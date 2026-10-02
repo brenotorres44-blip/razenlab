@@ -1,6 +1,6 @@
 # RazenLab — guia de instalação
 
-Siga na ordem. As etapas 1 a 6 são obrigatórias; 7 (frete automático) e 8 (cartão e boleto) são opcionais e podem ser feitas depois.
+Siga na ordem. As etapas 1 a 6 são obrigatórias; 7 (frete automático), 8 (cartão e boleto) e 9 (importar do MakerWorld) são opcionais e podem ser feitas depois.
 
 ---
 
@@ -99,6 +99,24 @@ O cliente continua podendo pagar por Pix sem taxa. Com isto ligado, ganha a opç
 **Opcional: assinatura dos avisos**
 Na sua aplicação do Mercado Pago, em **Webhooks**, você pode ver a **assinatura secreta**. Cadastre-a como o segredo `MP_WEBHOOK_SECRET`: a partir daí, a função recusa qualquer aviso que não venha do Mercado Pago. Sem ela o sistema já é seguro, porque todo pagamento é conferido direto na API.
 
+## 9. Importar modelos do MakerWorld
+
+Cole o link de um modelo e o sistema traz tempo, peso, filamento e licença, e preenche o orçamento.
+
+**Publicar a função** (não precisa de nenhum segredo)
+1. **Edge Functions → Deploy a new function → Via Editor** → nome `makerworld` → cole `supabase/functions/makerworld/index.ts` → **Deploy**.
+2. **Desligue a verificação de JWT**. A função confere sozinha se quem chamou é você, o administrador.
+
+**Usar**
+1. Na tela **Orçar** (ou dentro de um pedido), cole o link no campo **Importar do MakerWorld** e toque em **Avaliar**.
+2. Aparecem a capa, o autor, a **licença** e os perfis de impressão com peso e tempo.
+3. Toque no perfil desejado: peça, peso, tempo e filamento são preenchidos, e o preço aparece na hora.
+4. O modelo, o perfil escolhido e a licença ficam gravados no pedido.
+
+**Licença:** muitos modelos do MakerWorld proíbem vender as impressões (licenças "NC" e "Standard Digital File License"). O sistema mostra em **vermelho** quando não é permitido. Para vender, compre a licença comercial do autor ou escolha outro modelo.
+
+**Tempo da sua impressora:** os tempos do MakerWorld são para impressoras Bambu Lab. Em **Configurações → Custos da oficina → Tempo da sua impressora**, informe quanto a sua leva em comparação (100% = igual; 200% = o dobro). Para descobrir: fatie uma peça no seu fatiador e compare com o tempo que o MakerWorld mostra para ela.
+
 ## Como funciona o dia a dia
 
 1. **Cliente pede pelo site** → chega no painel como **Solicitado**.
@@ -138,6 +156,7 @@ Quando uma atualização mexer no banco, rode de novo o `supabase/01_estrutura.s
 - **"O painel ainda não está ligado ao Supabase"** → o `config.js` não foi preenchido ou não foi enviado ao GitHub.
 - **"Esta conta existe, mas ainda não tem acesso"** → falta rodar o `02_admin.sql` com o seu e-mail exato.
 - **Cotar frete diz que a função não foi publicada** → faça a etapa 7.
+- **Avaliar link do MakerWorld diz que a função não foi publicada** → faça a etapa 9.
 - **"Não foi possível abrir o pagamento"** no link do cliente → confira se a função `pagamento` foi publicada, o segredo `MP_ACCESS_TOKEN` e se a opção está ligada no painel.
 - **Cliente pagou no cartão e o pedido não virou Pago** → confira se a função `mp-webhook` foi publicada **com a verificação de JWT desligada**.
 - **"Falta atualizar o banco"** ao marcar "Não fechou" → rode de novo o `01_estrutura.sql`.
