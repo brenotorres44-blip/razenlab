@@ -2131,7 +2131,7 @@ async function cotarFrete(botao){
     if(error){
       let msg = error.message;
       try{ const j = await error.context.json(); if(j && j.erro) msg = j.erro; }catch(_){}
-      throw new Error(/Failed to send|fetch/i.test(msg) ? "A função de frete ainda não foi publicada no Supabase." : msg);
+      throw new Error(/Failed to send|fetch/i.test(msg) ? 'Não consegui falar com a função "frete". Confira no Supabase se ela foi publicada com esse nome exato e se o "Verify JWT" está desligado.' : msg);
     }
     opcoesFrete = data.opcoes || [];
     caixa.innerHTML = opcoesFrete.length ? `<div class="grid" style="margin-top:10px">${opcoesFrete.map((o,i) => `
@@ -2195,7 +2195,7 @@ async function avaliarMW(botao){
     if(error){
       let msg = error.message;
       try{ const j = await error.context.json(); if(j && j.erro) msg = j.erro; }catch(_){}
-      throw new Error(/Failed to send|fetch/i.test(msg) ? 'A função "makerworld" ainda não foi publicada no Supabase.' : msg);
+      throw new Error(/Failed to send|fetch/i.test(msg) ? 'Não consegui falar com a função "makerworld". Confira no Supabase se ela foi publicada com esse nome exato e se o "Verify JWT" está desligado.' : msg);
     }
     if(!data.perfis || !data.perfis.length) throw new Error("Esse modelo não tem perfil de impressão com tempo e peso.");
     mwDados[form.id] = data;
