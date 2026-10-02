@@ -305,6 +305,12 @@ textarea{resize:vertical;min-height:74px}
 /* pedido vindo do site */
 .req{background:rgba(242,138,20,.06);border:1px solid rgba(242,138,20,.32);border-radius:12px;padding:14px 16px;margin-bottom:16px}
 .req p{margin:6px 0 0;white-space:pre-line}
+.it .ck{width:22px;height:22px;border:1.5px solid var(--line2);border-radius:6px;display:grid;place-items:center;flex:0 0 auto;color:transparent;font-size:13px;font-weight:700;transition:all .15s}
+.it.sel{border-color:var(--cyan);background:rgba(30,155,255,.1)}
+.it.sel .ck{background:var(--blue);border-color:var(--blue);color:#fff}
+.lote{position:fixed;z-index:35;left:calc(var(--side) + 28px);right:28px;bottom:calc(16px + env(safe-area-inset-bottom,0px));display:flex;flex-wrap:wrap;gap:10px 14px;align-items:flex-end;
+  padding:14px 16px;background:rgba(6,20,42,.97);border:1px solid var(--cyan);border-radius:14px;box-shadow:0 10px 40px rgba(0,0,0,.55),0 0 24px rgba(63,224,255,.18);backdrop-filter:blur(8px);-webkit-backdrop-filter:blur(8px)}
+#lista-pedidos{padding-bottom:0}
 .linha-tempo{position:relative;padding-left:4px}
 .lt-it{display:flex;gap:12px;align-items:flex-start;padding:6px 0;position:relative}
 .lt-it>i{width:9px;height:9px;border-radius:50%;flex:0 0 auto;margin-top:6px;position:relative;z-index:1}
@@ -357,6 +363,7 @@ textarea{resize:vertical;min-height:74px}
   .md{max-width:none;margin-top:auto}
   .md>.pn{border-radius:18px 18px 0 0;padding-bottom:0}
   .md-h{position:sticky;top:calc(-10px - env(safe-area-inset-top,0px));z-index:3;margin:-18px -18px 14px;padding:16px 18px 12px;background:rgba(8,24,50,.97);border-bottom:1px solid var(--line);border-radius:18px 18px 0 0}
+  .lote{left:10px;right:10px;bottom:calc(78px + env(safe-area-inset-bottom,0px));padding:12px}
   .acoes{position:sticky;bottom:0;z-index:3;margin:18px -18px 0;padding:12px 18px calc(12px + env(safe-area-inset-bottom,0px));background:rgba(8,24,50,.97);border-top:1px solid var(--line)}
   .acoes .tb{flex:1 1 auto}
   .acoes .tb.pri{flex-basis:100%}
@@ -819,6 +826,7 @@ function desenharNav(){
 function ir(id){
   if(id === "mais"){ abrirFolhaMais(); return; }
   if(fecharModal() === false) return;
+  if(id !== "pedidos"){ selecionando = false; selecionados.clear(); }
   aba = id;
   render();
   window.scrollTo({top:0, behavior: reduzMov ? "auto" : "smooth"});
@@ -1161,7 +1169,9 @@ TELAS.painel = () => {
 
 /* ---------- pedidos ---------- */
 let filtroStatus = "abertos", busca = "";
-function listaPedidos(){
+let selecionando = false;
+const selecionados = new Set();
+function pedidosFiltrados(){
   let l = dados.pedidos.slice().sort((a,b) => (b.numero||0)-(a.numero||0));
   if(filtroStatus === "abertos") l = l.filter(p => !ENCERRADO.includes(p.status));
   else if(filtroStatus === "acao") l = l.filter(p => ["solicitado","comprovante"].includes(p.status));
@@ -1172,8 +1182,13 @@ function listaPedidos(){
     l = l.filter(p => (p.peca||"").toLowerCase().includes(q) || (p.cliente||"").toLowerCase().includes(q) || String(p.numero).includes(q)
       || (d.length >= 4 && String(p.contato||"").replace(/\D/g,"").includes(d)));
   }
+  return l;
+}
+function listaPedidos(){
+  const l = pedidosFiltrados();
   return l.length ? l.map(p => `
-    <div class="it" data-abrir="${p.id}">
+    <div class="it ${selecionando && selecionados.has(p.id) ? "sel" : ""}" data-abrir="${p.id}">
+      ${selecionando ? `<span class="ck" aria-hidden="true">✓</span>` : ""}
       <div class="g">
         <div class="n"><span class="nr">${numPed(p.numero)}</span>${esc(p.peca||"Peça sem nome")}</div>
         <div class="s">${esc(p.cliente||"Sem cliente")} · ${num(p.qtd)} un.${p.prazo?` · <span class="${atrasado(p)?"dn":""}">entrega ${dataBR(p.prazo)}</span>`:""}${vencido(p)?` · <span class="dn">venceu em ${dataBR(p.validadeAte)}</span>`:""}${p.status==="perdido"&&p.motivoPerda?` · ${esc(p.motivoPerda)}`:""}${p.dataPago&&FATURADO.includes(p.status)?` · pago em ${dataBR(p.dataPago)}`:""}</div>
@@ -1186,11 +1201,85 @@ TELAS.pedidos = () => {
   return `
   <div class="row rv" style="--d:40ms;margin-bottom:14px">
     <input id="busca" placeholder="Buscar por peça, cliente ou número" value="${esc(busca)}" style="flex:1;min-width:220px">
+    <button class="tb ${selecionando ? "pri" : ""}" data-acao="lote-modo">${selecionando ? "Concluir seleção" : "Selecionar"}</button>
     <button class="tb pri" data-acao="novo">${ico("mais2")} Novo orçamento</button>
   </div>
   <div class="chips rv" style="--d:90ms;margin-bottom:14px">${chips.map(([k,r]) => `<button class="chip ${filtroStatus===k?"on":""}" data-filtro="${k}">${r}</button>`).join("")}</div>
-  <div class="pn rv" style="--d:140ms"><div id="lista-pedidos">${listaPedidos()}</div></div>`;
+  <div class="pn rv" style="--d:140ms"><div id="lista-pedidos">${listaPedidos()}</div></div>
+  ${selecionando ? `<div style="height:${innerWidth < 760 ? 330 : 190}px"></div>${barraLote()}` : ""}`;
 };
+
+/* ---------- mudar a situação de vários pedidos de uma vez ---------- */
+let loteStatus = "pago", loteData = "", loteMotivo = "";
+function barraLote(){
+  const n = selecionados.size;
+  return `<div class="lote" id="barra-lote">
+    <div class="row" style="gap:12px;flex:1 1 100%">
+      <b class="hudn" id="lote-n">${n} selecionado${n===1?"":"s"}</b>
+      <button type="button" class="lk" data-acao="lote-todos">Selecionar todos da lista</button>
+      ${n ? `<button type="button" class="lk" data-acao="lote-limpar">Limpar</button>` : ""}
+    </div>
+    <label class="f" style="flex:1 1 160px"><span>Mudar para</span><select id="lote-status">${[...FLUXO, "perdido", "cancelado"].map(k => `<option value="${k}" ${loteStatus===k?"selected":""}>${STATUS[k].rotulo}</option>`).join("")}</select></label>
+    <label class="f" style="flex:1 1 150px"><span>Data</span><input type="date" id="lote-data" value="${loteData || hoje()}"></label>
+    ${loteStatus === "perdido" ? `<label class="f" style="flex:1 1 200px"><span>Motivo</span><select id="lote-motivo"><option value="">Escolha…</option>${MOTIVOS_PERDA.map(m => `<option ${loteMotivo===m?"selected":""}>${m}</option>`).join("")}</select></label>` : ""}
+    <button class="tb pri" data-acao="lote-aplicar" style="align-self:flex-end" ${n ? "" : "disabled"}>Aplicar</button>
+  </div>`;
+}
+function atualizarSelecao(){
+  document.getElementById("lista-pedidos").innerHTML = listaPedidos();
+  const b = document.getElementById("barra-lote"); if(b) b.outerHTML = barraLote();
+}
+/* aplica uma nova situação a um pedido seguindo as mesmas regras de datas da janela do pedido */
+function comNovaSituacao(p0, st, D, motivo){
+  const p = JSON.parse(JSON.stringify(p0)), antes = e => FLUXO.indexOf(st) < FLUXO.indexOf(e);
+  p.status = st;
+  if(st !== "solicitado" && !p.dataOrcamento) p.dataOrcamento = D;
+  if(p.dataOrcamento && !p.validadeAte) p.validadeAte = somaDias(p.dataOrcamento, num(dados.negocio.validadeDias) || 7);
+  if(FATURADO.includes(st)){ p.dataPago = p.dataPago || D; p.formaPagamento = p.formaPagamento || "Pix"; }
+  else{ delete p.dataPago; if(!p.mpPagamentoId){ delete p.formaPagamento; delete p.valorRecebido; delete p.taxaRecebimento; } }
+  if(["enviado","entregue"].includes(st)) p.dataEnviado = p.dataEnviado || D; else delete p.dataEnviado;
+  if(st === "entregue") p.dataEntregue = p.dataEntregue || D; else delete p.dataEntregue;
+  if(!["cancelado","perdido"].includes(st)){
+    if(antes("aprovado")) delete p.dataAprovado; else if(st === "aprovado" && !p.dataAprovado) p.dataAprovado = D;
+    if(antes("imprimindo")) delete p.dataInicio; else if(st === "imprimindo" && !p.dataInicio) p.dataInicio = D;
+  }
+  if(st === "perdido"){ p.motivoPerda = motivo; p.dataPerdido = p.dataPerdido || D; } else { delete p.motivoPerda; delete p.notaPerda; delete p.dataPerdido; }
+  const mudou = ajustarEstoque(p);
+  return { p, mudou };
+}
+async function aplicarLote(botao){
+  const st = document.getElementById("lote-status").value, D = document.getElementById("lote-data").value || hoje();
+  const motivo = (document.getElementById("lote-motivo") || {}).value || "";
+  const ids = [...selecionados];
+  if(!ids.length){ toast("Selecione pelo menos um pedido."); return; }
+  if(st === "perdido" && !motivo){ toast('Escolha o motivo de "Não fechou".'); return; }
+  if(!confirm(`Mudar ${ids.length} pedido${ids.length>1?"s":""} para "${STATUS[st].rotulo}" com data ${dataBR(D)}?`)) return;
+  if(ocupado) return; ocupado = true;
+  botao.disabled = true;
+  let ok = 0, iguais = 0; const falhas = [];
+  for(const [k, id] of ids.entries()){
+    botao.textContent = `Atualizando ${k+1} de ${ids.length}…`;
+    const p0 = dados.pedidos.find(x => x.id === id); if(!p0) continue;
+    if(p0.status === st){ iguais++; continue; }
+    try{
+      let r = comNovaSituacao(p0, st, D, motivo), salvo;
+      try{ salvo = await gravarPedido(r.p); }
+      catch(e){
+        if(!e.conflito) throw e;
+        await carregarTudo();                          // alguém mexeu no pedido: refaz a partir da versão mais nova
+        r = comNovaSituacao(dados.pedidos.find(x => x.id === id), st, D, motivo);
+        salvo = await gravarPedido(r.p);
+      }
+      for(const f of r.mudou) await gravarFilamento(f);
+      const i = dados.pedidos.findIndex(x => x.id === salvo.id); if(i >= 0) dados.pedidos[i] = salvo;
+      ok++;
+    }catch(e){ console.error(e); falhas.push(numPed(p0.numero)); }
+  }
+  ocupado = false;
+  if(falhas.length) await carregarTudo().catch(() => {});   // garante que estoque e lista fiquem iguais ao banco
+  selecionados.clear(); selecionando = false; loteData = ""; loteMotivo = ""; render();
+  toast(`${ok} pedido${ok===1?"":"s"} alterado${ok===1?"":"s"} para ${STATUS[st].rotulo}.` + (iguais ? ` ${iguais} já estava${iguais>1?"m":""} assim.` : "") + (falhas.length ? ` Não consegui alterar: ${falhas.join(", ")}.` : ""));
+}
 
 /* ---------- campos de uma peça (orçamento e pedido) ---------- */
 function camposPeca(p){
@@ -2544,6 +2633,9 @@ document.addEventListener("click", async e => {
   if((el = t.closest("[data-ir]"))){ if(el.dataset.filtroIr) filtroStatus = el.dataset.filtroIr; ir(el.dataset.ir); return; }
   if(t.hasAttribute("data-fechar")){ fecharModal(); return; }
   if((el = t.closest("[data-filtro]"))){ filtroStatus = el.dataset.filtro; render(); return; }
+  if(selecionando && (el = t.closest("#lista-pedidos [data-abrir]"))){
+    const id = el.dataset.abrir; selecionados.has(id) ? selecionados.delete(id) : selecionados.add(id); atualizarSelecao(); return;
+  }
   if((el = t.closest("[data-abrir]"))){ abrirPedido(dados.pedidos.find(p => p.id === el.dataset.abrir)); return; }
   if((el = t.closest("[data-status]"))){
     const f = document.getElementById("ped-form");
@@ -2610,6 +2702,10 @@ document.addEventListener("click", async e => {
     }
     case "salvar-pedido": salvarPedido(false); break;
     case "cotar-frete": cotarFrete(el); break;
+    case "lote-modo": selecionando = !selecionando; if(!selecionando) selecionados.clear(); render(); break;
+    case "lote-todos": pedidosFiltrados().forEach(p => selecionados.add(p.id)); atualizarSelecao(); break;
+    case "lote-limpar": selecionados.clear(); atualizarSelecao(); break;
+    case "lote-aplicar": aplicarLote(el); break;
     case "avaliar-mw": avaliarMW(el); break;
     case "mw-trocar": { const f = el.closest("#sim-form,#ped-form"); if(mwDados[f.id]) mostrarPerfisMW(f); else avaliarMW(f.querySelector('[data-acao="avaliar-mw"]')); break; }
     case "mw-remover": { const f = el.closest("#sim-form,#ped-form"); f.querySelector('[name="modeloJson"]').value = ""; f.querySelector('[name="mwLink"]').value = ""; f.querySelector(".mw-res").innerHTML = ""; if(f.id === "ped-form") formSujo = true; else atualizarSimulador(); break; }
@@ -2759,6 +2855,9 @@ document.addEventListener("change", async e => {
     const f = document.getElementById("ped-form");
     buscarCep(e.target.value, end => Object.entries(end).forEach(([k,v]) => { const i = f.querySelector(`[name="end_${k}"]`); if(i && !i.value && v) i.value = v; }));
   }
+  if(e.target.id === "lote-status"){ loteStatus = e.target.value; const b = document.getElementById("barra-lote"); if(b) b.outerHTML = barraLote(); return; }
+  if(e.target.id === "lote-data"){ loteData = e.target.value; return; }
+  if(e.target.id === "lote-motivo"){ loteMotivo = e.target.value; return; }
   if(e.target.id === "fin-de" || e.target.id === "fin-ate"){ finPer[e.target.id === "fin-de" ? "de" : "ate"] = e.target.value; render(); return; }
   if(e.target.id === "arq-backup" && e.target.files[0]){ importar(e.target.files[0]); e.target.value = ""; }
   if(e.target.id === "arq-fotos" && e.target.files.length && trabalhoAberto){
