@@ -165,7 +165,7 @@ footer{border-top:1px solid var(--line);padding:32px 0;color:var(--faint);font-s
 <link rel="stylesheet" href="assets/jarvis.css">
 <style>
 /* ---------- J.A.R.V.I.S. nesta página ---------- */
-.top{background:rgba(2,6,15,.82);border-bottom:1px solid var(--j-line)}
+.top{background:rgba(2,6,15,.82);border-bottom:1px solid var(--j-line);overflow:hidden}
 .top::after{content:"";position:absolute;left:0;bottom:-1px;height:1px;width:220px;background:linear-gradient(90deg,transparent,var(--j-cyan),transparent)}
 @media (prefers-reduced-motion:no-preference){.top::after{animation:j-linha 6s ease-in-out infinite}}
 @keyframes j-linha{0%{transform:translateX(-240px)}100%{transform:translateX(100vw)}}
@@ -251,6 +251,15 @@ h2{font-family:var(--j-hud);font-weight:600;letter-spacing:-.2px}
 footer{border-top:1px solid var(--j-line);font-family:var(--j-hud);letter-spacing:.08em;font-size:12.5px;background:rgba(2,6,15,.6)}
 .foot .sys{display:inline-flex;align-items:center;gap:8px;color:var(--j-cyan)}
 .foot .sys i{width:6px;height:6px;border-radius:50%;background:#3FD9A4;box-shadow:0 0 8px #3FD9A4}
+
+/* formulário em três etapas */
+.etapa{border:0;margin:0 0 6px;padding:0}
+.etapa + .etapa{border-top:1px solid var(--j-line);padding-top:18px;margin-top:8px}
+.etapa legend{display:flex;align-items:center;gap:10px;padding:0;margin-bottom:14px;font:600 13px/1.2 var(--j-hud);letter-spacing:.16em;text-transform:uppercase;color:var(--j-text)}
+.etapa legend i{display:inline-grid;place-items:center;width:22px;height:22px;border:1px solid var(--j-line2);color:var(--j-cyan);font-style:normal;font-size:11px}
+.etapa legend small{font:400 12px/1 var(--body);letter-spacing:0;text-transform:none;color:var(--j-faint)}
+.dica-cep{font-size:13px;color:var(--j-muted);margin:-4px 0 12px}
+.lk-btn{background:none;border:0;padding:0;color:var(--j-cyan);font:inherit;text-decoration:underline;text-underline-offset:3px;cursor:pointer}
 
 /* janela do trabalho */
 .ov{background:rgba(1,4,12,.86)}
@@ -354,30 +363,39 @@ footer{border-top:1px solid var(--j-line);font-family:var(--j-hud);letter-spacin
     <div id="caixa-form">
     <form class="form j-cut j-ticks" id="form-orc" novalidate>
       <div class="term"><span class="j-label" style="font-size:11px">Novo pedido</span><span class="j-num" style="color:var(--j-faint);font-size:11px;letter-spacing:.18em" id="term-id">ID —</span></div>
-      <label><span>Seu nome</span><input name="nome" autocomplete="name" maxlength="120"></label>
-      <div class="row2">
-        <label><span>WhatsApp</span><input name="contato" type="tel" inputmode="tel" autocomplete="tel" placeholder="(11) 90000-0000" maxlength="20"></label>
-        <label><span>E-mail · opcional</span><input name="email" type="email" autocomplete="email" maxlength="160"></label>
-      </div>
-      <label><span>O que você precisa?</span><textarea name="ideia" maxlength="3000" placeholder="Ex.: suporte de headset com meu nome, na cor preta, uns 20 cm de altura"></textarea></label>
+      <fieldset class="etapa"><legend><i>1</i>Sua ideia</legend>
+      <label><span>O que você precisa?</span><textarea name="ideia" maxlength="3000" placeholder="Ex.: suporte de headset com meu nome, na cor preta, uns 20 cm de altura…"></textarea></label>
       <div class="row2">
         <label><span>Quantidade</span><input name="qtd" inputmode="numeric" value="1" maxlength="5"></label>
-        <label><span>Para quando?</span><input name="quando" placeholder="Sem pressa, dia 15…" maxlength="120"></label>
+        <label><span>Para quando? · opcional</span><input name="quando" placeholder="Sem pressa, dia 15…" maxlength="120"></label>
       </div>
       <label><span>Foto de referência ou arquivo 3D · opcional</span><input type="file" name="anexo" accept="image/*,.stl,.3mf,.obj,.step,.stp,.zip"></label>
+      </fieldset>
+      <fieldset class="etapa"><legend><i>2</i>Seu contato</legend>
+      <label><span>Seu nome</span><input name="nome" autocomplete="name" maxlength="120"></label>
       <div class="row2">
-        <label><span>CEP de entrega</span><input name="cep" inputmode="numeric" autocomplete="postal-code" placeholder="00000-000" maxlength="9"></label>
+        <label><span>WhatsApp com DDD</span><input name="contato" type="tel" inputmode="tel" autocomplete="tel" placeholder="(11) 90000-0000" maxlength="20"></label>
+        <label><span>E-mail · opcional</span><input name="email" type="email" autocomplete="email" spellcheck="false" maxlength="160"></label>
+      </div>
+      </fieldset>
+      <fieldset class="etapa"><legend><i>3</i>Entrega <small>para calcular o frete</small></legend>
+      <div class="row2">
+        <label><span>CEP</span><input name="cep" inputmode="numeric" autocomplete="postal-code" placeholder="00000-000" maxlength="9"></label>
         <label><span>Número</span><input name="numero" maxlength="20"></label>
       </div>
-      <label><span>Rua</span><input name="rua" autocomplete="address-line1" maxlength="160"></label>
-      <div class="row2">
-        <label><span>Bairro</span><input name="bairro" maxlength="100"></label>
-        <label><span>Complemento · opcional</span><input name="complemento" maxlength="100"></label>
+      <div id="end-resto" hidden>
+        <label><span>Rua</span><input name="rua" autocomplete="address-line1" maxlength="160"></label>
+        <div class="row2">
+          <label><span>Bairro</span><input name="bairro" maxlength="100"></label>
+          <label><span>Complemento · opcional</span><input name="complemento" maxlength="100"></label>
+        </div>
+        <div class="row2">
+          <label><span>Cidade</span><input name="cidade" autocomplete="address-level2" maxlength="100"></label>
+          <label><span>UF</span><input name="uf" autocomplete="address-level1" maxlength="2" style="text-transform:uppercase"></label>
+        </div>
       </div>
-      <div class="row2">
-        <label><span>Cidade</span><input name="cidade" autocomplete="address-level2" maxlength="100"></label>
-        <label><span>UF</span><input name="uf" autocomplete="address-level1" maxlength="2" style="text-transform:uppercase"></label>
-      </div>
+      <p class="dica-cep" id="dica-cep">Digite o CEP que a gente preenche a rua, o bairro e a cidade. <button type="button" class="lk-btn" id="end-manual">Prefiro digitar o endereço</button></p>
+      </fieldset>
       <label class="aceite"><input type="checkbox" name="aceite"><span>Autorizo o uso destes dados só para o orçamento e a entrega deste pedido, conforme a <a href="privacidade.html" target="_blank" style="color:var(--cyan)">política de privacidade</a>.</span></label>
       <button class="btn btn-main" type="submit" id="btn-orc" style="width:100%;justify-content:center">Pedir orçamento</button>
       <p class="note" id="form-nota">Enviamos para todo o Brasil pelos Correios. O frete vem calculado no orçamento.</p>
@@ -578,13 +596,19 @@ document.addEventListener("input", async e => {
   if(d.length !== 8) return;
   try{
     const r = await fetch(`https://viacep.com.br/ws/${d}/json/`), j = await r.json();
-    if(j.erro) return nota("CEP não encontrado. Confira ou preencha o endereço à mão.", true);
+    if(j.erro){ mostrarEndereco(); return nota("CEP não encontrado. Confira ou preencha o endereço à mão.", true); }
     const f = document.getElementById("form-orc");
     [["rua",j.logradouro],["bairro",j.bairro],["cidade",j.localidade],["uf",j.uf]].forEach(([k,v]) => { if(v) f.querySelector(`[name="${k}"]`).value = v; });
+    mostrarEndereco();
     nota("Endereço encontrado. Confira e informe o número.");
     f.querySelector('[name="numero"]').focus();
-  }catch(err){ /* sem internet para buscar o CEP: o cliente digita */ }
+  }catch(err){ mostrarEndereco(); /* sem internet para buscar o CEP: o cliente digita */ }
 });
+function mostrarEndereco(){
+  const r = document.getElementById("end-resto"), d = document.getElementById("dica-cep");
+  if(r) r.hidden = false; if(d) d.hidden = true;
+}
+document.getElementById("end-manual").addEventListener("click", () => { mostrarEndereco(); document.querySelector('#form-orc [name="rua"]').focus(); });
 function nota(msg, erro){
   const n = document.getElementById("form-nota");
   n.textContent = msg; n.style.color = erro ? "#F28A14" : "";
@@ -604,7 +628,7 @@ document.getElementById("form-orc").addEventListener("submit", async e => {
       `*Quantidade:* ${v("qtd") || 1}`, v("quando") ? `*Para quando:* ${v("quando")}` : null, v("cep") ? `*CEP:* ${v("cep")}` : null].filter(Boolean).join("\n"));
   }
   if(v("cep").replace(/\D/g,"").length !== 8 || !v("rua") || !v("numero") || !v("cidade") || v("uf").length !== 2)
-    return nota("Preencha o endereço completo: CEP, rua, número, cidade e UF.", true);
+    { mostrarEndereco(); return nota("Preencha o endereço completo: CEP, rua, número, cidade e UF.", true); }
   if(!f.aceite) return nota("Marque a autorização de uso dos dados para continuar.", true);
 
   const btn = document.getElementById("btn-orc");

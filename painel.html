@@ -384,6 +384,49 @@ textarea{resize:vertical;min-height:74px}
   .pt{display:none}
 }
 
+/* ---------- janela do pedido: guiada ---------- */
+.proximo{display:flex;align-items:baseline;gap:12px;flex-wrap:wrap;padding:12px 14px;margin-bottom:12px;border:1px solid var(--line2);background:rgba(30,155,255,.07);border-radius:2px}
+.proximo b{font-weight:500}
+.trilha{display:grid;grid-template-columns:repeat(9,minmax(0,1fr));margin-bottom:18px}
+.trilha button{position:relative;display:grid;justify-items:center;gap:8px;padding:14px 2px 4px;background:none;border:0;color:var(--faint);font:500 10.5px/1.2 var(--hud);letter-spacing:.08em;text-transform:uppercase;cursor:pointer;text-align:center}
+.trilha button::before{content:"";position:absolute;top:19px;left:-50%;width:100%;height:1px;background:var(--line2)}
+.trilha button:first-child::before{display:none}
+.trilha i{position:relative;z-index:1;width:11px;height:11px;transform:rotate(45deg);border:1px solid var(--line2);background:var(--void)}
+.trilha button.feito{color:var(--muted)}
+.trilha button.feito i{background:var(--blue);border-color:var(--blue)}
+.trilha button.feito::before,.trilha button.on::before{background:var(--blue)}
+.trilha button.on{color:var(--text)}
+.trilha button.on i{background:var(--c);border-color:var(--c);box-shadow:0 0 12px var(--c)}
+.trilha button:hover{color:var(--text)}
+@media (max-width:760px){.trilha{grid-template-columns:repeat(9,74px);overflow-x:auto;scrollbar-width:none;margin-left:-18px;margin-right:-18px;padding:0 18px}.trilha::-webkit-scrollbar{display:none}}
+.passo-t{display:flex;align-items:center;gap:10px;margin:0 0 12px;font:600 13px/1.2 var(--hud);letter-spacing:2px;text-transform:uppercase}
+.passo-t .n,.dobra .n{display:inline-grid;place-items:center;width:22px;height:22px;border:1px solid var(--line2);color:var(--cyan);font-size:11px;transform:none}
+.dobra{border:1px solid var(--line);background:rgba(2,8,20,.45);border-radius:2px;padding:0 16px;margin:0 0 14px}
+.dobra > summary{display:flex;align-items:center;gap:10px;flex-wrap:wrap;min-height:48px;cursor:pointer;font:600 13px/1.2 var(--hud);letter-spacing:2px;text-transform:uppercase;list-style:none}
+.dobra > summary::-webkit-details-marker{display:none}
+.dobra > summary::after{content:"+";margin-left:auto;color:var(--cyan);font-size:18px}
+.dobra[open] > summary::after{content:"−"}
+.dobra > summary small{font:400 12px/1.3 var(--body);letter-spacing:0;text-transform:none;color:var(--faint)}
+.dobra[open]{padding-bottom:16px}
+.dobra.leve{background:none}
+.dobra.leve > summary{font-size:12px}
+.dobra .pn{background:none!important;border:0!important;padding:0!important;margin:0!important}
+.dobra .pn::before,.dobra .pn::after{display:none}
+.mais{position:relative}
+.mais > summary{list-style:none;cursor:pointer}
+.mais > summary::-webkit-details-marker{display:none}
+.mais-menu{position:absolute;right:0;bottom:calc(100% + 8px);z-index:5;display:grid;gap:6px;min-width:230px;padding:10px;background:#061428;border:1px solid var(--line2);box-shadow:0 12px 40px rgba(0,0,0,.6)}
+.mais-menu .tb{justify-content:flex-start;width:100%}
+
+/* abas dos relatórios */
+.abas-rel{display:flex;gap:0;margin-bottom:18px;border-bottom:1px solid var(--line)}
+.abas-rel button{background:none;border:0;border-bottom:2px solid transparent;margin-bottom:-1px;padding:12px 18px;color:var(--muted);font:600 12.5px/1 var(--hud);letter-spacing:2px;text-transform:uppercase;cursor:pointer}
+.abas-rel button.on{color:var(--text);border-bottom-color:var(--cyan);text-shadow:0 0 12px rgba(63,224,255,.4)}
+.abas-rel button:hover{color:var(--text)}
+.top{overflow:hidden}
+.est.baixo{display:block}
+.dobra.leve .pn > .lbl:first-child{display:none}
+
 /* ---------- refinamento J.A.R.V.I.S.: cantos secos, cortes chanfrados, telemetria ---------- */
 .pn{border-radius:3px}
 .pn::before{border-top-left-radius:3px}.pn::after{border-bottom-right-radius:3px}
@@ -810,35 +853,36 @@ const ico = (n, extra="") => `<svg viewBox="0 0 24 24" fill="none" stroke="curre
    7. NAVEGAÇÃO
    ================================================================ */
 const PAGINAS = [
-  { id:"painel",     nome:"Dashboard",     ico:"painel" },
+  { id:"painel",     nome:"Início",        ico:"painel" },
   { id:"pedidos",    nome:"Pedidos",       ico:"pedidos" },
-  { id:"orcar",      nome:"Orçamento",     ico:"orcar" },
+  { id:"orcar",      nome:"Novo orçamento", ico:"orcar" },
   { id:"clientes",   nome:"Clientes",      ico:"clientes" },
   { id:"estoque",    nome:"Estoque",       ico:"estoque" },
-  { id:"financeiro", nome:"Financeiro",    ico:"financeiro" },
+  { id:"financeiro", nome:"Relatórios",    ico:"financeiro" },
   { id:"analise",    nome:"Análise",       ico:"analise" },
   { id:"movimentacoes", nome:"Movimentações", ico:"historico" },
   { id:"vitrine",    nome:"Vitrine",       ico:"vitrine" },
   { id:"config",     nome:"Configurações", ico:"config" }
 ];
 let aba = "painel";
+// três telas de números, agrupadas num item só do menu
+const RELATORIOS = ["financeiro","analise","movimentacoes"];
+const NOMES_REL = { financeiro:"Dinheiro", analise:"Vendas", movimentacoes:"Histórico" };
 
 function desenharNav(){
   const qAbertos = abertos().length;
   const baixo = dados.filamentos.filter(f => f.estoque != null && num(f.estoque) <= num(f.minimo)).length;
-  document.getElementById("nav").innerHTML = PAGINAS.map(p => {
+  document.getElementById("nav").innerHTML = PAGINAS.filter(p => !RELATORIOS.slice(1).includes(p.id)).map(p => {
     let qt = "";
     const novos = dados.pedidos.filter(x => x.status==="solicitado" || x.status==="comprovante").length;
     if(p.id==="pedidos" && novos) qt = `<span class="qt" style="color:var(--spark);border-color:rgba(242,138,20,.45);background:rgba(242,138,20,.12)">${novos} novo${novos>1?"s":""}</span>`;
     else if(p.id==="pedidos" && qAbertos) qt = `<span class="qt">${qAbertos}</span>`;
     if(p.id==="estoque" && baixo) qt = `<span class="qt" style="color:var(--red);border-color:rgba(255,59,92,.4);background:rgba(255,59,92,.1)">${baixo}</span>`;
-    return `<button class="nav-it ${aba===p.id?"on":""}" data-ir="${p.id}">${ico(p.ico)}<span>${p.nome}</span>${qt}</button>`;
+    const ativo = aba === p.id || (p.id === "financeiro" && RELATORIOS.includes(aba));
+    return `<button class="nav-it ${ativo?"on":""}" data-ir="${p.id}">${ico(p.ico)}<span>${p.nome}</span>${qt}</button>`;
   }).join("");
 
   document.getElementById("side-foot").innerHTML = `
-    <div class="sys"><i class="led pulsa" style="color:var(--mint);width:6px;height:6px"></i>SISTEMA <b>ONLINE</b></div>
-    <div class="sys"><i class="led" style="color:var(--cyan);width:6px;height:6px"></i>SUPABASE <b>CONECTADO</b></div>
-    <div class="sys"><i class="led ${tempoReal?"pulsa":""}" style="color:${tempoReal?"var(--mint)":"var(--faint)"};width:6px;height:6px"></i>TEMPO REAL <b>${tempoReal?"ATIVO":"—"}</b></div>
     <a class="sys" href="index.html" target="_blank" rel="noopener" style="text-decoration:none;margin-top:4px">${ico("site",'style="width:13px;height:13px"')} <b>ABRIR O SITE</b></a>
     <button class="sys" data-acao="sair" style="background:none;border:none;padding:0;cursor:pointer;text-align:left">${ico("sair",'style="width:13px;height:13px"')} <b>SAIR</b></button>`;
 
@@ -861,7 +905,7 @@ function abrirFolhaMais(){
     <div class="ov" data-fechar style="align-items:flex-end;padding:0">
       <div class="folha" style="width:100%">
         <div class="lbl" style="padding:4px 6px 10px">MÓDULOS</div>
-        ${["clientes","financeiro","analise","movimentacoes","vitrine","config"].map(id => { const p = PAGINAS.find(x=>x.id===id);
+        ${["clientes","financeiro","vitrine","config"].map(id => { const p = PAGINAS.find(x=>x.id===id);
           return `<button class="nav-it ${aba===id?"on":""}" data-ir="${id}" style="padding:14px 12px">${ico(p.ico)}<span>${p.nome}</span></button>`; }).join("")}
         <a class="nav-it" href="index.html" target="_blank" rel="noopener" style="padding:14px 12px;text-decoration:none">${ico("site")}<span>Abrir o site</span></a>
         <button class="nav-it" data-acao="sair" style="padding:14px 12px">${ico("sair")}<span>Sair</span></button>
@@ -1090,8 +1134,6 @@ function telemetria(){
     `Fila da impressora <b>${dec(oc.fila)} h</b>`,
     `Ocupação 7 dias <b class="${oc.pct>=85?"al":""}">${dec(oc.pct,0)}%</b>`,
     `Filamento baixo <b class="${baixo?"al":""}">${baixo}</b>`,
-    `Banco <b>conectado</b>`,
-    `Tempo real <b>${tempoReal?"ativo":"—"}</b>`
   ].map(t => `<span>${t}</span>`).join("");
   el.innerHTML = itens + itens;
 }
@@ -1099,10 +1141,11 @@ function render(){
   desenharNav();
   telemetria();
   const p = PAGINAS.find(x => x.id === aba);
-  document.getElementById("titulo-pg").textContent = aba === "painel" ? "PAINEL DE CONTROLE" : p.nome.toUpperCase();
+  document.getElementById("titulo-pg").textContent = aba === "painel" ? "PAINEL DE CONTROLE" : RELATORIOS.includes(aba) ? "RELATÓRIOS · " + NOMES_REL[aba].toUpperCase() : p.nome.toUpperCase();
   const v = document.getElementById("view");
   graficos = {};
-  v.innerHTML = `<div class="pg-in">${TELAS[aba]()}</div>`;
+  const abasRel = RELATORIOS.includes(aba) ? `<div class="abas-rel" role="tablist" aria-label="Relatórios">${RELATORIOS.map(id => `<button role="tab" aria-selected="${aba===id}" class="${aba===id?"on":""}" data-ir="${id}">${NOMES_REL[id]}</button>`).join("")}</div>` : "";
+  v.innerHTML = `<div class="pg-in">${abasRel}${TELAS[aba]()}</div>`;
   if(aba === "orcar") atualizarSimulador();
   if(aba === "movimentacoes") carregarMovs();
   animarNumeros(v);
@@ -1162,7 +1205,7 @@ TELAS.painel = () => {
 
   <section class="meio">
     <div class="pn rv" style="--d:340ms">
-      <div class="ph"><h2>Fila de impressão</h2><span class="cod">MOD-01</span></div>
+      <div class="ph"><h2>Fila de impressão</h2></div>
       ${fila.length ? fila.slice(0,7).map(p => `
         <div class="fila-it" data-abrir="${p.id}">
           <div class="hr ${atrasado(p)?"dn":""}">${p.prazo?diaMes(p.prazo):"—"}</div>
@@ -1180,16 +1223,10 @@ TELAS.painel = () => {
         <div class="core-lbl" style="left:0;bottom:2%">HORAS NA FILA<b data-conta="${oc.fila}" data-tipo="h">0 h</b></div>
         <div class="core-lbl" style="right:0;bottom:2%;text-align:right">PEÇAS NO MÊS<b data-conta="${atual.pecas}">0</b></div>
       </div>
-      <div class="nucleo-foot">
-        <span class="chip-sys"><i class="led pulsa" style="color:var(--mint);width:6px;height:6px"></i>SISTEMA ONLINE</span>
-        <span class="chip-sys"><i class="led" style="color:var(--cyan);width:6px;height:6px"></i>SUPABASE · ${dados.pedidos.length} PEDIDOS</span>
-        <span class="chip-sys"><i class="led ${tempoReal?"pulsa":""}" style="color:${tempoReal?"var(--mint)":"var(--faint)"};width:6px;height:6px"></i>TEMPO REAL ${tempoReal?"ATIVO":"—"}</span>
-        ${sw?`<span class="chip-sys"><i class="led" style="color:var(--cyan);width:6px;height:6px"></i>APP INSTALÁVEL</span>`:""}
-      </div>
     </div>
 
     <div class="pn rv" style="--d:400ms">
-      <div class="ph"><h2>Filamentos em estoque</h2><span class="cod">MOD-03</span></div>
+      <div class="ph"><h2>Filamentos em estoque</h2></div>
       ${fils.length ? fils.slice(0,6).map(f => {
         const est = num(f.estoque), baixo = est <= num(f.minimo), pct = Math.max(2, Math.min(100, est/1000*100));
         return `<div class="est ${baixo?"baixo":""}"><div class="t"><span>${esc(f.nome)}</span><span>${dec(Math.max(0,est),0)} g${baixo?" · BAIXO":""}</span></div><div class="trilho"><i data-largura="${pct}%"></i></div></div>`;
@@ -1203,7 +1240,7 @@ TELAS.painel = () => {
       ${graficoHolo("dash", meses.map(m=>m.rot), [{nome:"Faturamento", cor:"#3FE0FF", vals:serieFat},{nome:"Lucro", cor:"#3FD9A4", vals:serieLuc}])}
     </div>
     <div class="pn rv" style="--d:540ms" id="cal-pn">
-      <div class="ph"><h2>Prazos de entrega</h2><span class="cod">MOD-05</span></div>
+      <div class="ph"><h2>Prazos de entrega</h2></div>
       <div id="cal">${calendario()}</div>
     </div>
   </section>`;
@@ -1239,14 +1276,19 @@ function listaPedidos(){
     </div>`).join("") : `<div class="vazio"><span class="lbl">NENHUM REGISTRO</span>Nada encontrado com esse filtro.</div>`;
 }
 TELAS.pedidos = () => {
-  const chips = [["acao","Precisa de ação"],["vencidos","Vencidos"],["abertos","Abertos"],["todos","Todos"]].concat(Object.entries(STATUS).map(([k,v])=>[k,v.rotulo]));
+  const chips = [["acao","Precisa de ação"],["abertos","Abertos"],["vencidos","Vencidos"],["todos","Todos"]];
+  const porSituacao = STATUS[filtroStatus] ? filtroStatus : "";
   return `
   <div class="row rv" style="--d:40ms;margin-bottom:14px">
     <input id="busca" placeholder="Buscar por peça, cliente ou número" value="${esc(busca)}" style="flex:1;min-width:220px">
     <button class="tb ${selecionando ? "pri" : ""}" data-acao="lote-modo">${selecionando ? "Concluir seleção" : "Selecionar"}</button>
     <button class="tb pri" data-acao="novo">${ico("mais2")} Novo orçamento</button>
   </div>
-  <div class="chips rv" style="--d:90ms;margin-bottom:14px">${chips.map(([k,r]) => `<button class="chip ${filtroStatus===k?"on":""}" data-filtro="${k}">${r}</button>`).join("")}</div>
+  <div class="row rv" style="--d:90ms;margin-bottom:14px;gap:10px">
+    <div class="chips" style="padding:0">${chips.map(([k,r]) => `<button class="chip ${filtroStatus===k?"on":""}" data-filtro="${k}">${r}</button>`).join("")}</div>
+    <label class="dir" style="display:flex;align-items:center;gap:8px"><span class="lbl">Situação</span>
+      <select id="filtro-situacao" style="width:auto;min-width:170px"><option value="">Todas</option>${Object.entries(STATUS).map(([k,v]) => `<option value="${k}" ${porSituacao===k?"selected":""}>${v.rotulo}</option>`).join("")}</select></label>
+  </div>
   <div class="pn rv" style="--d:140ms"><div id="lista-pedidos">${listaPedidos()}</div></div>
   ${selecionando ? `<div style="height:${innerWidth < 760 ? 330 : 190}px"></div>${barraLote()}` : ""}`;
 };
@@ -1768,35 +1810,41 @@ TELAS.config = () => {
       ${tx("pixCidade","Cidade do recebedor",n.pixCidade,"Até 15 letras, sem acento.")}
     </div>
     <div class="sep"></div>
-    <div class="ph" style="margin-bottom:10px"><h2>Cartão e boleto (Mercado Pago)</h2><span class="cod">CONFIRMAÇÃO AUTOMÁTICA</span></div>
+    <details class="dobra" ${n.mpAtivo===true||n.mpAtivo==="true"?"open":""}><summary>Cartão e boleto <small>opcional, pelo Mercado Pago</small></summary>
     <label class="chk" style="margin-bottom:12px"><input type="checkbox" name="mpAtivo" ${n.mpAtivo===true||n.mpAtivo==="true"?"checked":""}> Oferecer cartão e boleto no link do cliente</label>
     <div class="grid g2">
       ${cn("acrescimoCartao","Acréscimo no cartão e boleto",n.acrescimoCartao,"%","Cobre a taxa do Mercado Pago. O Pix continua sem acréscimo.")}
       ${cn("parcelasMax","Parcelas no cartão",n.parcelasMax,"x","Até 12. Os juros do parcelamento ficam com o cliente.")}
     </div>
     <p class="dica">Só funciona depois de publicar as funções "pagamento" e "mp-webhook" no Supabase (veja o guia).</p>
+    </details>
     <button class="tb pri" style="margin-top:16px" data-acao="salvar-negocio">Salvar dados do negócio</button>
   </div>
   <div class="pn rv" style="--d:120ms;margin-bottom:16px" id="cfg-form">
     <div class="ph"><h2>Custos da oficina</h2><span class="cod">BASE DO CÁLCULO</span></div>
+    <p class="p13 muted" style="margin:-4px 0 14px">Estes números fazem o preço sozinho. Comece pelos quatro de cima; o resto já vem com um valor típico.</p>
     <div class="grid g3">
       ${cn("precoFilamento","Preço padrão do filamento",c.precoFilamento,"/kg",null,"R$")}
       ${cn("horaTrabalho","Sua hora de trabalho",c.horaTrabalho,"/h",null,"R$")}
+      ${cn("margem","Margem de lucro",c.margem,"%")}
+      ${cn("horasDia","Horas de impressão por dia",c.horasDia,"h","Usado na ocupação da semana.")}
+    </div>
+    <details class="dobra" style="margin-top:16px"><summary>Ajustes finos <small>energia, desgaste, falhas, embalagem e tempo da impressora</small></summary>
+    <div class="grid g3">
       ${cn("potencia","Potência média",c.potencia,"W","150–250 W é comum.")}
       ${cn("precoKwh","Preço da energia",c.precoKwh,"/kWh","Na conta de luz, com impostos.","R$")}
       ${cn("valorImpressora","Valor da impressora",c.valorImpressora,null,null,"R$")}
       ${cn("vidaUtil","Vida útil estimada",c.vidaUtil,"h")}
       ${cn("manutencaoHora","Manutenção e peças",c.manutencaoHora,"/h",null,"R$")}
       ${cn("taxaFalha","Reserva para falhas",c.taxaFalha,"%")}
-      ${cn("margem","Margem de lucro",c.margem,"%")}
       ${cn("taxaPagamento","Taxa de recebimento",c.taxaPagamento,"%","Pix é 0.")}
-      ${cn("horasDia","Horas de impressão por dia",c.horasDia,"h","Usado no anel de ocupação.")}
       ${cn("embComp","Caixa padrão · comprimento",c.embComp,"cm","Medidas usadas na cotação de frete.")}
       ${cn("embLarg","Caixa padrão · largura",c.embLarg,"cm")}
       ${cn("embAlt","Caixa padrão · altura",c.embAlt,"cm")}
       ${cn("embPeso","Peso da caixa e proteção",c.embPeso,"g","Somado ao peso das peças.")}
       ${cn("tempoAjuste","Tempo da sua impressora",c.tempoAjuste,"%","Comparado aos tempos do MakerWorld (Bambu Lab). 100% = igual; se a sua leva o dobro, 200%.")}
     </div>
+    </details>
     <button class="tb pri" style="margin-top:16px" data-acao="salvar-config">Salvar custos</button>
   </div>
   <div class="pn rv" style="--d:180ms">
@@ -1839,6 +1887,22 @@ function fecharModal(forcar){
   document.getElementById("modal").innerHTML = "";
   document.body.style.overflow = "";
 }
+/* o que fazer agora com este pedido, dito em uma frase */
+function proximoPasso(p){
+  return ({
+    solicitado: "Preencha a peça e o preço e envie o orçamento ao cliente.",
+    orcamento:  "Esperando o cliente aprovar e pagar. Se demorar, reenvie o orçamento.",
+    aprovado:   "Cliente aprovou. Esperando o pagamento.",
+    comprovante:"O cliente mandou o comprovante. Confira no banco e confirme o pagamento.",
+    pago:       "Pago. Coloque na impressora e mude para Imprimindo.",
+    imprimindo: "Imprimindo. Quando terminar, mude para Pronto.",
+    pronto:     "Peça pronta. Poste, informe o rastreio e marque como enviado.",
+    enviado:    "A caminho do cliente. Quando chegar, marque como Entregue.",
+    entregue:   "Concluído. Se ficou bonito, mostre na vitrine.",
+    perdido:    "Orçamento encerrado sem venda.",
+    cancelado:  "Pedido cancelado."
+  })[p.status] || "Preencha os dados do pedido.";
+}
 function acaoPrincipal(p){
   if(["solicitado","orcamento","aprovado"].includes(p.status)) return `<button class="tb pri acao-dest" data-acao="enviar-orcamento">Enviar orçamento no WhatsApp</button>`;
   if(p.status === "comprovante") return `<button class="tb pri acao-dest" data-acao="confirmar-pagamento">Confirmar pagamento</button>`;
@@ -1857,11 +1921,11 @@ function desenharPedido(){
           ${p.id ? `<div class="p13 muted" style="margin-top:4px">${p.cliente?`para <b style="color:var(--text)">${esc(p.cliente)}</b> · `:""}orçado em ${dataBR(dataOrc(p))}${p.validadeAte?` · <span class="${vencido(p)?"dn":""}">${vencido(p)?"venceu":"válido até"} ${dataBR(p.validadeAte)}</span>`:""}${p.origem==="site"?" · pedido pelo site":""}</div>` : `<div class="p13 muted" style="margin-top:4px">O número é gerado ao salvar.</div>`}</div>
           <button class="x" data-fechar aria-label="Fechar">&times;</button></div>
         <input type="hidden" name="status" value="${p.status}">
-        <div class="fluxo" role="group" aria-label="Situação">
-          ${FLUXO.map(k => `<button type="button" class="${p.status===k?"on":""}" data-status="${k}" style="--c:${STATUS[k].cor}">${STATUS[k].rotulo}</button>`).join("")}
-          <button type="button" class="${p.status==="perdido"?"on":""}" data-status="perdido" style="--c:${STATUS.perdido.cor};flex:0 0 auto">Não fechou</button>
-          <button type="button" class="${p.status==="cancelado"?"on":""}" data-status="cancelado" style="--c:${STATUS.cancelado.cor};flex:0 0 auto">Cancelar</button>
+        <div class="proximo"><span class="lbl">Próximo passo</span><b>${proximoPasso(p)}</b></div>
+        <div class="trilha" role="group" aria-label="Situação do pedido. Toque numa etapa para mudar.">
+          ${FLUXO.map((k,i) => { const at = FLUXO.indexOf(p.status); return `<button type="button" class="${p.status===k?"on":""} ${at>i?"feito":""}" data-status="${k}" style="--c:${STATUS[k].cor}" ${p.status===k?'aria-current="step"':""}><i></i><span>${STATUS[k].rotulo}</span></button>`; }).join("")}
         </div>
+        ${["perdido","cancelado"].includes(p.status) ? `<div class="req" style="margin-bottom:16px;border-color:color-mix(in srgb,${STATUS[p.status].cor} 50%,transparent)"><b style="color:${STATUS[p.status].cor}">${p.status==="perdido"?"Marcado como não fechou":"Pedido cancelado"}.</b> <span class="muted">Para reabrir, toque numa etapa acima.</span></div>` : ""}
         <div class="req" id="perda" style="border-color:rgba(176,122,140,.55);background:rgba(176,122,140,.08)" ${p.status==="perdido"?"":"hidden"}>
           <div class="lbl" style="color:#D9A5B6;margin-bottom:10px">POR QUE NÃO FECHOU?</div>
           <div class="grid g2">
@@ -1877,22 +1941,6 @@ function desenharPedido(){
             ${p.anexo?`<button type="button" class="tb min" data-arquivo="${esc(p.anexo)}">Abrir anexo do cliente</button>`:`<span class="faint">Sem anexo</span>`}</div>
         </div>` : ""}
 
-        <div class="pn" style="background:rgba(2,8,20,.45);margin-bottom:16px">
-          <div class="lbl" style="margin-bottom:10px">PAGAMENTO E DATAS</div>
-          <div class="grid g3">
-            <label class="f"><span>Data do orçamento</span><input type="date" name="f_dataOrcamento" value="${p.dataOrcamento||""}"></label>
-            <label class="f"><span>Data de aprovação</span><input type="date" name="f_dataAprovado" value="${p.dataAprovado||""}"></label>
-            <label class="f"><span>Data do pagamento</span><input type="date" name="f_dataPago" value="${p.dataPago||""}"></label>
-            <label class="f"><span>Forma de pagamento</span><select name="f_forma"><option value="">—</option>${
-              [...new Set(["Pix","Dinheiro","Cartão na maquininha","Transferência","Outro", p.formaPagamento].filter(Boolean))].map(o => `<option ${p.formaPagamento===o?"selected":""}>${esc(o)}</option>`).join("")}</select></label>
-            <label class="f"><span>Valor recebido</span><div class="campo"><span class="u">R$</span><input class="num" name="f_valorRecebido" inputmode="decimal" value="${p.valorRecebido ? dec(num(p.valorRecebido),2) : ""}" placeholder="${esc(dec(num(p.total),2))}"></div><span class="dica">Vazio = o total do pedido.</span></label>
-            <label class="f"><span>Taxa descontada</span><div class="campo"><span class="u">R$</span><input class="num" name="f_taxa" inputmode="decimal" value="${taxaRec(p) ? dec(taxaRec(p),2) : ""}" placeholder="0,00"></div><span class="dica">Maquininha ou Mercado Pago.</span></label>
-            <label class="f"><span>Início da produção</span><input type="date" name="f_dataInicio" value="${p.dataInicio||""}"></label>
-            <label class="f"><span>Data de envio</span><input type="date" name="f_dataEnviado" value="${p.dataEnviado||""}"></label>
-            <label class="f"><span>Data de entrega</span><input type="date" name="f_dataEntregue" value="${p.dataEntregue||""}"></label>
-          </div>
-          <p class="dica" style="margin-top:8px">Cada data preenchida avança o pedido para a etapa dela (Aprovado, Pago, Imprimindo, Enviado, Entregue). O relatório financeiro usa a data do pagamento.</p>
-        </div>
 
         ${p.mpPagamentoId || p.mpStatus ? `<div class="req" style="border-color:rgba(30,155,255,.5);background:rgba(30,155,255,.07)">
           <div class="lbl" style="color:var(--cyan)">MERCADO PAGO</div>
@@ -1910,6 +1958,7 @@ function desenharPedido(){
 
         <div class="md-grid">
           <div>
+            <h3 class="passo-t"><span class="n">1</span>Cliente</h3>
             <div class="grid g2" style="margin-bottom:14px">
               ${txt("cliente","Cliente",p.cliente,"Nome de quem encomendou",'list="lista-clientes"')}
               <datalist id="lista-clientes">${listaClientes().map(x=>`<option value="${esc(x.nome)}">`).join("")}</datalist>
@@ -1917,7 +1966,11 @@ function desenharPedido(){
               ${txt("email","E-mail",p.email,"opcional")}
               <label class="f"><span>Prazo de entrega</span><input type="date" name="prazo" value="${p.prazo||""}"></label>
             </div>
-            ${blocoMakerWorld(p.modelo ? p.modelo.url : "", p.modelo ? JSON.stringify(p.modelo) : (p.modeloJson || ""))}
+            <div class="sep"></div>
+            <h3 class="passo-t"><span class="n">2</span>Peça e preço</h3>
+            <details class="dobra leve" ${p.modelo?"open":""}><summary>Importar do MakerWorld <small>opcional: traz tempo, peso e licença</small></summary>
+              ${blocoMakerWorld(p.modelo ? p.modelo.url : "", p.modelo ? JSON.stringify(p.modelo) : (p.modeloJson || ""))}
+            </details>
             ${camposPeca(p)}
             <div class="grid g2" style="margin-top:14px">
               <label class="f"><span>Preço combinado por peça</span><div class="campo"><span class="u">R$</span><input class="num" name="precoManual" inputmode="decimal" value="${p.precoManual||""}" placeholder="automático"></div><span class="dica">Vazio = usa o calculado.</span></label>
@@ -1925,7 +1978,7 @@ function desenharPedido(){
             </div>
 
             <div class="sep"></div>
-            <div class="lbl" style="margin-bottom:10px">ENTREGA PELOS CORREIOS</div>
+            <h3 class="passo-t"><span class="n">3</span>Entrega</h3>
             <div class="grid g3">
               ${txt("cep","CEP",p.cep,"00000-000",'inputmode="numeric" data-cep')}
               ${ENDERECO_CAMPOS.map(([k,r]) => txt("end_"+k, r, e[k], "")).join("")}
@@ -1939,8 +1992,26 @@ function desenharPedido(){
             <div id="frete-opcoes"></div>
 
             <div class="sep"></div>
+            <h3 class="passo-t"><span class="n">4</span>Recados</h3>
             <label class="f"><span>Recado para o cliente</span><textarea name="recado" placeholder="Aparece no link do pedido. Ex.: cor, detalhes combinados, prazo">${esc(p.recado||"")}</textarea></label>
             <label class="f" style="margin-top:14px"><span>Observações internas</span><textarea name="obs" placeholder="Só você vê">${esc(p.obs||"")}</textarea></label>
+            <div class="sep"></div>
+        <details class="dobra" ${p.status==="comprovante"?"open":""}>
+              <summary><span class="n">5</span>Pagamento e datas <small>preenchidas sozinhas ao mudar a etapa</small></summary>
+              <div class="grid g3">
+                <label class="f"><span>Data do orçamento</span><input type="date" name="f_dataOrcamento" value="${p.dataOrcamento||""}"></label>
+                <label class="f"><span>Data de aprovação</span><input type="date" name="f_dataAprovado" value="${p.dataAprovado||""}"></label>
+                <label class="f"><span>Data do pagamento</span><input type="date" name="f_dataPago" value="${p.dataPago||""}"></label>
+                <label class="f"><span>Forma de pagamento</span><select name="f_forma"><option value="">—</option>${
+                  [...new Set(["Pix","Dinheiro","Cartão na maquininha","Transferência","Outro", p.formaPagamento].filter(Boolean))].map(o => `<option ${p.formaPagamento===o?"selected":""}>${esc(o)}</option>`).join("")}</select></label>
+                <label class="f"><span>Valor recebido</span><div class="campo"><span class="u">R$</span><input class="num" name="f_valorRecebido" inputmode="decimal" value="${p.valorRecebido ? dec(num(p.valorRecebido),2) : ""}" placeholder="${esc(dec(num(p.total),2))}"></div><span class="dica">Vazio = o total do pedido.</span></label>
+                <label class="f"><span>Taxa descontada</span><div class="campo"><span class="u">R$</span><input class="num" name="f_taxa" inputmode="decimal" value="${taxaRec(p) ? dec(taxaRec(p),2) : ""}" placeholder="0,00"></div><span class="dica">Maquininha ou Mercado Pago.</span></label>
+                <label class="f"><span>Início da produção</span><input type="date" name="f_dataInicio" value="${p.dataInicio||""}"></label>
+                <label class="f"><span>Data de envio</span><input type="date" name="f_dataEnviado" value="${p.dataEnviado||""}"></label>
+                <label class="f"><span>Data de entrega</span><input type="date" name="f_dataEntregue" value="${p.dataEntregue||""}"></label>
+              </div>
+              <p class="dica" style="margin-top:8px">Só mexa aqui para corrigir. Preencher uma data também avança o pedido para a etapa dela. O financeiro usa a data do pagamento.</p>
+            </details>
           </div>
           <div>
             <div class="pn" style="background:rgba(2,8,20,.55)" id="ped-res">${blocoResultado(c)}</div>
@@ -1953,9 +2024,13 @@ function desenharPedido(){
           ${acaoPrincipal(p)}
           <button class="tb ${acaoPrincipal(p)?"":"pri"}" data-acao="salvar-pedido">${p.id?"Salvar":"Criar pedido"}</button>
           <button class="tb" data-acao="gerar-orcamento">Enviar PDF</button>
-          ${p.id?`<button class="tb" data-acao="duplicar">Duplicar</button>
-            ${["enviado","entregue"].includes(p.status)?`<button class="tb" data-acao="para-vitrine">Mostrar na vitrine</button>`:""}
-            <button class="tb perigo dir" data-acao="excluir-pedido">Excluir</button>`:""}
+          ${p.id?`<details class="mais dir"><summary class="tb">Mais ações</summary><div class="mais-menu">
+            <button type="button" class="tb" data-acao="duplicar">Duplicar pedido</button>
+            ${["enviado","entregue"].includes(p.status)?`<button type="button" class="tb" data-acao="para-vitrine">Mostrar na vitrine</button>`:""}
+            ${p.status!=="perdido"?`<button type="button" class="tb" data-status="perdido">Marcar como não fechou</button>`:""}
+            ${p.status!=="cancelado"?`<button type="button" class="tb perigo" data-status="cancelado">Cancelar pedido</button>`:""}
+            <button type="button" class="tb perigo" data-acao="excluir-pedido">Excluir de vez</button>
+          </div></details>`:""}
         </div>
       </div>
     </div>
@@ -2670,6 +2745,9 @@ document.getElementById("login-form").addEventListener("submit", async e => {
 /* ================================================================
    15. EVENTOS
    ================================================================ */
+document.addEventListener("change", e => {
+  if(e.target.id === "filtro-situacao"){ filtroStatus = e.target.value || "abertos"; render(); }
+});
 document.addEventListener("click", async e => {
   const t = e.target; let el;
   if((el = t.closest("[data-ir]"))){ if(el.dataset.filtroIr) filtroStatus = el.dataset.filtroIr; ir(el.dataset.ir); return; }
@@ -2683,6 +2761,8 @@ document.addEventListener("click", async e => {
     const f = document.getElementById("ped-form");
     f.querySelector('[name="status"]').value = el.dataset.status;
     const perda = document.getElementById("perda"); if(perda) perda.hidden = el.dataset.status !== "perdido";
+    if(el.dataset.status === "perdido" && perda) perda.scrollIntoView({ behavior: reduzMov ? "auto" : "smooth", block:"center" });
+    const menu = el.closest("details.mais"); if(menu) menu.open = false;
     const st = el.dataset.status, campo = n => f.querySelector(`[name="${n}"]`);
     const liga = (n, sim) => { const c = campo(n); if(!c) return; if(sim){ if(!c.value) c.value = hoje(); } else c.value = ""; };
     if(!["cancelado","perdido"].includes(st)){
