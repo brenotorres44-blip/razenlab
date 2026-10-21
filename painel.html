@@ -938,7 +938,6 @@ const ico = (n, extra="") => `<svg viewBox="0 0 24 24" fill="none" stroke="curre
 const PAGINAS = [
   { id:"painel",     nome:"Dashboard",     ico:"painel" },
   { id:"pedidos",    nome:"Pedidos",       ico:"pedidos" },
-  { id:"orcar",      nome:"Orçamento",     ico:"orcar" },
   { id:"clientes",   nome:"Clientes",      ico:"clientes" },
   { id:"estoque",    nome:"Estoque",       ico:"estoque" },
   { id:"financeiro", nome:"Financeiro",    ico:"financeiro" },
@@ -966,7 +965,7 @@ function desenharNav(){
     <a class="sys" href="index.html" target="_blank" rel="noopener" style="text-decoration:none">${ico("site",'style="width:15px;height:15px"')} Abrir o site</a>
     <button class="sys" data-acao="sair" style="background:none;border:none;cursor:pointer;text-align:left;width:100%;font:inherit">${ico("sair",'style="width:15px;height:15px"')} Sair</button>`;
 
-  const mob = [["painel","Início","painel"],["pedidos","Pedidos","pedidos"],["orcar","Orçar","mais2"],["estoque","Estoque","estoque"],["mais","Mais","mais"]];
+  const mob = [["painel","Início","painel"],["pedidos","Pedidos","pedidos"],["orcar","Novo","mais2"],["estoque","Estoque","estoque"],["mais","Mais","mais"]];
   document.getElementById("bnav").innerHTML = mob.map(([id,n,ic]) => id==="orcar"
     ? `<button class="fab ${aba===id?"on":""}" data-ir="${id}"><span class="c">${ico(ic)}</span>${n}</button>`
     : `<button class="${(aba===id)||(id==="mais"&&["clientes","financeiro","analise","movimentacoes","vitrine","config"].includes(aba))?"on":""}" data-ir="${id}">${ico(ic)}${n}</button>`).join("");
@@ -974,6 +973,8 @@ function desenharNav(){
 
 function ir(id){
   if(id === "mais"){ abrirFolhaMais(); return; }
+  // o orçamento agora é feito direto na janela do pedido (calcula na hora e só salva se você quiser)
+  if(id === "orcar"){ abrirPedido(null); return; }
   if(fecharModal() === false) return;
   if(id !== "pedidos"){ selecionando = false; selecionados.clear(); }
   aba = id;
@@ -1895,7 +1896,7 @@ function desenharPedido(){
   <div class="ov" data-fechar>
     <div class="md" role="dialog" aria-modal="true" aria-label="Pedido">
       <div class="pn" id="ped-form">
-        <div class="md-h"><div style="flex:1;min-width:0"><h2>${p.id ? `Orçamento ${numPed(p.numero)}` : "Novo orçamento"}</h2>
+        <div class="md-h"><div style="flex:1;min-width:0"><h2>${p.id ? `Orçamento ${numPed(p.numero)}` : "Novo orçamento"}</h2>${p.id ? "" : `<div class="p13 muted" style="margin-top:4px">O preço é calculado enquanto você preenche. Só é salvo quando você clicar em Salvar.</div>`}
           ${p.id ? `<div class="p13 muted" style="margin-top:4px">${p.cliente?`para <b style="color:var(--text)">${esc(p.cliente)}</b> · `:""}orçado em ${dataBR(dataOrc(p))}${p.validadeAte?` · <span class="${vencido(p)?"dn":""}">${vencido(p)?"venceu":"válido até"} ${dataBR(p.validadeAte)}</span>`:""}${p.origem==="site"?" · pedido pelo site":""}</div>` : `<div class="p13 muted" style="margin-top:4px">O número é gerado ao salvar.</div>`}</div>
           <button class="x" data-fechar aria-label="Fechar">&times;</button></div>
         <input type="hidden" name="status" value="${p.status}">
@@ -1919,8 +1920,8 @@ function desenharPedido(){
             ${p.anexo?`<button type="button" class="tb min" data-arquivo="${esc(p.anexo)}">Abrir anexo do cliente</button>`:`<span class="faint">Sem anexo</span>`}</div>
         </div>` : ""}
 
-        <div class="pn" style="background:rgba(2,8,20,.45);margin-bottom:16px">
-          <div class="lbl" style="margin-bottom:10px">Pagamento e datas</div>
+        <details class="pn ped-datas" style="background:rgba(2,8,20,.45);margin-bottom:16px" ${p.id ? "open" : ""}>
+          <summary class="lbl" style="margin-bottom:10px;cursor:pointer">Pagamento e datas${p.id ? "" : " · abrir só se o cliente já aprovou ou pagou"}</summary>
           <div class="grid g3">
             <label class="f"><span>Data do orçamento</span><input type="date" name="f_dataOrcamento" value="${p.dataOrcamento||""}"></label>
             <label class="f"><span>Data de aprovação</span><input type="date" name="f_dataAprovado" value="${p.dataAprovado||""}"></label>
@@ -1934,7 +1935,7 @@ function desenharPedido(){
             <label class="f"><span>Data de entrega</span><input type="date" name="f_dataEntregue" value="${p.dataEntregue||""}"></label>
           </div>
           <p class="dica" style="margin-top:8px">Cada data preenchida avança o pedido para a etapa dela (Aprovado, Pago, Imprimindo, Enviado, Entregue). O relatório financeiro usa a data do pagamento.</p>
-        </div>
+        </details>
 
         ${p.mpPagamentoId || p.mpStatus ? `<div class="req" style="border-color:rgba(30,155,255,.5);background:rgba(30,155,255,.07)">
           <div class="lbl" style="color:var(--cyan)">Mercado Pago</div>
