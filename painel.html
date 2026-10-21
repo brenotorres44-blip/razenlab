@@ -652,7 +652,7 @@ const vitDaLinha = r => ({ ...r.dados, id:r.id, visivel:r.visivel, destaque:r.de
 function erroTexto(e){
   const m = (e && (e.message || e.error_description || e.msg)) || String(e || "");
   if(/Failed to fetch|NetworkError|network/i.test(m)) return "Sem conexão com a internet.";
-  if(/JWT|expired|not authenticated/i.test(m)) return "Sua sessão expirou. Entre de novo.";
+  if(/JWT|expired|not authenticated|Bearer token|Auth session missing|session_not_found|permission denied for (table|function)/i.test(m)) return "Sua sessão expirou. Saia e entre de novo no painel.";
   return m || "Erro desconhecido.";
 }
 function falhou(e, acao){ console.error(acao, e); toast(`Não consegui ${acao}: ${erroTexto(e)}`); }
@@ -3274,7 +3274,15 @@ async function salvarTrocaSenha(btn){
   finally{ if(document.body.contains(btn)){ btn.disabled = false; btn.textContent = "Salvar nova senha"; } }
 }
 let novoFator = null;
+async function sessaoValida(){
+  const { data } = await sb.auth.getSession();
+  if(!data.session) return false;
+  const u = await sb.auth.getUser();
+  if(u.error){ const r = await sb.auth.refreshSession(); return !r.error && !!r.data.session; }
+  return true;
+}
 async function ativar2fa(){
+  if(!(await sessaoValida())){ toast("Sua sessão expirou. Saia e entre de novo no painel para ativar as duas etapas."); return; }
   try{
     // limpa tentativas antigas que não foram confirmadas
     const l = await sb.auth.mfa.listFactors();
@@ -3688,10 +3696,13 @@ if("serviceWorker" in navigator && location.protocol === "https:") navigator.ser
     return;
   }
   let recuperando = VEIO_RECUPERACAO;
-  sb.auth.onAuthStateChange(ev => { if(ev === "PASSWORD_RECOVERY" && !recuperando){ recuperando = true; fluxoRecuperacao(); } });
+  sb.auth.onAuthStateChange(ev => {
+    if(ev === "PASSWORD_RECOVERY" && !recuperando){ recuperando = true; fluxoRecuperacao(); }
+    if(ev === "SIGNED_OUT" && sessaoAberta){ sessaoAberta = false; location.replace(location.pathname + "?saiu=sessao"); }
+  });
   const { data } = await sb.auth.getSession();
   if(q.get("saiu")){ history.replaceState(null, "", location.pathname); }
-  const avisoSaida = q.get("saiu") === "inatividade" ? "Você saiu por inatividade. Entre de novo." : q.get("saiu") === "todos" ? "Todas as sessões foram encerradas." : "";
+  const avisoSaida = q.get("saiu") === "inatividade" ? "Você saiu por inatividade. Entre de novo." : q.get("saiu") === "todos" ? "Todas as sessões foram encerradas." : q.get("saiu") === "sessao" ? "Sua sessão terminou. Entre de novo." : "";
   if(!data.session){ if(recuperando){ history.replaceState(null, "", location.pathname); mostrarLogin("Não consegui abrir esse link de recuperação. Peça um novo abaixo.", true, "esqueci"); return; } mostrarLogin(avisoSaida); return; }
   if(recuperando){ fluxoRecuperacao(); return; }
   // sessão guardada há mais tempo que o limite de inatividade: pede login de novo
