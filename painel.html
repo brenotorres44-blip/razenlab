@@ -2841,7 +2841,7 @@ function desenharColecao(){
         <div class="lbl" style="margin:12px 0 6px">Link para compartilhar · abre o site direto neste catálogo</div>
         <div class="row" style="gap:8px;flex-wrap:wrap"><input readonly value="${esc(linkCatalogo(c))}" style="flex:1;min-width:200px;font-size:13px" onclick="this.select()">
           <button class="tb min" data-acao="colecao-copiar" data-link="${esc(linkCatalogo(c))}">Copiar</button>
-          <a class="tb min" href="https://wa.me/?text=${encodeURIComponent(`Olha o catálogo de ${c.nome} da RazenLab3d: peças impressas em 3D para decorar, colecionar e presentear.\n${linkCatalogo(c)}`)}" target="_blank" rel="noopener">WhatsApp</a></div></div>
+          <a class="tb min" href="https://wa.me/?text=${encodeURIComponent(`Olha o catálogo de ${c.nome} da RazenLab: peças impressas em 3D para decorar, colecionar e presentear.\n${linkCatalogo(c)}`)}" target="_blank" rel="noopener">WhatsApp</a></div></div>
     </div>
     <div class="col-pecas">
       ${itens.length ? itens.map(v0 => { const v = { ...v0, ...((c.rasc||{})[v0.id]||{}) }; return `<div class="col-peca" data-item-col="${v.id}">
