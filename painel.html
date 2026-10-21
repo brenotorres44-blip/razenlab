@@ -2434,7 +2434,7 @@ function abrirFilamento(id){
 
 let trabalhoAberto = null;
 function abrirTrabalho(t){
-  trabalhoAberto = t ? {...t, fotos:[...(t.fotos||[])]} : { id:null, titulo:"", categoria:"", descricao:"", material:"", dimensoes:"", prazo:"", fotos:[], destaque:false, visivel:true };
+  trabalhoAberto = t ? {...t, fotos:[...(t.fotos||[])]} : { id:null, titulo:"", categoria:"", descricao:"", material:"", dimensoes:"", prazo:"", preco:"", fotos:[], destaque:false, visivel:true };
   desenharTrabalho();
 }
 function desenharTrabalho(){
@@ -2450,6 +2450,7 @@ function desenharTrabalho(){
       <label class="f"><span>Material</span><input name="material" value="${esc(t.material)}" placeholder="PLA preto fosco"></label>
       <label class="f"><span>Tamanho</span><input name="dimensoes" value="${esc(t.dimensoes)}" placeholder="12 × 8 × 20 cm"></label>
       <label class="f"><span>Prazo médio</span><input name="prazo" value="${esc(t.prazo)}" placeholder="3 a 5 dias"></label>
+      <label class="f"><span>Preço no site (opcional)</span><input name="preco" value="${esc(t.preco||"")}" inputmode="decimal" placeholder="59,90 · vazio = sob orçamento"></label>
     </div>
     <label class="f" style="margin-top:14px"><span>Descrição</span><textarea name="descricao">${esc(t.descricao)}</textarea></label>
     <div class="row" style="margin-top:14px;gap:22px"><label class="chk"><input type="checkbox" name="visivel" ${t.visivel!==false?"checked":""}> Mostrar no site</label><label class="chk"><input type="checkbox" name="destaque" ${t.destaque?"checked":""}> Destaque</label></div>
@@ -2475,7 +2476,7 @@ async function gravarTrabalho(w){
   const fotos = [];
   for(const f of w.fotos) fotos.push(f.startsWith("data:") ? await subirImagem("vitrine", f) : f);
   const {id, visivel, destaque, fotos:_, ...d} = w;
-  const linha = { visivel: visivel !== false, destaque: !!destaque, dados:{ titulo:d.titulo, categoria:d.categoria, descricao:d.descricao, material:d.material, dimensoes:d.dimensoes, prazo:d.prazo }, fotos };
+  const linha = { visivel: visivel !== false, destaque: !!destaque, dados:{ titulo:d.titulo, categoria:d.categoria, descricao:d.descricao, material:d.material, dimensoes:d.dimensoes, prazo:d.prazo, preco:d.preco || "" }, fotos };
   const r = id ? await sb.from("vitrine").update(linha).eq("id", id).select().single() : await sb.from("vitrine").insert(linha).select().single();
   if(r.error) throw r.error;
   return vitDaLinha(r.data);
