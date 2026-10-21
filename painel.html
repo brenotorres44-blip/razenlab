@@ -2782,7 +2782,7 @@ function desenharColecao(){
       <label class="f"><span>Entra no ar em</span><input name="inicio" value="${ddmm(c.inicio)}" placeholder="dd/mm" inputmode="numeric" maxlength="5"><span class="dica">Só no modo por datas.</span></label>
       <label class="f"><span>Sai do ar depois de</span><input name="fim" value="${ddmm(c.fim)}" placeholder="dd/mm" inputmode="numeric" maxlength="5"><span class="dica">Pode virar o ano: 01/11 a 06/01.</span></label>
     </div>
-    <label class="f" style="margin-top:14px"><span>Frase do catálogo no site</span><textarea name="descricao" maxlength="240" placeholder="Peças para decorar, colecionar e presentear.">${esc(c.descricao)}</textarea></label>
+    <label class="f" style="margin-top:14px"><span>Frase do catálogo no site</span><textarea name="descricao" maxlength="600" rows="4" placeholder="Peças para decorar, colecionar e presentear.">${esc(c.descricao)}</textarea><span class="dica">Até 600 caracteres. As quebras de linha aparecem no site. Frases curtas (1 a 3 linhas) ficam melhor no destaque.</span></label>
     <div class="foto-site" style="margin-top:6px">
       ${c.banner ? `<img src="${esc(c.banner)}" alt="" style="height:140px;width:112px;object-fit:cover">` : `<div style="width:112px;height:140px;border-radius:10px;border:1px dashed var(--control)"></div>`}
       <div><b>Imagem do catálogo</b><p class="muted p13" style="margin:4px 0 10px">Aparece em destaque no site e o cliente pode abrir em tela cheia. Formato de post (1080 × 1350) fica melhor.</p>
