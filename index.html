@@ -324,7 +324,7 @@ html:not(.js) [data-reveal]{opacity:1;transform:none}
 
 <main id="conteudo">
 <div class="hero" id="inicio">
-  <div class="hero-img"><img src="assets/hero.webp" width="2000" height="1125" alt="Vasos, suporte de celular e um lagarto articulado impressos em 3D sobre uma mesa escura" fetchpriority="high"></div>
+  <div class="hero-img"><img id="hero-foto" src="assets/hero.webp" width="2000" height="1125" alt="Vasos, suporte de celular e um lagarto articulado impressos em 3D sobre uma mesa escura" fetchpriority="high"><script>try{var h=localStorage.getItem("razenlab.site.hero");if(h)document.getElementById("hero-foto").src=h}catch(e){}</script></div>
   <div class="wrap">
     <div class="hero-txt">
       <span class="kicker dot" data-load style="--d:0ms">Criatividade em cada camada</span>
@@ -569,6 +569,12 @@ function preencherNegocio(){
   const n = V.negocio;
   if(n.slogan) document.getElementById("slogan").textContent = n.slogan;
   if(n.sobre) document.getElementById("sobre").textContent = n.sobre;
+  // fotos trocadas no painel
+  const hero = document.getElementById("hero-foto");
+  if(n.heroFoto){ if(hero.getAttribute("src") !== n.heroFoto) hero.src = n.heroFoto; }
+  else if(hero.getAttribute("src") !== "assets/hero.webp") hero.src = "assets/hero.webp";
+  try{ n.heroFoto ? localStorage.setItem("razenlab.site.hero", n.heroFoto) : localStorage.removeItem("razenlab.site.hero"); }catch(e){}
+  if(n.logoFoto) document.querySelectorAll(".brand img").forEach(i => i.src = n.logoFoto);
 
   const canais = [];
   if(n.whatsapp) canais.push(`<a class="channel" href="${esc(linkWhats("Olá! Vim pelo site da RazenLab3d."))}" target="_blank" rel="noopener"><span class="ic">${IC.whats}</span><span><small>WhatsApp</small>${esc(n.whatsapp)}</span></a>`);
@@ -589,7 +595,7 @@ function preencherNegocio(){
 function lista(){
   demo = !V.itens.length;
   if(demo) return DEMO;
-  return V.itens.slice().sort((a,b)=>(b.destaque?1:0)-(a.destaque?1:0)).map(i => ({ ...i, foto:(i.fotos||[])[0], selo:i.destaque ? "Favorito do laboratório" : "" }));
+  return V.itens.slice().sort((a,b)=>(b.destaque?1:0)-(a.destaque?1:0)).map(i => ({ ...i, foto:(i.fotos||[])[0], selo:i.selo || (i.destaque ? "Favorito do laboratório" : "") }));
 }
 function desenharCatalogo(){
   const itens = lista();

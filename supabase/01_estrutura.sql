@@ -14,9 +14,17 @@ create table if not exists public.admins (
   user_id uuid primary key references auth.users(id) on delete cascade
 );
 
+-- administrador = está na lista E passou pelo código de duas etapas, se tiver ativado
 create or replace function public.is_admin() returns boolean
-language sql stable security definer set search_path = public as $$
-  select exists (select 1 from public.admins where user_id = auth.uid());
+language sql stable security definer set search_path = public, auth as $$
+  select exists (select 1 from public.admins where user_id = auth.uid())
+     and (
+       coalesce(auth.jwt() ->> 'aal', 'aal1') = 'aal2'
+       or not exists (
+         select 1 from auth.mfa_factors f
+         where f.user_id = auth.uid() and f.status = 'verified'
+       )
+     );
 $$;
 
 -- --------------------------------------------------------------------------
