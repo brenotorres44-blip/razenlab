@@ -560,7 +560,7 @@ const NEGOCIO_PADRAO = {
   nome:"RazenLab",
   slogan:"Design que surpreende. Peças que têm a sua cara. Transformamos imaginação em realidade, camada por camada.",
   sobre:"Conte o que você precisa. O orçamento chega com frete para todo o Brasil e pagamento por Pix.",
-  whatsapp:"", instagram:"", email:"", cidade:"", responsavel:"", heroFoto:"", logoFoto:"",
+  whatsapp:"", instagram:"", email:"", cidade:"", responsavel:"", heroFoto:"", logoFoto:"", colecoes:[],
   pagamento:"Pix. A produção começa após a confirmação do pagamento.",
   validadeDias:7, entregas:"",
   pixTipo:"celular", pixChave:"", pixNome:"", pixCidade:"",
@@ -649,7 +649,7 @@ async function gravarConfig(){
   const r1 = await sb.from("config").upsert({ id:1, dados:{ config:dados.config, negocio:n } });
   if(r1.error) throw r1.error;
   // só o que é público vai para o site
-  const r2 = await sb.from("site").upsert({ id:1, dados:{ nome:n.nome, slogan:n.slogan, sobre:n.sobre, whatsapp:n.whatsapp, instagram:n.instagram, email:n.email, cidade:n.cidade, entregas:n.entregas, heroFoto:n.heroFoto || "", logoFoto:n.logoFoto || "" } });
+  const r2 = await sb.from("site").upsert({ id:1, dados:{ nome:n.nome, slogan:n.slogan, sobre:n.sobre, whatsapp:n.whatsapp, instagram:n.instagram, email:n.email, cidade:n.cidade, entregas:n.entregas, heroFoto:n.heroFoto || "", logoFoto:n.logoFoto || "", colecoes:Array.isArray(n.colecoes) ? n.colecoes : [] } });
   if(r2.error) throw r2.error;
 }
 async function gravarFilamento(f){
@@ -1713,16 +1713,21 @@ function pesoVitrine(){
   const b = vitrine.reduce((s,v)=>s+(v.fotos||[]).reduce((a,f)=>a+f.length*.75,0),0);
   return b > 1048576 ? dec(b/1048576,1)+" MB" : dec(b/1024,0)+" KB";
 }
-TELAS.vitrine = () => `
+TELAS.vitrine = () => {
+  const cs = colecoes();
+  const lista = vitrine.filter(v => vitFiltro === "todos" ? true : vitFiltro === "sem" ? !cs.some(c => c.id === v.colecao) : v.colecao === vitFiltro);
+  return `
+  ${blocoColecoes()}
   ${blocoFotosSite()}
   <div class="md-grid">
     <div class="pn rv" style="--d:60ms">
       <div class="ph"><h2>Trabalhos no site</h2><button class="tb pri min dir" data-acao="novo-trabalho">${ico("mais2")} Adicionar</button></div>
-      ${vitrine.length ? vitrine.slice().sort((a,b)=>(b.destaque?1:0)-(a.destaque?1:0)).map(v => `
+      ${cs.length && vitrine.length ? `<div class="row" style="gap:6px;margin:-4px 0 10px;flex-wrap:wrap">${[["todos","Todas"],["sem","Sem catálogo"],...cs.map(c => [c.id, c.nome])].map(([f,r]) => `<button class="tb min ${vitFiltro===f?"pri":""}" data-acao="vit-filtro" data-f="${esc(f)}">${esc(r)}</button>`).join("")}</div>` : ""}
+      ${vitrine.length ? lista.slice().sort((a,b)=>(b.destaque?1:0)-(a.destaque?1:0)).map(v => `
         <div class="it" data-trabalho="${v.id}">
           ${v.fotos&&v.fotos[0]?`<img class="thumb" src="${v.fotos[0]}" alt="">`:`<div class="thumb"></div>`}
-          <div class="g"><div class="n">${esc(v.titulo||"Sem título")}</div><div class="s">${esc([v.categoria,v.material].filter(Boolean).join(" · ")||"—")}</div></div>
-          <div class="val">${v.destaque?`<span class="st" style="color:var(--spark)">DESTAQUE</span>`:""}${v.visivel===false?`<span class="st faint">OCULTO</span>`:""}</div>
+          <div class="g"><div class="n">${esc(v.titulo||"Sem título")}</div><div class="s">${esc([(cs.find(c => c.id === v.colecao)||{}).nome, v.categoria].filter(Boolean).join(" · ")||"—")}</div></div>
+          <div class="val"><b>${precoPainel(v.preco) || `<span class="faint p13">sob orçamento</span>`}</b>${v.colecao && cs.find(c => c.id === v.colecao) && !colecaoNoAr(cs.find(c => c.id === v.colecao)) ? `<span class="st faint">FORA DE ÉPOCA</span>` : ""}${v.destaque?`<span class="st" style="color:var(--spark)">DESTAQUE</span>`:""}${v.visivel===false?`<span class="st faint">OCULTO</span>`:""}</div>
         </div>`).join("") : `<div class="vazio"><span class="lbl">Vitrine vazia</span>Enquanto estiver vazia, o site mostra a coleção de exemplo. Adicione suas peças ou traga os exemplos para cá e troque as fotos de cada um.<div style="margin-top:12px"><button class="tb" data-acao="importar-exemplos">Trazer a coleção de exemplo para editar</button></div></div>`}
     </div>
     <div class="pn rv" style="--d:140ms">
@@ -1737,6 +1742,7 @@ TELAS.vitrine = () => `
       <p class="faint p13" style="margin-top:12px">${vitrine.length} trabalho${vitrine.length===1?"":"s"} · ${vitrine.filter(v=>v.visivel!==false).length} visíve${vitrine.filter(v=>v.visivel!==false).length===1?"l":"is"}</p>
     </div>
   </div>`;
+};
 
 /* ---------- configurações ---------- */
 TELAS.config = () => {
@@ -2482,7 +2488,7 @@ function abrirFilamento(id){
 
 let trabalhoAberto = null;
 function abrirTrabalho(t){
-  trabalhoAberto = t ? {...t, fotos:[...(t.fotos||[])]} : { id:null, titulo:"", categoria:"", descricao:"", material:"", dimensoes:"", prazo:"", preco:"", selo:"", fotos:[], destaque:false, visivel:true };
+  trabalhoAberto = t ? {...t, fotos:[...(t.fotos||[])]} : { id:null, titulo:"", categoria:"", descricao:"", material:"", dimensoes:"", prazo:"", preco:"", selo:"", colecao:"", fotos:[], destaque:false, visivel:true };
   desenharTrabalho();
 }
 function desenharTrabalho(){
@@ -2498,6 +2504,7 @@ function desenharTrabalho(){
       <label class="f"><span>Material</span><input name="material" value="${esc(t.material)}" placeholder="PLA preto fosco"></label>
       <label class="f"><span>Tamanho</span><input name="dimensoes" value="${esc(t.dimensoes)}" placeholder="12 × 8 × 20 cm"></label>
       <label class="f"><span>Prazo médio</span><input name="prazo" value="${esc(t.prazo)}" placeholder="3 a 5 dias"></label>
+      <label class="f"><span>Catálogo</span><select name="colecao"><option value="">Sempre no site (sem catálogo)</option>${colecoes().map(c => `<option value="${esc(c.id)}" ${t.colecao===c.id?"selected":""}>${esc(c.nome)}</option>`).join("")}</select><span class="dica">Peça de um catálogo só aparece quando ele está no ar.</span></label>
       <label class="f"><span>Selo no cartão (opcional)</span><input name="selo" value="${esc(t.selo||"")}" maxlength="28" placeholder="Favorito do laboratório"></label>
       <label class="f"><span>Preço no site (opcional)</span><input name="preco" value="${esc(t.preco||"")}" inputmode="decimal" placeholder="59,90 · vazio = sob orçamento"></label>
     </div>
@@ -2525,7 +2532,7 @@ async function gravarTrabalho(w){
   const fotos = [];
   for(const f of w.fotos) fotos.push(f.startsWith("data:") ? await subirImagem("vitrine", f) : f);
   const {id, visivel, destaque, fotos:_, ...d} = w;
-  const linha = { visivel: visivel !== false, destaque: !!destaque, dados:{ titulo:d.titulo, categoria:d.categoria, descricao:d.descricao, material:d.material, dimensoes:d.dimensoes, prazo:d.prazo, preco:d.preco || "", selo:d.selo || "" }, fotos };
+  const linha = { visivel: visivel !== false, destaque: !!destaque, dados:{ titulo:d.titulo, categoria:d.categoria, descricao:d.descricao, material:d.material, dimensoes:d.dimensoes, prazo:d.prazo, preco:d.preco || "", selo:d.selo || "", colecao:d.colecao || "" }, fotos };
   const r = id ? await sb.from("vitrine").update(linha).eq("id", id).select().single() : await sb.from("vitrine").insert(linha).select().single();
   if(r.error) throw r.error;
   return vitDaLinha(r.data);
@@ -2706,7 +2713,193 @@ document.addEventListener("click", e => {
   else if(b.dataset.acao === "importar-exemplos") importarExemplos(b);
 });
 document.addEventListener("change", e => {
-  if(e.target.id === "arq-site" && e.target.files[0]){ const f = e.target.files[0]; e.target.value = ""; trocarFotoSite(f); }
+  if(e.target.id === "arq-site" && e.target.files[0]){ const f = e.target.files[0]; e.target.value = ""; if(bannerAlvo){ bannerAlvo = false; trocarBanner(f); } else trocarFotoSite(f); }
+});
+
+/* ---------- catálogos por época (coleções) ---------- */
+// modo: "ligada" (sempre no ar), "desligada" (fora do site) ou "datas" (entra e sai sozinha todo ano)
+const MD = d => String(d.getMonth()+1).padStart(2,"0") + "-" + String(d.getDate()).padStart(2,"0");
+function colecaoNoAr(c, quando){
+  if(!c) return true;
+  if(c.modo === "ligada") return true;
+  if(c.modo !== "datas" || !c.inicio || !c.fim) return false;
+  const h = MD(quando || new Date());
+  return c.inicio <= c.fim ? (h >= c.inicio && h <= c.fim) : (h >= c.inicio || h <= c.fim);
+}
+const ddmm = md => md ? md.split("-").reverse().join("/") : "";
+function lerDiaMes(txt){
+  const m = String(txt||"").trim().match(/^(\d{1,2})\s*[\/.-]\s*(\d{1,2})$/);
+  if(!m) return null;
+  const d = +m[1], mes = +m[2];
+  if(mes < 1 || mes > 12 || d < 1 || d > new Date(2024, mes, 0).getDate()) return null;
+  return String(mes).padStart(2,"0") + "-" + String(d).padStart(2,"0");
+}
+const colecoes = () => (dados.negocio.colecoes = Array.isArray(dados.negocio.colecoes) ? dados.negocio.colecoes : []);
+function statusColecao(c){
+  if(c.modo === "ligada") return { txt:"NO AR", cor:"var(--positive)" };
+  if(c.modo === "desligada") return { txt:"DESLIGADA", cor:"var(--faint)" };
+  return colecaoNoAr(c) ? { txt:`NO AR ATÉ ${ddmm(c.fim)}`, cor:"var(--positive)" } : { txt:`VOLTA EM ${ddmm(c.inicio)}`, cor:"var(--spark)" };
+}
+const precoPainel = p => { const n = parseFloat(String(p||"").replace(/[^\d,.-]/g,"").replace(/\.(?=\d{3})/g,"").replace(",",".")); return isFinite(n) && n > 0 ? brl(n) : ""; };
+let vitFiltro = "todos";
+
+function blocoColecoes(){
+  const cs = colecoes();
+  const temNatal = cs.some(c => /natal/i.test(c.nome));
+  return `<div class="pn rv" style="--d:20ms;margin-bottom:16px">
+    <div class="ph"><h2>Catálogos por época</h2><button class="tb pri min dir" data-acao="nova-colecao">${ico("mais2")} Novo catálogo</button></div>
+    <p class="muted p13" style="margin:0 0 6px">Agrupe as peças de cada época (Natal, Páscoa, Dia das Mães…). Catálogo desligado some do site com todas as peças dele; no modo <b>por datas</b> ele entra e sai sozinho todo ano.</p>
+    ${cs.length ? cs.map(c => {
+      const st = statusColecao(c), qtd = vitrine.filter(v => v.colecao === c.id).length;
+      return `<div class="seg-linha">
+        ${c.banner ? `<img src="${esc(c.banner)}" alt="" style="width:56px;height:70px;object-fit:cover;border-radius:8px;border:1px solid var(--rule)">` : ""}
+        <div class="g"><b>${esc(c.nome)} <span class="st" style="--c:${st.cor};color:${st.cor};margin-left:6px">${st.txt}</span></b>
+          <span class="muted p13">${qtd} peça${qtd===1?"":"s"} · ${c.modo === "datas" ? `de ${ddmm(c.inicio)} a ${ddmm(c.fim)}` : c.modo === "ligada" ? "sempre no ar" : "fora do site"}</span></div>
+        <div class="row" style="gap:8px">
+          <button class="tb min" data-acao="colecao-ligar" data-col="${c.id}">${colecaoNoAr(c) ? "Desligar" : "Ligar agora"}</button>
+          <button class="tb min" data-acao="colecao-editar" data-col="${c.id}">Editar e preços</button>
+        </div></div>`; }).join("")
+      : `<p class="dica">Nenhum catálogo ainda.</p>`}
+    ${temNatal ? "" : `<div class="seg-linha"><div class="g"><b>Catálogo de Natal pronto</b><span class="muted p13">8 peças com fotos, anúncios e preços sugeridos. Fica no ar de 15/10 a 06/01 todo ano e você muda tudo depois.</span></div><button class="tb" data-acao="importar-natal">Trazer o catálogo de Natal</button></div>`}
+  </div>`;
+}
+
+let colecaoAberta = null;
+function abrirColecao(id){
+  const c = id ? colecoes().find(x => x.id === id) : null;
+  colecaoAberta = c ? { ...c } : { id:null, nome:"", descricao:"", modo:"datas", inicio:"", fim:"", banner:"" };
+  desenharColecao();
+}
+function desenharColecao(){
+  const c = colecaoAberta, itens = c.id ? vitrine.filter(v => v.colecao === c.id) : [];
+  document.getElementById("modal").innerHTML = `
+  <div class="ov" data-fechar><div class="md est"><div class="pn" id="col-form">
+    <div class="md-h"><h2>${c.id ? esc(c.nome) : "Novo catálogo"}</h2><button class="x" data-fechar aria-label="Fechar">&times;</button></div>
+    <div class="grid g2">
+      <label class="f"><span>Nome no site</span><input name="nome" value="${esc(c.nome)}" maxlength="40" placeholder="Natal, Páscoa, Dia das Mães"></label>
+      <label class="f"><span>Quando aparece no site</span><select name="modo">
+        ${[["datas","Por datas (todo ano)"],["ligada","Sempre ligado"],["desligada","Desligado"]].map(([v,r]) => `<option value="${v}" ${c.modo===v?"selected":""}>${r}</option>`).join("")}</select></label>
+      <label class="f"><span>Entra no ar em</span><input name="inicio" value="${ddmm(c.inicio)}" placeholder="dd/mm" inputmode="numeric" maxlength="5"><span class="dica">Só no modo por datas.</span></label>
+      <label class="f"><span>Sai do ar depois de</span><input name="fim" value="${ddmm(c.fim)}" placeholder="dd/mm" inputmode="numeric" maxlength="5"><span class="dica">Pode virar o ano: 01/11 a 06/01.</span></label>
+    </div>
+    <label class="f" style="margin-top:14px"><span>Frase do catálogo no site</span><textarea name="descricao" maxlength="240" placeholder="Peças para decorar, colecionar e presentear.">${esc(c.descricao)}</textarea></label>
+    <div class="foto-site" style="margin-top:6px">
+      ${c.banner ? `<img src="${esc(c.banner)}" alt="" style="height:140px;width:112px;object-fit:cover">` : `<div style="width:112px;height:140px;border-radius:10px;border:1px dashed var(--control)"></div>`}
+      <div><b>Imagem do catálogo</b><p class="muted p13" style="margin:4px 0 10px">Aparece em destaque no site e o cliente pode abrir em tela cheia. Formato de post (1080 × 1350) fica melhor.</p>
+        <div class="row"><button class="tb" data-acao="colecao-banner">${c.banner ? "Trocar imagem" : "Escolher imagem"}</button>${c.banner ? `<button class="lk" data-acao="colecao-banner-tirar">Tirar</button>` : ""}</div></div>
+    </div>
+    ${c.id ? `<div class="sep"></div>
+    <div class="lbl" style="margin-bottom:8px">Peças deste catálogo · preço no site</div>
+    ${itens.length ? itens.map(v => `<div class="seg-linha" data-item-col="${v.id}">
+        ${v.fotos && v.fotos[0] ? `<img src="${esc(v.fotos[0])}" alt="" style="width:48px;height:48px;object-fit:cover;border-radius:8px">` : ""}
+        <div class="g"><b>${esc(v.titulo||"Sem título")}</b><label class="chk p13" style="margin-top:4px"><input type="checkbox" data-vis ${v.visivel!==false?"checked":""}> Mostrar no site</label></div>
+        <div class="campo" style="width:140px"><span class="u">R$</span><input class="num" data-preco value="${esc(v.preco||"")}" inputmode="decimal" placeholder="sob orçamento"></div>
+        <button class="lk" data-acao="colecao-abrir-item" data-item="${v.id}">fotos e texto</button>
+      </div>`).join("") : `<p class="dica">Nenhuma peça ainda. Ao criar ou editar uma peça, escolha este catálogo no campo <b>Catálogo</b>.</p>`}` : ""}
+    <p class="login-msg" id="col-msg"></p>
+    <div class="row" style="margin-top:16px"><button class="tb pri" data-acao="colecao-salvar">Salvar${c.id && itens.length ? " catálogo e preços" : ""}</button>
+      ${c.id ? `<button class="tb" data-acao="colecao-nova-peca">${ico("mais2")} Peça neste catálogo</button><button class="tb perigo dir" data-acao="colecao-excluir">Excluir catálogo</button>` : ""}</div>
+  </div></div></div>`;
+  document.body.style.overflow = "hidden";
+}
+function guardarColecao(){
+  const f = document.getElementById("col-form"); if(!f) return;
+  const v = lerCampos(f);
+  colecaoAberta.nome = String(v.nome||"").trim(); colecaoAberta.descricao = String(v.descricao||"").trim(); colecaoAberta.modo = v.modo;
+  colecaoAberta._inicio = v.inicio; colecaoAberta._fim = v.fim;
+}
+async function salvarColecao(btn){
+  guardarColecao();
+  const c = colecaoAberta, msg = t => { const m = document.getElementById("col-msg"); m.textContent = t; m.classList.add("erro"); };
+  if(!c.nome) return msg("Dê um nome ao catálogo.");
+  const ini = lerDiaMes(c._inicio), fim = lerDiaMes(c._fim);
+  if(c.modo === "datas" && (!ini || !fim)) return msg("Informe as datas no formato dia/mês, por exemplo 01/11 e 06/01.");
+  const antes = JSON.parse(JSON.stringify(colecoes()));
+  const novo = { id: c.id || ("col-" + crypto.randomUUID().slice(0,8)), nome:c.nome, descricao:c.descricao, modo:c.modo, inicio: ini || c.inicio || "", fim: fim || c.fim || "", banner:c.banner || "" };
+  btn.disabled = true; btn.textContent = "Salvando…";
+  try{
+    const i = colecoes().findIndex(x => x.id === novo.id);
+    if(i >= 0) colecoes()[i] = novo; else colecoes().push(novo);
+    await gravarConfig();
+    // preços e visibilidade das peças, só as que mudaram
+    for(const linha of document.querySelectorAll("#col-form [data-item-col]")){
+      const v = vitrine.find(x => x.id === linha.dataset.itemCol); if(!v) continue;
+      const preco = linha.querySelector("[data-preco]").value.trim(), vis = linha.querySelector("[data-vis]").checked;
+      if(preco === String(v.preco||"") && vis === (v.visivel !== false)) continue;
+      const salvo = await gravarTrabalho({ ...v, preco, visivel:vis });
+      vitrine[vitrine.findIndex(x => x.id === v.id)] = salvo;
+    }
+    fecharModal(true); render(); toast("Catálogo salvo. O site já mostra as mudanças.");
+  }catch(err){ dados.negocio.colecoes = antes; btn.disabled = false; btn.textContent = "Salvar"; falhou(err, "salvar o catálogo"); }
+}
+async function ligarColecao(id){
+  const c = colecoes().find(x => x.id === id); if(!c) return;
+  const antes = c.modo;
+  c.modo = colecaoNoAr(c) ? "desligada" : "ligada";
+  try{ await gravarConfig(); render(); toast(c.modo === "ligada" ? `${c.nome} está no ar.` : `${c.nome} saiu do site.`); }
+  catch(err){ c.modo = antes; falhou(err, "mudar o catálogo"); }
+}
+async function excluirColecao(){
+  const c = colecaoAberta, itens = vitrine.filter(v => v.colecao === c.id);
+  if(!confirm(`Excluir o catálogo "${c.nome}"?${itens.length ? `\n\nAs ${itens.length} peças continuam na vitrine, sem catálogo. Para tirar do site, desmarque "Mostrar no site" nelas.` : ""}`)) return;
+  const antes = JSON.parse(JSON.stringify(colecoes()));
+  try{
+    dados.negocio.colecoes = colecoes().filter(x => x.id !== c.id);
+    await gravarConfig();
+    for(const v of itens){ const s = await gravarTrabalho({ ...v, colecao:"" }); vitrine[vitrine.findIndex(x => x.id === v.id)] = s; }
+    fecharModal(true); render(); toast("Catálogo excluído.");
+  }catch(err){ dados.negocio.colecoes = antes; falhou(err, "excluir o catálogo"); }
+}
+let bannerAlvo = false;
+async function trocarBanner(arq){
+  if(!/^image\/(jpeg|png|webp)$/.test(arq.type)) return toast("Use uma imagem JPG, PNG ou WEBP.");
+  guardarColecao(); toast("Enviando imagem…");
+  try{ colecaoAberta.banner = await subirImagem("vitrine", await comprimirFoto(arq, 1600, .86)); desenharColecao(); toast("Imagem pronta. Clique em Salvar."); }
+  catch(err){ falhou(err, "enviar a imagem"); }
+}
+
+/* catálogo de Natal pronto */
+const NATAL = [
+  ["Placa Feliz Natal","Decoração","Clássico da estação","39,90","placa-feliz-natal","A frase da estação com floco de neve vazado. Linda no aparador, na mesa da ceia ou embrulhada para presente."],
+  ["Papai Noel Tricô","Colecionáveis","Mais pedido","59,90","papai-noel-trico","O bom velhinho com textura de tricô, impresso camada por camada. Parece feito à mão, mas saiu do laboratório."],
+  ["Duo de Pinheiros","Decoração","Kit com 2","79,90","duo-de-pinheiros","Pinheiros em camadas, com estrela no topo e base canelada. Um toque nórdico para a sala, a estante ou a mesa posta."],
+  ["Rena Tricô","Colecionáveis","Fofura garantida","59,90","rena-trico","Chifres de chocolate e nariz vermelho que acende o clima de Natal em qualquer estante ou mesa de trabalho."],
+  ["Ursinho Polar","Colecionáveis","Novidade","59,90","ursinho-polar","Branquinho como a neve e de gorro vermelho. Para quem coleciona ou para entregar junto com um cartão especial."],
+  ["Pinguim Noel","Colecionáveis","Queridinho","59,90","pinguim-noel","Direto do polo para a sua mesa: gorro de Noel, pezinhos laranja e textura de tricô em cada detalhe."],
+  ["Árvore Tricô","Decoração","Ideal para mesa","49,90","arvore-trico","Três camadas de tricô e uma estrela dourada no topo. A árvore de Natal que cabe na escrivaninha."],
+  ["Biscoito de Gengibre","Colecionáveis","Sabor de Natal","54,90","biscoito-de-gengibre","O boneco de gengibre mais simpático do Natal, com glacê e botões vermelhos. Só não dá para comer."]
+];
+async function importarNatal(btn){
+  if(!confirm("Trazer o catálogo de Natal com as 8 peças? Ele fica no ar de 15/10 a 06/01 todo ano. Depois você muda preços, fotos e datas quando quiser.")) return;
+  btn.disabled = true; btn.textContent = "Trazendo…";
+  const url = f => new URL(`assets/natal/${f}`, location.href).href;
+  const col = { id:"col-natal", nome:"Natal", descricao:"Oito peças para decorar, colecionar e presentear. Todas impressas camada por camada no nosso laboratório.", modo:"datas", inicio:"10-15", fim:"01-06", banner:url("catalogo-natal.jpg") };
+  try{
+    if(!colecoes().some(c => c.id === col.id)){ colecoes().push(col); await gravarConfig(); }
+    for(const [titulo,categoria,selo,preco,arq,descricao] of NATAL.slice().reverse()){
+      if(vitrine.some(v => v.colecao === col.id && v.titulo === titulo)) continue;
+      const r = await sb.from("vitrine").insert({ visivel:true, destaque:false, dados:{ titulo, categoria, selo, preco, descricao, material:"PLA", dimensoes:"", prazo:"", colecao:col.id }, fotos:[url(arq + ".webp"), url(arq + "-anuncio.jpg")] }).select().single();
+      if(r.error) throw r.error;
+      vitrine.unshift(vitDaLinha(r.data));
+    }
+    render(); toast("Catálogo de Natal na vitrine. Confira os preços em Editar e preços.");
+  }catch(err){ falhou(err, "trazer o catálogo de Natal"); render(); }
+}
+
+document.addEventListener("click", e => {
+  const b = e.target.closest("[data-acao]"); if(!b) return;
+  const a = b.dataset.acao;
+  if(a === "nova-colecao") abrirColecao(null);
+  else if(a === "colecao-editar") abrirColecao(b.dataset.col);
+  else if(a === "colecao-ligar") ligarColecao(b.dataset.col);
+  else if(a === "colecao-salvar") salvarColecao(b);
+  else if(a === "colecao-excluir") excluirColecao();
+  else if(a === "colecao-banner"){ guardarColecao(); bannerAlvo = true; document.getElementById("arq-site").click(); }
+  else if(a === "colecao-banner-tirar"){ guardarColecao(); colecaoAberta.banner = ""; desenharColecao(); }
+  else if(a === "colecao-abrir-item"){ const v = vitrine.find(x => x.id === b.dataset.item); colecaoAberta = null; abrirTrabalho(v); }
+  else if(a === "colecao-nova-peca"){ const id = colecaoAberta.id; colecaoAberta = null; abrirTrabalho(null); trabalhoAberto.colecao = id; desenharTrabalho(); }
+  else if(a === "importar-natal") importarNatal(b);
+  else if(a === "vit-filtro"){ vitFiltro = b.dataset.f; render(); }
 });
 
 /* ================================================================

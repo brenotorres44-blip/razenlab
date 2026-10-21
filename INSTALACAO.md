@@ -166,6 +166,8 @@ Faça uma vez. Leva uns 5 minutos.
 No painel, abra **Vitrine**:
 - **Fotos do site:** troque a **foto de capa** (a grande do topo) e a **logo**. Aparecem no site na hora. **Voltar à original** desfaz.
 - **Peças do catálogo:** cada trabalho tem até 4 fotos. Toque em **capa** numa foto para ela ser a principal do cartão. Também dá para mudar título, categoria, selo e preço.
+- **Catálogos por época:** crie um catálogo (Natal, Páscoa, Dia das Mães…) e escolha **Por datas** (entra e sai do site sozinho todo ano), **Sempre ligado** ou **Desligado**. Em **Editar e preços** você muda o preço de todas as peças do catálogo de uma vez e escolhe a imagem do catálogo, que aparece em destaque no site. Ao criar ou editar uma peça, escolha o catálogo dela no campo **Catálogo**.
+- **Catálogo de Natal pronto:** o botão **Trazer o catálogo de Natal** cria o catálogo (15/10 a 06/01) com as 8 peças, fotos, anúncios e preços sugeridos.
 - Enquanto a vitrine estiver vazia, o site mostra a coleção de exemplo. O botão **Trazer a coleção de exemplo para editar** copia os 8 exemplos para a vitrine, para você trocar as fotos pelas das suas peças, ajustar os preços ou excluir os que não quiser.
 
 ---
