@@ -36,8 +36,9 @@ Siga na ordem. As etapas 1 a 6 são obrigatórias e a 10 (segurança) é muito r
 1. Abra o repositório `razenlab` no GitHub → **Add file → Upload files**.
 2. Arraste **todo o conteúdo** desta pasta (incluindo `assets` e `supabase`) e clique em **Commit changes**. Os arquivos com o mesmo nome são substituídos.
 3. Em 1 a 2 minutos estará no ar:
-   - Site: https://brenotorres44-blip.github.io/razenlab/
-   - Painel: https://brenotorres44-blip.github.io/razenlab/painel.html
+   - Site: https://razenlab.com.br/
+   - Painel: https://razenlab.com.br/painel.html
+   (o endereço antigo brenotorres44-blip.github.io/razenlab leva para o novo sozinho)
 
 ## 6. Primeiro acesso e migração
 
@@ -127,7 +128,7 @@ Faça uma vez. Leva uns 5 minutos.
 
 **b) Deixar o link de recuperação voltar para o painel**
 1. Menu **Authentication → URL Configuration**.
-2. Em **Site URL**, coloque `https://brenotorres44-blip.github.io/razenlab/painel.html`.
+2. Em **Site URL**, coloque `https://razenlab.com.br/painel.html`.
 3. Em **Redirect URLs**, clique em **Add URL** e coloque o mesmo endereço. Salve.
 
 **c) Senhas mais fortes**

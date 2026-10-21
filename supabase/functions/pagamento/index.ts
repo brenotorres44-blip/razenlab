@@ -28,7 +28,7 @@ Deno.serve(async (req) => {
   const SERVICE = Deno.env.get("SUPABASE_SERVICE_ROLE_KEY")!;
   const MP_TOKEN = Deno.env.get("MP_ACCESS_TOKEN");
   const MP_API = Deno.env.get("MP_API_BASE") ?? "https://api.mercadopago.com";
-  const SITE = (Deno.env.get("SITE_URL") ?? "https://brenotorres44-blip.github.io/razenlab/").replace(/\/?$/, "/");
+  const SITE = (Deno.env.get("SITE_URL") ?? "https://razenlab.com.br/").replace(/\/?$/, "/");
   if (!MP_TOKEN) return resposta({ erro: "Pagamento por cartão ainda não configurado." }, 503);
 
   let b: { token?: string };
