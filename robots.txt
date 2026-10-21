@@ -1,0 +1,6 @@
+User-agent: *
+Disallow: /painel.html
+Disallow: /pedido.html
+Disallow: /supabase/
+
+Sitemap: https://razenlab.com.br/sitemap.xml

@@ -173,6 +173,24 @@ No painel, abra **Vitrine**:
 
 ---
 
+## 12. Reforço de segurança e LGPD
+
+1. No Supabase, abra o **SQL Editor**, cole todo o `supabase/04_lgpd_seguranca.sql` e clique em **Run**. A tabela que aparece embaixo deve mostrar todas as tabelas com **RLS ligado = true**.
+2. Se usa frete, cartão ou MakerWorld, publique de novo as funções (`frete`, `pagamento`, `mp-webhook`, `makerworld`). Agora elas só aceitam chamadas vindas do site.
+3. No Mercado Pago, cadastre a **assinatura secreta dos webhooks** e coloque o valor no segredo `MP_WEBHOOK_SECRET` do Supabase.
+4. No Supabase, em **Authentication**:
+   - **Sign In / Providers**: confirme que **Allow new users to sign up** está desligado.
+   - **Rate Limits**: deixe os limites padrão (protegem contra força bruta).
+   - **Sessions** (planos pagos): tempo máximo de sessão de 7 dias.
+5. **Project Settings → Database**: guarde a senha do banco num gerenciador de senhas e não use em nenhum outro lugar.
+6. No painel, em **Configurações → Privacidade dos clientes (LGPD)**, toque em **Aplicar agora** sempre que aparecer item com prazo vencido. O painel avisa sozinho.
+
+**Quando um cliente pedir os dados dele:** em **Privacidade dos clientes**, digite o WhatsApp dele e use **Exportar dados** (gera um arquivo para enviar só a ele) ou **Apagar dados**. A LGPD dá 15 dias para responder.
+
+**Se desconfiar de invasão:** troque a senha, use **Sair de todos os aparelhos**, confira os **Últimos acessos** e, se dados de clientes vazaram, avise os clientes afetados e a ANPD (gov.br/anpd) em até 3 dias úteis.
+
+---
+
 ## Como funciona o dia a dia
 
 1. **Cliente pede pelo site** → chega no painel como **Solicitado**.

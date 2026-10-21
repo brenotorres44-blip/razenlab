@@ -2,6 +2,9 @@
 <html lang="pt-BR">
 <head>
 <meta charset="utf-8">
+<meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self' 'unsafe-inline'; style-src 'self' 'unsafe-inline' https://fonts.googleapis.com; font-src 'self' https://fonts.gstatic.com data:; img-src 'self' data: blob: https:; connect-src 'self' data: blob: https://*.supabase.co wss://*.supabase.co https://viacep.com.br; worker-src 'self'; manifest-src 'self'; base-uri 'self'; form-action 'self'; object-src 'none'; upgrade-insecure-requests">
+<meta name="referrer" content="no-referrer">
+<script>if(window.top!==window.self){document.documentElement.style.display="none";try{window.top.location=window.location.href}catch(e){}}</script>
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
 <meta name="robots" content="noindex, nofollow">
 <title>RazenLab · Painel de Controle</title>
@@ -563,7 +566,7 @@ input:focus-visible,select:focus-visible,textarea:focus-visible,.campo:focus-wit
 <input type="file" id="arq-backup" accept="application/json,.json" style="display:none">
 <input type="file" id="arq-fotos" accept="image/*" multiple style="display:none">
 <input type="file" id="arq-site" accept="image/jpeg,image/png,image/webp" style="display:none">
-<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.117.1/dist/umd/supabase.js"></script>
+<script src="assets/vendor/supabase-2.117.1.js" integrity="sha384-K1nraABOP/zFehpLIUksXebbs7jMpB8gYMlb+uhVKZcWT/9Vkq1+qhv6ndC+1Yuz"></script>
 <script src="config.js"></script>
 <script>
 "use strict";
@@ -1145,7 +1148,7 @@ function render(){
   v.innerHTML = `<div class="pg-in">${TELAS[aba]()}</div>`;
   if(aba === "orcar") atualizarSimulador();
   if(aba === "movimentacoes") carregarMovs();
-  if(aba === "config") carregarSeguranca();
+  if(aba === "config"){ carregarSeguranca(); carregarLgpd(); }
   animarNumeros(v);
 }
 
@@ -1779,7 +1782,7 @@ TELAS.config = () => {
   const c = dados.config, n = dados.negocio;
   const cn = (nome,rot,val,uni,dica,pre) => `<label class="f"><span>${rot}</span><div class="campo">${pre?`<span class="u">${pre}</span>`:""}<input class="num" name="${nome}" inputmode="decimal" value="${String(val).replace(".",",")}">${uni?`<span class="u">${uni}</span>`:""}</div>${dica?`<span class="dica">${dica}</span>`:""}</label>`;
   const tx = (nome,rot,val,dica,ph) => `<label class="f"><span>${rot}</span><input name="${nome}" value="${esc(val)}" placeholder="${esc(ph||"")}">${dica?`<span class="dica">${dica}</span>`:""}</label>`;
-  return `${blocoSeguranca()}
+  return `${blocoSeguranca()}${blocoLgpd()}
   <div class="pn rv" style="--d:60ms;margin-bottom:16px" id="neg-form">
     <div class="ph"><h2>Seu negócio</h2><span class="cod">SITE E ORÇAMENTOS</span></div>
     <div class="grid g2">
@@ -3108,6 +3111,7 @@ async function iniciarSessao(){
   ligarTempoReal();
   render();
   inicializar();
+  lembretesSeguranca();
 }
 document.getElementById("login-form").addEventListener("submit", async e => {
   e.preventDefault();
@@ -3335,6 +3339,86 @@ document.addEventListener("click", e => {
   else if(a === "seg-2fa-off") desativar2fa();
   else if(a === "seg-sair-todos") sairTodos();
 });
+
+/* ---------- LGPD: direitos do titular e prazos de guarda ---------- */
+let lgpd = { carregado:false, ok:true, anonimizar:0, anexos:0 };
+async function carregarLgpd(){
+  const r = await sb.rpc("admin_lgpd_prazos", { p_aplicar:false });
+  lgpd = r.error ? { carregado:true, ok:false } : { carregado:true, ok:true, ...r.data };
+  const box = document.getElementById("lgpd-box"); if(box) box.outerHTML = blocoLgpd();
+}
+function blocoLgpd(){
+  const ult = dados.config && dados.config.lgpdUltimaLimpeza;
+  return `<div class="pn rv" id="lgpd-box" style="margin-bottom:16px">
+    <div class="ph"><h2>Privacidade dos clientes (LGPD)</h2><span class="cod">DADOS PESSOAIS</span></div>
+    ${!lgpd.carregado ? `<p class="muted p13">Carregando…</p>` : !lgpd.ok ? `<p class="dica">Para ligar esta parte, rode o arquivo <b>04_lgpd_seguranca.sql</b> no Supabase.</p>` : `
+    <div class="seg-linha"><div class="g"><b>Prazos de guarda</b>
+      <span class="muted p13">Orçamento sem resposta: 6 meses · não fechou ou cancelado: 12 meses · entregue: 5 anos (prazo fiscal). Arquivos do cliente somem 90 dias depois do pedido encerrado. Os valores ficam para o financeiro; só os dados pessoais saem.</span>
+      <span class="p13" style="display:block;margin-top:6px">${lgpd.anonimizar || lgpd.anexos ? `<b style="color:var(--spark)">${lgpd.anonimizar} pedido${lgpd.anonimizar===1?"":"s"} para anonimizar · ${lgpd.anexos} arquivo${lgpd.anexos===1?"":"s"} para apagar</b>` : `<span style="color:var(--positive)">Tudo em dia.</span>`}${ult ? ` <span class="faint">· última limpeza ${new Date(ult).toLocaleDateString("pt-BR")}</span>` : ""}</span></div>
+      <button class="tb ${lgpd.anonimizar || lgpd.anexos ? "pri" : ""}" data-acao="lgpd-aplicar" ${lgpd.anonimizar || lgpd.anexos ? "" : "disabled"}>Aplicar agora</button></div>
+    <div class="seg-linha"><div class="g"><b>Pedido de um cliente</b>
+      <span class="muted p13">Quando alguém pedir para ver ou apagar os próprios dados, informe o WhatsApp dele. Você tem até 15 dias para responder.</span>
+      <div class="row" style="gap:8px;margin-top:10px;flex-wrap:wrap"><input id="lgpd-tel" inputmode="tel" placeholder="(11) 90000-0000" style="width:200px">
+        <button class="tb" data-acao="lgpd-exportar">Exportar dados</button>
+        <button class="tb perigo" data-acao="lgpd-apagar">Apagar dados</button></div></div></div>`}
+  </div>`;
+}
+async function apagarArquivos(lista){
+  const porBalde = {};
+  (lista || []).forEach(c => { const i = String(c).indexOf("/"); if(i > 0){ const b = c.slice(0, i); (porBalde[b] = porBalde[b] || []).push(c.slice(i + 1)); } });
+  for(const [b, nomes] of Object.entries(porBalde)) for(let k = 0; k < nomes.length; k += 100) await sb.storage.from(b).remove(nomes.slice(k, k + 100));
+}
+async function lgpdAplicar(btn){
+  if(!confirm(`Anonimizar ${lgpd.anonimizar} pedido(s) e apagar ${lgpd.anexos} arquivo(s) de clientes?\n\nNome, WhatsApp, e-mail, endereço e arquivos saem para sempre. Os valores continuam no financeiro.`)) return;
+  btn.disabled = true; btn.textContent = "Aplicando…";
+  try{
+    const r = await sb.rpc("admin_lgpd_prazos", { p_aplicar:true }); if(r.error) throw r.error;
+    await apagarArquivos(r.data.arquivos);
+    dados.config.lgpdUltimaLimpeza = new Date().toISOString();
+    await recarregarPedidos(); toast("Prazos aplicados."); carregarLgpd();
+  }catch(err){ falhou(err, "aplicar os prazos"); btn.disabled = false; btn.textContent = "Aplicar agora"; }
+}
+async function lgpdExportar(){
+  const tel = document.getElementById("lgpd-tel").value;
+  const r = await sb.rpc("admin_lgpd_exportar", { p_contato:tel });
+  if(r.error) return falhou(r.error, "exportar");
+  if(!r.data.length) return toast("Nenhum pedido com esse WhatsApp.");
+  baixar(`dados-cliente-${tel.replace(/\D/g,"")}-${hoje()}.json`, JSON.stringify({ geradoEm:new Date().toISOString(), controlador:"RazenLab", pedidos:r.data }, null, 1));
+  toast(`${r.data.length} pedido(s) exportado(s). Envie o arquivo só para o próprio cliente.`);
+}
+async function lgpdApagar(btn){
+  const tel = document.getElementById("lgpd-tel").value;
+  if(tel.replace(/\D/g,"").length < 8) return toast("Informe o WhatsApp do cliente.");
+  const conf = prompt(`Isso apaga nome, contato, endereço e arquivos de TODOS os pedidos do WhatsApp ${tel}. Os valores continuam no financeiro.\n\nPara confirmar, digite APAGAR:`);
+  if((conf || "").trim().toUpperCase() !== "APAGAR") return;
+  btn.disabled = true;
+  try{
+    const r = await sb.rpc("admin_lgpd_apagar_cliente", { p_contato:tel }); if(r.error) throw r.error;
+    await apagarArquivos(r.data.arquivos);
+    await recarregarPedidos(); document.getElementById("lgpd-tel").value = "";
+    toast(r.data.pedidos ? `Dados apagados de ${r.data.pedidos} pedido(s).` : "Nenhum pedido com esse WhatsApp.");
+  }catch(err){ falhou(err, "apagar os dados"); }
+  btn.disabled = false;
+}
+document.addEventListener("click", e => {
+  const b = e.target.closest("[data-acao]"); if(!b) return;
+  if(b.dataset.acao === "lgpd-aplicar") lgpdAplicar(b);
+  else if(b.dataset.acao === "lgpd-exportar") lgpdExportar();
+  else if(b.dataset.acao === "lgpd-apagar") lgpdApagar(b);
+});
+async function lembretesSeguranca(){
+  try{
+    const lembrou = lerLS("razenlab.lembrete", 0);
+    if(Date.now() - lembrou < 24*3600e3) return;
+    const f = await fatorTotp().catch(() => null);
+    if(!f){ gravarLS("razenlab.lembrete", Date.now()); setTimeout(() => toast("Proteja o painel: ative as duas etapas em Configurações → Segurança da conta."), 2500); return; }
+    const ult = dados.config && dados.config.lgpdUltimaLimpeza;
+    if(!ult || Date.now() - new Date(ult) > 30*24*3600e3){
+      const r = await sb.rpc("admin_lgpd_prazos", { p_aplicar:false });
+      if(!r.error && (r.data.anonimizar || r.data.anexos)){ gravarLS("razenlab.lembrete", Date.now()); setTimeout(() => toast(`LGPD: há ${r.data.anonimizar + r.data.anexos} item(ns) com prazo vencido. Veja em Configurações.`), 2500); }
+    }
+  }catch(e){}
+}
 
 /* ================================================================
    15. EVENTOS

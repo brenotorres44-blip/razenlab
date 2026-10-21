@@ -1,5 +1,7 @@
 <!DOCTYPE html>
-<html lang="pt-BR"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<html lang="pt-BR"><head><meta charset="utf-8">
+<meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self' 'unsafe-inline'; style-src 'self' 'unsafe-inline' https://fonts.googleapis.com; font-src 'self' https://fonts.gstatic.com data:; img-src 'self' data: blob: https:; connect-src 'self' data: blob: https://*.supabase.co wss://*.supabase.co https://viacep.com.br; worker-src 'self'; manifest-src 'self'; base-uri 'self'; form-action 'self'; object-src 'none'; upgrade-insecure-requests">
+<meta name="referrer" content="strict-origin-when-cross-origin"><meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
 <title>Privacidade e termos · RazenLab</title><meta name="description" content="Como a RazenLab usa seus dados e como funcionam as encomendas.">
 <meta name="theme-color" content="#020A1F"><meta name="color-scheme" content="dark"><link rel="icon" type="image/png" href="assets/favicon.png"><link rel="preconnect" href="https://fonts.googleapis.com"><link rel="preconnect" href="https://fonts.gstatic.com" crossorigin><link href="https://fonts.googleapis.com/css2?family=Chakra+Petch:wght@500;600&family=Stack+Sans+Headline:wght@300&family=Stack+Sans+Text:wght@400;500&display=swap" rel="stylesheet"><style>:root{--bg:#020A1F;--surface:#0B1C40;--surface-2:#10275A;--ink:#EEF4FF;--muted:#AFC0DE;--accent:#1E9BFF;--accent-ink:#020A1F;--accent-strong:#5CB8FF;
 --display:"Stack Sans Headline","Segoe UI",system-ui,sans-serif;--text:"Stack Sans Text","Segoe UI",system-ui,sans-serif;--m:clamp(16px,2.4vw,32px);--ease-out:cubic-bezier(.22,1,.36,1)}
@@ -58,36 +60,59 @@ article li::before{box-shadow:0 0 8px rgba(30,155,255,.7)}
 <header><span class="hud-label">Protocolo de dados · LGPD</span><div class="layers" aria-hidden="true"><i></i><i></i><i></i><i></i></div>
 <h1>Privacidade e termos</h1>
 <p class="sub" style="font-size:clamp(1.25rem,1.1rem + .7vw,1.625rem);color:var(--ink);line-height:1.35;max-width:26ch">Como usamos seus dados e como funcionam as encomendas.</p>
-<p class="sub">Última atualização: setembro de 2026</p>
+<p class="sub">Última atualização: outubro de 2026</p>
 </header>
 <article>
+<h2>Quem cuida dos seus dados</h2>
+<p>A RazenLab é a controladora dos dados pessoais tratados neste site (Lei 13.709/2018, a LGPD). Para qualquer assunto sobre os seus dados, inclusive falar com o encarregado, use o nosso contato <span id="contato">pelo WhatsApp informado no site</span>.</p>
 
 <h2>Quais dados pedimos</h2>
-<p>Quando você pede um orçamento, guardamos: nome, WhatsApp, e-mail (se informar), endereço de entrega, a descrição do que você precisa, os arquivos ou fotos que enviar e, depois, o comprovante do Pix.</p>
+<p>Quando você pede um orçamento, guardamos: nome, WhatsApp, e-mail (se informar), endereço de entrega, a descrição do que você precisa, os arquivos ou fotos que enviar e, depois, o comprovante de pagamento. Também registramos a data e a versão desta política no momento em que você autorizou o uso dos dados.</p>
+<p>Não pedimos CPF, dados de cartão nem dados sensíveis. O pagamento por cartão ou boleto é feito na página do Mercado Pago, e nós não recebemos os dados do seu cartão.</p>
 
-<h2>Para que usamos</h2>
+<h2>Para que usamos e com qual base legal</h2>
 <ul>
-  <li>Fazer o orçamento, produzir a peça e combinar detalhes com você.</li>
-  <li>Enviar o pedido pelos Correios ou outra transportadora.</li>
-  <li>Conferir o pagamento e cumprir obrigações fiscais.</li>
+<li>Fazer o orçamento, produzir a peça e combinar os detalhes com você: para cumprir o contrato que você pediu (art. 7º, V).</li>
+<li>Enviar a encomenda pela transportadora: execução do contrato (art. 7º, V).</li>
+<li>Conferir pagamentos e guardar registros fiscais: obrigação legal (art. 7º, II).</li>
+<li>Prevenir fraudes e abusos no site, como pedidos automáticos em massa: legítimo interesse (art. 7º, IX).</li>
 </ul>
-<p>Não vendemos seus dados e não mandamos propaganda sem a sua autorização.</p>
+<p>Não vendemos seus dados, não fazemos perfil de consumo e não mandamos propaganda sem a sua autorização.</p>
 
 <h2>Com quem compartilhamos</h2>
 <ul>
-  <li><b>Transportadora:</b> nome e endereço, para a etiqueta de envio.</li>
-  <li><b>Serviços de tecnologia</b> que guardam o site e os pedidos com segurança (hospedagem e banco de dados em nuvem).</li>
+<li>Transportadora (Correios ou outra): nome e endereço, só para a etiqueta de envio.</li>
+<li>Supabase: banco de dados e armazenamento dos pedidos, com acesso restrito e conexão criptografada.</li>
+<li>GitHub Pages: hospeda as páginas do site (não recebe os dados dos pedidos).</li>
+<li>Mercado Pago, se você escolher cartão ou boleto: valor e identificação do pedido.</li>
+<li>ViaCEP: o CEP digitado, para preencher o endereço automaticamente.</li>
+<li>Google Fonts: o seu navegador baixa as fontes do site do Google, que recebe dados técnicos como o endereço IP.</li>
 </ul>
-<p>O pagamento por Pix é feito direto no app do seu banco. Não temos acesso à sua conta.</p>
+<p>Alguns desses serviços podem guardar dados fora do Brasil. Usamos apenas empresas que se comprometem com padrões de proteção compatíveis com a LGPD (art. 33).</p>
 
 <h2>Por quanto tempo guardamos</h2>
-<p>Pelo tempo necessário para concluir o pedido e cumprir obrigações legais. Arquivos de referência e comprovantes podem ser apagados a seu pedido depois da entrega.</p>
+<ul>
+<li>Orçamento pedido e sem resposta: até 6 meses.</li>
+<li>Orçamento que não foi fechado, ou pedido cancelado: até 12 meses.</li>
+<li>Pedido concluído: 5 anos, pelo prazo das obrigações fiscais.</li>
+<li>Arquivos e fotos que você enviou: apagados 90 dias depois que o pedido termina.</li>
+</ul>
+<p>Depois desses prazos, apagamos nome, contato, endereço e arquivos. Ficam só os valores, sem identificar você, para a nossa contabilidade.</p>
 
 <h2>Seus direitos</h2>
-<p>Pela Lei Geral de Proteção de Dados (Lei 13.709/2018), você pode pedir para ver, corrigir ou apagar seus dados, ou retirar a autorização, a qualquer momento. É só falar com a gente <span id="contato">pelo WhatsApp informado no site</span>.</p>
+<p>Você pode, a qualquer momento e sem custo: confirmar se temos dados seus, ver uma cópia deles, corrigir o que estiver errado, pedir a portabilidade, pedir que sejam apagados e retirar a sua autorização (art. 18). Responderemos em até 15 dias. Alguns dados podem ser mantidos pelo tempo exigido por lei, como os registros fiscais.</p>
+<p>Se não ficar satisfeito com a nossa resposta, você pode reclamar à Autoridade Nacional de Proteção de Dados (ANPD), em gov.br/anpd.</p>
 
-<h2>Segurança do seu pedido</h2>
-<p>Cada pedido tem um link próprio, difícil de adivinhar. Ele mostra seus dados e o valor, então não compartilhe com quem não deve ver.</p>
+<h2>Segurança</h2>
+<ul>
+<li>Cada pedido tem um link próprio com um código aleatório. Ele mostra seus dados e o valor, então não compartilhe com quem não deve ver. Depois que o pedido termina, o endereço deixa de aparecer no link.</li>
+<li>Só a RazenLab acessa os pedidos, com senha forte e verificação em duas etapas. Os arquivos que você envia não ficam públicos.</li>
+<li>Toda a comunicação com o site é criptografada (HTTPS).</li>
+<li>Se acontecer um incidente de segurança que possa trazer risco a você, avisaremos você e a ANPD.</li>
+</ul>
+
+<h2>Dados guardados no seu aparelho</h2>
+<p>O site não usa cookies de propaganda nem de rastreamento. No seu navegador ficam guardados só os links dos pedidos que você fez neste aparelho, para você encontrá-los depois. Dá para apagar limpando os dados do site no navegador.</p>
 
 <h2>Como funcionam as encomendas</h2>
 <ul>
@@ -102,7 +127,7 @@ article li::before{box-shadow:0 0 8px rgba(30,155,255,.7)}
 <div class="acts"><a class="bead" href="index.html#orcamento">Pedir orçamento</a><a class="bead quiet" href="index.html">Voltar ao site</a></div>
 </article>
 </main>
-<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.117.1/dist/umd/supabase.js"></script>
+<script src="assets/vendor/supabase-2.117.1.js" integrity="sha384-K1nraABOP/zFehpLIUksXebbs7jMpB8gYMlb+uhVKZcWT/9Vkq1+qhv6ndC+1Yuz"></script>
 <script src="config.js"></script>
 <script>
 (async function(){

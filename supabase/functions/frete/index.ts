@@ -10,13 +10,20 @@
 //    MELHOR_ENVIO_SANDBOX = 1  para testar no ambiente de testes deles
 // ==========================================================================
 
-const CORS = {
-  "Access-Control-Allow-Origin": "*",
-  "Access-Control-Allow-Headers": "authorization, x-client-info, apikey, content-type",
-  "Access-Control-Allow-Methods": "POST, OPTIONS",
+// só o site da RazenLab chama esta função pelo navegador (outros endereços: ORIGENS_PERMITIDAS)
+const ORIGENS = (Deno.env.get("ORIGENS_PERMITIDAS") ??
+  "https://razenlab.com.br,https://www.razenlab.com.br,https://brenotorres44-blip.github.io").split(",").map((o) => o.trim());
+const cabecalhos = (req: Request) => {
+  const o = req.headers.get("Origin") ?? "";
+  return {
+    "Access-Control-Allow-Origin": ORIGENS.includes(o) ? o : ORIGENS[0],
+    "Access-Control-Allow-Headers": "authorization, x-client-info, apikey, content-type",
+    "Access-Control-Allow-Methods": "POST, OPTIONS",
+    "Vary": "Origin",
+  };
 };
 const resposta = (corpo: unknown, status = 200) =>
-  new Response(JSON.stringify(corpo), { status, headers: { ...CORS, "Content-Type": "application/json" } });
+  new Response(JSON.stringify(corpo), { status, headers: { "Content-Type": "application/json", "X-Content-Type-Options": "nosniff" } });
 
 const soDigitos = (v: unknown) => String(v ?? "").replace(/\D/g, "");
 const limitar = (v: unknown, min: number, max: number, padrao: number) => {
@@ -25,7 +32,14 @@ const limitar = (v: unknown, min: number, max: number, padrao: number) => {
 };
 
 Deno.serve(async (req) => {
-  if (req.method === "OPTIONS") return new Response("ok", { headers: CORS });
+  const cors = cabecalhos(req);
+  if (req.method === "OPTIONS") return new Response("ok", { headers: cors });
+  const res = await tratar(req);
+  for (const [k, v] of Object.entries(cors)) res.headers.set(k, v);
+  return res;
+});
+
+async function tratar(req: Request): Promise<Response> {
   if (req.method !== "POST") return resposta({ erro: "Use POST." }, 405);
 
   const SUPABASE_URL = Deno.env.get("SUPABASE_URL")!;
@@ -104,4 +118,4 @@ Deno.serve(async (req) => {
     .sort((a, b) => a.preco - b.preco);
 
   return resposta({ opcoes, pacote });
-});
+}

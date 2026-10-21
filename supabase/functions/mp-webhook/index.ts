@@ -25,7 +25,11 @@ async function assinaturaValida(req: Request, dataId: string, segredo: string) {
   const chave = await crypto.subtle.importKey("raw", new TextEncoder().encode(segredo), { name: "HMAC", hash: "SHA-256" }, false, ["sign"]);
   const mac = new Uint8Array(await crypto.subtle.sign("HMAC", chave, new TextEncoder().encode(manifesto)));
   const hex = [...mac].map((x) => x.toString(16).padStart(2, "0")).join("");
-  return hex === partes.v1;
+  // comparação em tempo constante (não revela quantos caracteres batem)
+  if (hex.length !== partes.v1.length) return false;
+  let dif = 0;
+  for (let i = 0; i < hex.length; i++) dif |= hex.charCodeAt(i) ^ partes.v1.charCodeAt(i);
+  return dif === 0;
 }
 
 Deno.serve(async (req) => {

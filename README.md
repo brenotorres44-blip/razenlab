@@ -12,6 +12,7 @@ Impressão 3D sob encomenda: site para clientes, página de acompanhamento do pe
 | `config.js` | Endereço e chave pública do Supabase — **preencher** |
 | `supabase/01_estrutura.sql` | Tabelas, regras de segurança e funções do banco |
 | `supabase/02_admin.sql` | Libera o seu e-mail como administrador |
+| `supabase/04_lgpd_seguranca.sql` | Reforço de segurança e LGPD: limites contra robôs, arquivos, prazos de guarda, exportar e apagar dados de cliente |
 | `supabase/03_seguranca.sql` | Duas etapas obrigatórias no banco, conferência de senha e histórico de acessos |
 | `supabase/functions/frete` | Cotação de frete pelo Melhor Envio (opcional) |
 | `supabase/functions/pagamento` | Cria o pagamento com cartão/boleto no Mercado Pago (opcional) |

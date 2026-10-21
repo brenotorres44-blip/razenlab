@@ -2,6 +2,8 @@
 <html lang="pt-BR">
 <head>
 <meta charset="utf-8">
+<meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self' 'unsafe-inline'; style-src 'self' 'unsafe-inline' https://fonts.googleapis.com; font-src 'self' https://fonts.gstatic.com data:; img-src 'self' data: blob: https:; connect-src 'self' data: blob: https://*.supabase.co wss://*.supabase.co https://viacep.com.br; worker-src 'self'; manifest-src 'self'; base-uri 'self'; form-action 'self'; object-src 'none'; upgrade-insecure-requests">
+<meta name="referrer" content="strict-origin-when-cross-origin">
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
 <title>RazenLab — Impressão 3D sob encomenda</title>
 <meta name="description" content="Peças únicas impressas em 3D: decoração, colecionáveis, utilidades e peças sob medida. Orçamento com frete, pagamento por Pix e envio para todo o Brasil.">
@@ -509,7 +511,7 @@ html:not(.js) [data-reveal]{opacity:1;transform:none}
 
 <div id="modal"></div>
 
-<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.117.1/dist/umd/supabase.js"></script>
+<script src="assets/vendor/supabase-2.117.1.js" integrity="sha384-K1nraABOP/zFehpLIUksXebbs7jMpB8gYMlb+uhVKZcWT/9Vkq1+qhv6ndC+1Yuz"></script>
 <script src="config.js"></script>
 <script>
 "use strict";
@@ -887,6 +889,7 @@ document.getElementById("form-orc").addEventListener("submit", async e => {
     if(arq){
       if(arq.size > 25*1024*1024) throw new Error("O arquivo passa de 25 MB. Envie sem ele e mande pelo WhatsApp depois.");
       const ext = ((arq.name.split(".").pop() || "bin").toLowerCase().replace(/[^a-z0-9]/g,"") || "bin").slice(0,5);
+      if(!/^(stl|3mf|obj|step|stp|zip|jpg|jpeg|png|webp|gif|heic|heif|avif|bmp|tif|tiff|pdf)$/.test(ext)) throw new Error("Esse tipo de arquivo não é aceito. Envie foto, PDF ou arquivo 3D (STL, 3MF, OBJ, STEP ou ZIP)");
       const nome = `${crypto.randomUUID()}.${ext}`;
       const up = await sb.storage.from("anexos").upload(nome, arq, { contentType: arq.type || "application/octet-stream", upsert:false });
       if(up.error) throw up.error;
