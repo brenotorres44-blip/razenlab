@@ -344,6 +344,12 @@ input[type=checkbox],input[type=radio]{width:18px;height:18px;min-height:0;paddi
 .col-cfg[open] summary{margin-bottom:14px}
 .col-acoes{position:sticky;bottom:-20px;margin:16px -20px -20px;padding:14px 20px;background:var(--surface);border-top:1px solid var(--rule);z-index:2}
 @media (max-width:560px){.col-peca{grid-template-columns:64px 1fr;gap:10px;padding:12px}.col-peca>img,.col-peca .sem-foto{width:64px;height:64px}.col-linha label{width:100%!important}.col-acoes .tb.perigo{margin-left:0}}
+.capas-prontas{display:grid;grid-template-columns:repeat(auto-fill,minmax(150px,1fr));gap:10px}
+.capa-pronta{padding:0;border:2px solid var(--rule);border-radius:10px;overflow:hidden;background:var(--ground);cursor:pointer;text-align:left;color:var(--text)}
+.capa-pronta img{width:100%;aspect-ratio:16/9;object-fit:cover;display:block}
+.capa-pronta span{display:block;padding:6px 8px;font-size:12px}
+.capa-pronta.on{border-color:var(--accent);cursor:default}
+.capa-pronta:not(.on):hover{border-color:color-mix(in srgb,var(--accent) 60%,transparent)}
 .foto .capa{position:absolute;left:4px;bottom:4px;top:auto;right:auto;width:auto;height:auto;font-size:10px;line-height:1;padding:4px 6px;border-radius:6px;border:0;background:rgba(0,0,0,.65);color:#fff;cursor:pointer;text-transform:uppercase;letter-spacing:.06em}
 .foto .capa.on{background:var(--accent);color:var(--accent-ink);cursor:default}
 .foto-site{display:grid;grid-template-columns:160px 1fr;gap:16px;align-items:center;padding:12px 0;border-top:1px solid var(--rule)}
@@ -2664,6 +2670,7 @@ const FOTOS_SITE = {
   heroFoto:{ nome:"Foto de capa", dica:"A foto grande do topo do site. Use uma foto deitada, de pelo menos 1600 px de largura, com as peças mais à direita (o texto fica à esquerda).", padrao:"assets/hero.webp", max:2200, q:.82 },
   logoFoto:{ nome:"Logo", dica:"Aparece redonda no topo e no rodapé. Use uma imagem quadrada.", padrao:"assets/logo-mark.jpg", max:400, q:.9 }
 };
+const CAPAS_PRONTAS = [["assets/hero.webp","Peças variadas"],["assets/capas/capa-natal.jpg","Natal"],["assets/capas/capa-podios.jpg","Pódios"],["assets/capas/capa-impressao.jpg","Impressão ao vivo"]];
 let fotoSiteAlvo = null;
 function blocoFotosSite(){
   const n = dados.negocio;
@@ -2675,6 +2682,9 @@ function blocoFotosSite(){
         <div><b>${f.nome}</b>${n[k] ? "" : ` <span class="faint p13">(original)</span>`}<p class="muted p13" style="margin:4px 0 10px">${f.dica}</p>
           <div class="row"><button class="tb" data-acao="site-foto" data-qual="${k}">Trocar foto</button>${n[k] ? `<button class="lk" data-acao="site-foto-padrao" data-qual="${k}">Voltar à original</button>` : ""}</div></div>
       </div>`).join("")}
+    <div class="lbl" style="margin:14px 0 8px">Capas prontas · toque para usar no site</div>
+    <div class="capas-prontas">${CAPAS_PRONTAS.map(([f,r]) => { const url = new URL(f, location.href).href, atual = (n.heroFoto || new URL("assets/hero.webp", location.href).href) === url;
+      return `<button class="capa-pronta ${atual?"on":""}" data-acao="capa-pronta" data-url="${esc(url)}" ${atual?"disabled":""}><img src="${esc(f)}" alt=""><span>${r}${atual?" · em uso":""}</span></button>`; }).join("")}</div>
     <p class="dica">As fotos das peças do catálogo ficam em cada trabalho, logo abaixo.</p>
   </div>`;
 }
@@ -2735,6 +2745,12 @@ document.addEventListener("click", e => {
   if(b.dataset.acao === "site-foto"){ fotoSiteAlvo = b.dataset.qual; document.getElementById("arq-site").click(); }
   else if(b.dataset.acao === "site-foto-padrao") fotoSitePadrao(b.dataset.qual);
   else if(b.dataset.acao === "importar-exemplos") importarExemplos(b);
+  else if(b.dataset.acao === "capa-pronta"){
+    const url = b.dataset.url, padrao = new URL("assets/hero.webp", location.href).href, antiga = dados.negocio.heroFoto;
+    dados.negocio.heroFoto = url === padrao ? "" : url;
+    gravarConfig().then(() => { const nome = antiga && caminhoVitrine(antiga); if(nome) sb.storage.from("vitrine").remove([nome]); render(); toast("Capa trocada. O site já mostra a nova."); })
+      .catch(err => { dados.negocio.heroFoto = antiga; falhou(err, "trocar a capa"); });
+  }
 });
 document.addEventListener("change", e => {
   if(e.target.id === "arq-site" && e.target.files[0]){ const f = e.target.files[0]; e.target.value = ""; if(bannerAlvo){ bannerAlvo = false; trocarBanner(f); } else trocarFotoSite(f); }
