@@ -1,0 +1,103 @@
+/* ==========================================================================
+   RazenLab · camada J.A.R.V.I.S.
+   Por cima do visual original: linhas finas de 1px, cantos chanfrados,
+   tipografia técnica, brilho ciano contido e leituras de telemetria.
+   Carregado depois do CSS de cada página (site, pedido, privacidade, 404).
+   ========================================================================== */
+:root{
+  --j-bg:#02060F;
+  --j-panel:rgba(6,18,40,.78);
+  --j-panel-solid:#061228;
+  --j-cyan:#3FE0FF;
+  --j-blue:#1E9BFF;
+  --j-spark:#F28A14;
+  --j-line:rgba(63,224,255,.16);
+  --j-line2:rgba(63,224,255,.36);
+  --j-text:#E6F4FF;
+  --j-muted:#8FA8C8;
+  --j-faint:#6F87A8;
+  --j-hud:"Chakra Petch","Segoe UI",system-ui,sans-serif;
+  --j-cut:14px;
+  --j-ease:cubic-bezier(.2,.8,.2,1);
+}
+
+/* ---------- fundo: grade técnica, vinheta e partículas ---------- */
+html{background:var(--j-bg);color-scheme:dark}
+body{background:transparent!important;background-image:none!important}
+.j-bg{position:fixed;inset:0;z-index:-1;pointer-events:none;overflow:hidden;background:var(--j-bg)}
+.j-bg::before{content:"";position:absolute;inset:0;
+  background:
+    radial-gradient(900px 600px at 70% -10%,rgba(30,155,255,.16),transparent 62%),
+    radial-gradient(700px 500px at 0% 100%,rgba(63,224,255,.06),transparent 60%)}
+.j-bg::after{content:"";position:absolute;inset:-1px;
+  background-image:linear-gradient(rgba(92,225,255,.045) 1px,transparent 1px),linear-gradient(90deg,rgba(92,225,255,.045) 1px,transparent 1px);
+  background-size:44px 44px;
+  -webkit-mask-image:radial-gradient(ellipse at 55% 30%,#000 30%,transparent 85%);mask-image:radial-gradient(ellipse at 55% 30%,#000 30%,transparent 85%)}
+.j-pt{position:absolute;width:2px;height:2px;border-radius:50%;background:var(--j-cyan);box-shadow:0 0 6px var(--j-cyan);opacity:0}
+@keyframes j-flutua{0%{transform:translateY(0);opacity:0}15%{opacity:.7}85%{opacity:.5}100%{transform:translateY(-220px);opacity:0}}
+@media (prefers-reduced-motion:no-preference){.j-pt{animation:j-flutua linear infinite}}
+
+/* ---------- quadro chanfrado com contorno de 1px ----------
+   o elemento pinta a linha; o ::before pinta o fundo 1px para dentro,
+   com o mesmo corte, e a linha aparece também na diagonal */
+.j-cut{position:relative;isolation:isolate;border:0!important;background:var(--j-line2)!important;
+  clip-path:polygon(var(--j-cut) 0,100% 0,100% calc(100% - var(--j-cut)),calc(100% - var(--j-cut)) 100%,0 100%,0 var(--j-cut))}
+.j-cut::before{content:"";position:absolute;inset:1px;z-index:-1;background:var(--j-fill,var(--j-panel-solid));
+  clip-path:polygon(calc(var(--j-cut) - .5px) 0,100% 0,100% calc(100% - var(--j-cut) + .5px),calc(100% - var(--j-cut) + .5px) 100%,0 100%,0 calc(var(--j-cut) - .5px))}
+/* cantoneiras de mira nos outros dois cantos */
+.j-ticks{position:relative}
+.j-ticks::after{content:"";position:absolute;inset:-1px;pointer-events:none;z-index:2;
+  background:
+    linear-gradient(var(--j-cyan),var(--j-cyan)) 100% 0/12px 1.5px no-repeat,
+    linear-gradient(var(--j-cyan),var(--j-cyan)) 100% 0/1.5px 12px no-repeat,
+    linear-gradient(var(--j-cyan),var(--j-cyan)) 0 100%/12px 1.5px no-repeat,
+    linear-gradient(var(--j-cyan),var(--j-cyan)) 0 100%/1.5px 12px no-repeat;opacity:.75}
+
+/* ---------- tipografia técnica ---------- */
+.j-label{font:500 11.5px/1.2 var(--j-hud);letter-spacing:.22em;text-transform:uppercase;color:var(--j-cyan);display:inline-flex;align-items:center;gap:9px}
+.j-label::before{content:"";width:6px;height:6px;background:currentColor;box-shadow:0 0 8px currentColor;transform:rotate(45deg);flex:0 0 auto}
+.j-label.spark{color:var(--j-spark)}
+.j-num{font-family:var(--j-hud);font-variant-numeric:tabular-nums;letter-spacing:.04em}
+.j-cursor::after{content:"";display:inline-block;width:.55em;height:1.05em;margin-left:4px;vertical-align:-2px;background:var(--j-cyan);box-shadow:0 0 8px var(--j-cyan)}
+@keyframes j-pisca{50%{opacity:0}}
+@media (prefers-reduced-motion:no-preference){.j-cursor::after{animation:j-pisca 1s steps(1) infinite}}
+
+/* ---------- botões chanfrados ---------- */
+.btn{--j-cut:9px;position:relative;isolation:isolate;border:0!important;border-radius:0!important;
+  font:600 13px/1 var(--j-hud)!important;letter-spacing:.16em;text-transform:uppercase;padding:15px 24px!important;
+  clip-path:polygon(var(--j-cut) 0,100% 0,100% calc(100% - var(--j-cut)),calc(100% - var(--j-cut)) 100%,0 100%,0 var(--j-cut));
+  transition:filter .2s,transform .12s,background-color .2s,color .2s!important}
+.btn:active{transform:translateY(1px)}
+.btn-main{background:var(--j-blue)!important;color:#02060F!important;box-shadow:none!important;filter:drop-shadow(0 0 10px rgba(30,155,255,.45))}
+@media (hover:hover) and (pointer:fine){.btn-main:hover{background:#4FC0FF!important;filter:drop-shadow(0 0 16px rgba(63,224,255,.7))}}
+.btn-ghost,.btn-line{background:var(--j-line2)!important;color:var(--j-text)!important}
+.btn-ghost::before,.btn-line::before{content:"";position:absolute;inset:1px;z-index:-1;background:#040E20;
+  clip-path:polygon(calc(var(--j-cut) - .5px) 0,100% 0,100% calc(100% - var(--j-cut) + .5px),calc(100% - var(--j-cut) + .5px) 100%,0 100%,0 calc(var(--j-cut) - .5px))}
+@media (hover:hover) and (pointer:fine){.btn-ghost:hover,.btn-line:hover{background:var(--j-cyan)!important;color:var(--j-cyan)!important}}
+.btn:focus-visible{outline:2px solid var(--j-cyan);outline-offset:3px}
+.btn:disabled{opacity:.55;cursor:not-allowed}
+
+/* ---------- campos ---------- */
+input,textarea,select{border-radius:2px!important}
+input:focus,textarea:focus,select:focus{border-color:var(--j-cyan)!important;box-shadow:0 0 0 3px rgba(63,224,255,.12),0 0 16px rgba(63,224,255,.18)!important;outline:none}
+
+/* ---------- varredura e anéis ---------- */
+.j-scan{position:relative;overflow:hidden}
+.j-scan::after{content:"";position:absolute;left:0;right:0;height:28%;top:-30%;pointer-events:none;z-index:3;
+  background:linear-gradient(180deg,transparent,rgba(63,224,255,.22),transparent)}
+@keyframes j-varre{0%{transform:translateY(0)}100%{transform:translateY(480%)}}
+@media (prefers-reduced-motion:no-preference){.j-scan::after{animation:j-varre 4.2s ease-in-out infinite alternate}}
+.j-gira{transform-box:fill-box;transform-origin:center}
+@keyframes j-rot{to{transform:rotate(360deg)}}
+@media (prefers-reduced-motion:no-preference){.j-gira{animation:j-rot var(--t,60s) linear infinite}.j-gira.rev{animation-direction:reverse}}
+@keyframes j-pulso{50%{opacity:.4}}
+@media (prefers-reduced-motion:no-preference){.j-pulso{animation:j-pulso 1.8s ease-in-out infinite}}
+
+/* faixa de telemetria que corre */
+.j-ticker{overflow:hidden;white-space:nowrap;border-top:1px solid var(--j-line);border-bottom:1px solid var(--j-line);background:rgba(4,12,28,.6)}
+.j-ticker div{display:inline-flex;gap:48px;padding:10px 0;font:500 11.5px/1 var(--j-hud);letter-spacing:.22em;text-transform:uppercase;color:var(--j-faint)}
+.j-ticker b{color:var(--j-cyan);font-weight:500}
+@keyframes j-corre{to{transform:translateX(-50%)}}
+@media (prefers-reduced-motion:no-preference){.j-ticker div{animation:j-corre 40s linear infinite}}
+
+@media (prefers-reduced-motion:reduce){.j-pt{display:none}}
