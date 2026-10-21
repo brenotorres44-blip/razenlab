@@ -1,6 +1,6 @@
 # RazenLab — guia de instalação
 
-Siga na ordem. As etapas 1 a 6 são obrigatórias; 7 (frete automático), 8 (cartão e boleto) e 9 (importar do MakerWorld) são opcionais e podem ser feitas depois.
+Siga na ordem. As etapas 1 a 6 são obrigatórias e a 10 (segurança) é muito recomendada; 7 (frete automático), 8 (cartão e boleto) e 9 (importar do MakerWorld) são opcionais e podem ser feitas depois.
 
 ---
 
@@ -116,6 +116,59 @@ Cole o link de um modelo e o sistema traz tempo, peso, filamento e licença, e p
 **Licença:** muitos modelos do MakerWorld proíbem vender as impressões (licenças "NC" e "Standard Digital File License"). O sistema mostra em **vermelho** quando não é permitido. Para vender, compre a licença comercial do autor ou escolha outro modelo.
 
 **Tempo da sua impressora:** os tempos do MakerWorld são para impressoras Bambu Lab. Em **Configurações → Custos da oficina → Tempo da sua impressora**, informe quanto a sua leva em comparação (100% = igual; 200% = o dobro). Para descobrir: fatie uma peça no seu fatiador e compare com o tempo que o MakerWorld mostra para ela.
+
+## 10. Segurança do login e recuperação da conta
+
+Faça uma vez. Leva uns 5 minutos.
+
+**a) Rodar o arquivo de segurança**
+1. No Supabase, abra o **SQL Editor**, cole todo o `supabase/03_seguranca.sql` e clique em **Run**.
+2. A tabela que aparece embaixo mostra o seu e-mail e se as duas etapas estão ativas.
+
+**b) Deixar o link de recuperação voltar para o painel**
+1. Menu **Authentication → URL Configuration**.
+2. Em **Site URL**, coloque `https://brenotorres44-blip.github.io/razenlab/painel.html`.
+3. Em **Redirect URLs**, clique em **Add URL** e coloque o mesmo endereço. Salve.
+
+**c) Senhas mais fortes**
+1. Menu **Authentication → Sign In / Providers → Email** (em alguns projetos fica em **Settings → Password**).
+2. **Minimum password length**: 10. Em **Password requirements**, escolha letras e números.
+3. Se aparecer **Prevent use of leaked passwords**, ligue. (Nos planos pagos.)
+4. Confira que **Allow new users to sign up** está desligado (etapa 3).
+
+**d) Ativar a verificação em duas etapas**
+1. No celular, instale o **Google Authenticator**, **Microsoft Authenticator** ou **Authy**.
+2. No painel, vá em **Configurações → Segurança da conta → Verificação em duas etapas → Ativar**.
+3. Leia o código QR com o app e digite os 6 números. Pronto: a partir de agora o painel pede a senha **e** o código.
+4. **Guarde a chave de texto** que aparece embaixo do QR num lugar seguro (por exemplo, no gerenciador de senhas). É com ela que você recadastra o app se trocar de celular.
+
+**Como fica a recuperação**
+- **Esqueceu a senha:** na tela de login, toque em **Esqueci minha senha**. Chega um e-mail com um link válido por 1 hora; ao abrir, o painel pede o código do app (se estiver ativo) e deixa criar uma senha nova. As outras sessões abertas são encerradas.
+- **Perdeu o celular do autenticador:** entre no Supabase (com a sua conta do GitHub), abra o **SQL Editor** e rode:
+  ```sql
+  delete from auth.mfa_factors
+  where user_id = (select id from auth.users where email = 'SEU-EMAIL-AQUI');
+  ```
+  Depois entre no painel só com a senha e ative as duas etapas de novo no celular novo. Proteja bem a conta do GitHub/Supabase, porque é ela que guarda essa chave mestra.
+- **Desconfia que alguém entrou:** em **Configurações → Segurança da conta**, veja os **Últimos acessos**, use **Sair de todos os aparelhos** e troque a senha.
+
+**O que já está protegendo o painel**
+- Só o e-mail liberado no `02_admin.sql` acessa os dados; isso é conferido pelo próprio banco, não só pela tela.
+- Com as duas etapas ativas, o banco recusa qualquer acesso que não tenha passado pelo código.
+- Depois de 5 senhas ou códigos errados, o painel faz uma pausa crescente (30 s, 1 min, 2 min… até 15 min). O Supabase também limita tentativas do lado dele.
+- O painel sai sozinho depois de 30 minutos sem uso (dá para mudar por aparelho em **Segurança da conta**).
+- O e-mail de recuperação não revela se um endereço tem conta ou não.
+
+> O e-mail de recuperação sai pelo servidor de testes do Supabase, que manda poucos e-mails por hora. Para o seu uso (uma conta) é suficiente. Se um dia quiser e-mails com o nome da RazenLab, configure um SMTP em **Authentication → Emails → SMTP Settings**.
+
+## 11. Trocar as fotos do site
+
+No painel, abra **Vitrine**:
+- **Fotos do site:** troque a **foto de capa** (a grande do topo) e a **logo**. Aparecem no site na hora. **Voltar à original** desfaz.
+- **Peças do catálogo:** cada trabalho tem até 4 fotos. Toque em **capa** numa foto para ela ser a principal do cartão. Também dá para mudar título, categoria, selo e preço.
+- Enquanto a vitrine estiver vazia, o site mostra a coleção de exemplo. O botão **Trazer a coleção de exemplo para editar** copia os 8 exemplos para a vitrine, para você trocar as fotos pelas das suas peças, ajustar os preços ou excluir os que não quiser.
+
+---
 
 ## Como funciona o dia a dia
 

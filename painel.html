@@ -305,6 +305,28 @@ input[type=checkbox],input[type=radio]{width:18px;height:18px;min-height:0;paddi
 .login-top img{width:64px;height:64px;border-radius:50%}
 .login-msg{font-size:13px;color:var(--muted);margin:12px 0 0;min-height:18px}
 .login-msg.erro{color:var(--negative)}
+.login [hidden]{display:none!important}
+.forca{display:grid;gap:6px;margin-top:-4px}
+.forca i{display:block;height:4px;border-radius:4px;background:var(--rule);position:relative;overflow:hidden}
+.forca i::after{content:"";position:absolute;inset:0 auto 0 0;width:var(--p,0%);background:var(--c,var(--negative));transition:width .2s,background .2s}
+.forca span{font-size:12px;color:var(--faint);min-height:16px}
+.seg-qr{display:grid;place-items:center;background:#fff;border-radius:12px;padding:12px;width:220px;height:220px;margin:6px auto}
+.seg-qr img{width:196px;height:196px}
+.seg-seg{font-family:ui-monospace,Menlo,Consolas,monospace;font-size:13px;word-break:break-all;background:var(--ground);border:1px solid var(--rule);border-radius:8px;padding:8px 10px}
+.seg-linha{display:flex;justify-content:space-between;align-items:center;gap:12px;flex-wrap:wrap;padding:12px 0;border-top:1px solid var(--rule)}
+.seg-linha:first-of-type{border-top:0}
+.seg-linha .g{min-width:0;flex:1}
+.seg-linha b{display:block;font-weight:500}
+.seg-ac{list-style:none;margin:0;padding:0;display:grid;gap:0}
+.seg-ac li{display:flex;justify-content:space-between;gap:12px;padding:8px 0;border-top:1px solid var(--rule);font-size:13px}
+.seg-ac li:first-child{border-top:0}
+.foto .capa{position:absolute;left:4px;bottom:4px;top:auto;right:auto;width:auto;height:auto;font-size:10px;line-height:1;padding:4px 6px;border-radius:6px;border:0;background:rgba(0,0,0,.65);color:#fff;cursor:pointer;text-transform:uppercase;letter-spacing:.06em}
+.foto .capa.on{background:var(--accent);color:var(--accent-ink);cursor:default}
+.foto-site{display:grid;grid-template-columns:160px 1fr;gap:16px;align-items:center;padding:12px 0;border-top:1px solid var(--rule)}
+.foto-site:first-of-type{border-top:0}
+.foto-site img{width:160px;height:100px;object-fit:cover;border-radius:10px;background:var(--ground);border:1px solid var(--rule)}
+.foto-site.logo img{width:72px;height:72px;border-radius:50%;justify-self:center}
+@media (max-width:560px){.foto-site{grid-template-columns:1fr}.foto-site img{width:100%;height:auto;aspect-ratio:16/9}}
 /* pedido vindo do site */
 .req{background:color-mix(in srgb,var(--warning) 9%,var(--surface));border:1px solid color-mix(in srgb,var(--warning) 30%,transparent);border-radius:12px;padding:14px 16px;margin-bottom:16px}
 .req p{margin:6px 0 0;white-space:pre-line}
@@ -452,9 +474,31 @@ input:focus-visible,select:focus-visible,textarea:focus-visible,.campo:focus-wit
       <div class="lbl">Entre para abrir o painel</div>
     </div>
     <div id="login-campos" class="grid">
-      <label class="f"><span>E-mail</span><input type="email" id="login-email" autocomplete="username" required></label>
-      <label class="f"><span>Senha</span><div class="campo"><input type="password" id="login-senha" autocomplete="current-password" required><button type="button" id="ver-senha" class="lk" style="text-decoration:none;white-space:nowrap">mostrar</button></div></label>
-      <button class="tb pri" type="submit" id="login-btn" style="width:100%;margin-top:4px">Entrar</button>
+      <div class="grid" data-vista="entrar">
+        <label class="f"><span>E-mail</span><input type="email" id="login-email" autocomplete="username" required></label>
+        <label class="f"><span>Senha</span><div class="campo"><input type="password" id="login-senha" autocomplete="current-password" required><button type="button" class="lk ver-senha" data-alvo="login-senha" style="text-decoration:none;white-space:nowrap">mostrar</button></div></label>
+        <button class="tb pri" type="submit" id="login-btn" style="width:100%;margin-top:4px">Entrar</button>
+        <button type="button" class="lk" data-vista-ir="esqueci" style="justify-self:center">Esqueci minha senha</button>
+      </div>
+      <div class="grid" data-vista="esqueci" hidden>
+        <p class="muted p13" style="margin:0">Informe o e-mail da conta. Se ele estiver cadastrado, chega um link para criar uma senha nova.</p>
+        <label class="f"><span>E-mail</span><input type="email" id="rec-email" autocomplete="username"></label>
+        <button class="tb pri" type="button" id="rec-btn" style="width:100%">Enviar link de recuperação</button>
+        <button type="button" class="lk" data-vista-ir="entrar" style="justify-self:center">Voltar para o login</button>
+      </div>
+      <div class="grid" data-vista="codigo" hidden>
+        <p class="muted p13" style="margin:0">Abra o app autenticador no celular e digite o código de 6 números da RazenLab.</p>
+        <label class="f"><span>Código</span><input id="mfa-codigo" inputmode="numeric" autocomplete="one-time-code" maxlength="6" pattern="[0-9]*" placeholder="000000" style="letter-spacing:.3em;font-size:20px;text-align:center"></label>
+        <button class="tb pri" type="button" id="mfa-btn" style="width:100%">Confirmar</button>
+        <button type="button" class="lk" id="mfa-cancelar" style="justify-self:center">Usar outra conta</button>
+      </div>
+      <div class="grid" data-vista="nova-senha" hidden>
+        <p class="muted p13" style="margin:0">Crie a nova senha do painel.</p>
+        <label class="f"><span>Nova senha</span><div class="campo"><input type="password" id="ns-senha" autocomplete="new-password"><button type="button" class="lk ver-senha" data-alvo="ns-senha" style="text-decoration:none;white-space:nowrap">mostrar</button></div></label>
+        <div class="forca" id="ns-forca"><i></i><span></span></div>
+        <label class="f"><span>Repita a nova senha</span><input type="password" id="ns-senha2" autocomplete="new-password"></label>
+        <button class="tb pri" type="button" id="ns-btn" style="width:100%">Salvar nova senha e entrar</button>
+      </div>
     </div>
     <p class="login-msg" id="login-msg"></p>
   </form>
@@ -488,6 +532,7 @@ input:focus-visible,select:focus-visible,textarea:focus-visible,.campo:focus-wit
 <div id="modal"></div>
 <input type="file" id="arq-backup" accept="application/json,.json" style="display:none">
 <input type="file" id="arq-fotos" accept="image/*" multiple style="display:none">
+<input type="file" id="arq-site" accept="image/jpeg,image/png,image/webp" style="display:none">
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.117.1/dist/umd/supabase.js"></script>
 <script src="config.js"></script>
 <script>
@@ -500,6 +545,7 @@ input:focus-visible,select:focus-visible,textarea:focus-visible,.campo:focus-wit
    (número, status, link secreto do cliente).
    ================================================================ */
 const CFG = window.RAZENLAB_CONFIG || {};
+const VEIO_RECUPERACAO = /type=recovery/.test(location.hash + location.search);
 const CONFIGURADO = !!(CFG.url && CFG.anonKey && !/COLE-AQUI/.test(CFG.url + CFG.anonKey));
 const sb = (CONFIGURADO && window.supabase) ? window.supabase.createClient(CFG.url, CFG.anonKey) : null;
 const LOGO = document.getElementById("logo-src").src;
@@ -512,9 +558,9 @@ const CONFIG_PADRAO = {
 };
 const NEGOCIO_PADRAO = {
   nome:"RazenLab",
-  slogan:"Peças personalizadas, presentes, protótipos e reposições. Você manda a ideia ou o arquivo, eu cuido do resto.",
+  slogan:"Design que surpreende. Peças que têm a sua cara. Transformamos imaginação em realidade, camada por camada.",
   sobre:"Conte o que você precisa. O orçamento chega com frete para todo o Brasil e pagamento por Pix.",
-  whatsapp:"", instagram:"", email:"", cidade:"", responsavel:"",
+  whatsapp:"", instagram:"", email:"", cidade:"", responsavel:"", heroFoto:"", logoFoto:"",
   pagamento:"Pix. A produção começa após a confirmação do pagamento.",
   validadeDias:7, entregas:"",
   pixTipo:"celular", pixChave:"", pixNome:"", pixCidade:"",
@@ -603,7 +649,7 @@ async function gravarConfig(){
   const r1 = await sb.from("config").upsert({ id:1, dados:{ config:dados.config, negocio:n } });
   if(r1.error) throw r1.error;
   // só o que é público vai para o site
-  const r2 = await sb.from("site").upsert({ id:1, dados:{ nome:n.nome, slogan:n.slogan, sobre:n.sobre, whatsapp:n.whatsapp, instagram:n.instagram, email:n.email, cidade:n.cidade, entregas:n.entregas } });
+  const r2 = await sb.from("site").upsert({ id:1, dados:{ nome:n.nome, slogan:n.slogan, sobre:n.sobre, whatsapp:n.whatsapp, instagram:n.instagram, email:n.email, cidade:n.cidade, entregas:n.entregas, heroFoto:n.heroFoto || "", logoFoto:n.logoFoto || "" } });
   if(r2.error) throw r2.error;
 }
 async function gravarFilamento(f){
@@ -1069,6 +1115,7 @@ function render(){
   v.innerHTML = `<div class="pg-in">${TELAS[aba]()}</div>`;
   if(aba === "orcar") atualizarSimulador();
   if(aba === "movimentacoes") carregarMovs();
+  if(aba === "config") carregarSeguranca();
   animarNumeros(v);
 }
 
@@ -1667,6 +1714,7 @@ function pesoVitrine(){
   return b > 1048576 ? dec(b/1048576,1)+" MB" : dec(b/1024,0)+" KB";
 }
 TELAS.vitrine = () => `
+  ${blocoFotosSite()}
   <div class="md-grid">
     <div class="pn rv" style="--d:60ms">
       <div class="ph"><h2>Trabalhos no site</h2><button class="tb pri min dir" data-acao="novo-trabalho">${ico("mais2")} Adicionar</button></div>
@@ -1675,7 +1723,7 @@ TELAS.vitrine = () => `
           ${v.fotos&&v.fotos[0]?`<img class="thumb" src="${v.fotos[0]}" alt="">`:`<div class="thumb"></div>`}
           <div class="g"><div class="n">${esc(v.titulo||"Sem título")}</div><div class="s">${esc([v.categoria,v.material].filter(Boolean).join(" · ")||"—")}</div></div>
           <div class="val">${v.destaque?`<span class="st" style="color:var(--spark)">DESTAQUE</span>`:""}${v.visivel===false?`<span class="st faint">OCULTO</span>`:""}</div>
-        </div>`).join("") : `<div class="vazio"><span class="lbl">Vitrine vazia</span>Adicione fotos das peças que você já fez.</div>`}
+        </div>`).join("") : `<div class="vazio"><span class="lbl">Vitrine vazia</span>Enquanto estiver vazia, o site mostra a coleção de exemplo. Adicione suas peças ou traga os exemplos para cá e troque as fotos de cada um.<div style="margin-top:12px"><button class="tb" data-acao="importar-exemplos">Trazer a coleção de exemplo para editar</button></div></div>`}
     </div>
     <div class="pn rv" style="--d:140ms">
       <div class="ph"><h2>Direto no site</h2></div>
@@ -1685,7 +1733,7 @@ TELAS.vitrine = () => `
         <li>Dê um título e uma categoria.</li>
         <li>Marque <b>Mostrar no site</b> e salve.</li>
       </ol>
-      <a class="tb" style="width:100%;margin-top:12px" href="index.html#trabalhos" target="_blank" rel="noopener">${ico("site")} Ver o site</a>
+      <a class="tb" style="width:100%;margin-top:12px" href="index.html#catalogo" target="_blank" rel="noopener">${ico("site")} Ver o site</a>
       <p class="faint p13" style="margin-top:12px">${vitrine.length} trabalho${vitrine.length===1?"":"s"} · ${vitrine.filter(v=>v.visivel!==false).length} visíve${vitrine.filter(v=>v.visivel!==false).length===1?"l":"is"}</p>
     </div>
   </div>`;
@@ -1695,7 +1743,7 @@ TELAS.config = () => {
   const c = dados.config, n = dados.negocio;
   const cn = (nome,rot,val,uni,dica,pre) => `<label class="f"><span>${rot}</span><div class="campo">${pre?`<span class="u">${pre}</span>`:""}<input class="num" name="${nome}" inputmode="decimal" value="${String(val).replace(".",",")}">${uni?`<span class="u">${uni}</span>`:""}</div>${dica?`<span class="dica">${dica}</span>`:""}</label>`;
   const tx = (nome,rot,val,dica,ph) => `<label class="f"><span>${rot}</span><input name="${nome}" value="${esc(val)}" placeholder="${esc(ph||"")}">${dica?`<span class="dica">${dica}</span>`:""}</label>`;
-  return `
+  return `${blocoSeguranca()}
   <div class="pn rv" style="--d:60ms;margin-bottom:16px" id="neg-form">
     <div class="ph"><h2>Seu negócio</h2><span class="cod">SITE E ORÇAMENTOS</span></div>
     <div class="grid g2">
@@ -2434,7 +2482,7 @@ function abrirFilamento(id){
 
 let trabalhoAberto = null;
 function abrirTrabalho(t){
-  trabalhoAberto = t ? {...t, fotos:[...(t.fotos||[])]} : { id:null, titulo:"", categoria:"", descricao:"", material:"", dimensoes:"", prazo:"", preco:"", fotos:[], destaque:false, visivel:true };
+  trabalhoAberto = t ? {...t, fotos:[...(t.fotos||[])]} : { id:null, titulo:"", categoria:"", descricao:"", material:"", dimensoes:"", prazo:"", preco:"", selo:"", fotos:[], destaque:false, visivel:true };
   desenharTrabalho();
 }
 function desenharTrabalho(){
@@ -2442,14 +2490,15 @@ function desenharTrabalho(){
   document.getElementById("modal").innerHTML = `
   <div class="ov" data-fechar><div class="md est"><div class="pn" id="trab-form">
     <div class="md-h"><h2>${t.id?"Editar trabalho":"Novo trabalho"}</h2><button class="x" data-fechar aria-label="Fechar">&times;</button></div>
-    <div class="lbl" style="margin-bottom:8px">Fotos · até 4 · a primeira é a capa</div>
-    <div class="fotos" style="margin-bottom:16px">${t.fotos.map((f,i)=>`<div class="foto"><img src="${f}" alt=""><button data-del-foto="${i}" aria-label="Remover foto">&times;</button></div>`).join("")}${t.fotos.length<4?`<button class="foto-add" data-acao="add-foto">+ Foto</button>`:""}</div>
+    <div class="lbl" style="margin-bottom:8px">Fotos · até 4 · toque em “capa” para escolher a principal</div>
+    <div class="fotos" style="margin-bottom:16px">${t.fotos.map((f,i)=>`<div class="foto"><img src="${f}" alt=""><button data-del-foto="${i}" aria-label="Remover foto">&times;</button>${i?`<button class="capa" data-capa-foto="${i}" title="Usar como capa">capa</button>`:`<span class="capa on">capa</span>`}</div>`).join("")}${t.fotos.length<4?`<button class="foto-add" data-acao="add-foto">+ Foto</button>`:""}</div>
     <div class="grid g2">
       <label class="f"><span>Título</span><input name="titulo" value="${esc(t.titulo)}" placeholder="Suporte de headset"></label>
       <label class="f"><span>Categoria</span><input name="categoria" list="lcats" value="${esc(t.categoria)}" placeholder="Decoração, Geek"><datalist id="lcats">${cats.map(c=>`<option value="${esc(c)}">`).join("")}</datalist></label>
       <label class="f"><span>Material</span><input name="material" value="${esc(t.material)}" placeholder="PLA preto fosco"></label>
       <label class="f"><span>Tamanho</span><input name="dimensoes" value="${esc(t.dimensoes)}" placeholder="12 × 8 × 20 cm"></label>
       <label class="f"><span>Prazo médio</span><input name="prazo" value="${esc(t.prazo)}" placeholder="3 a 5 dias"></label>
+      <label class="f"><span>Selo no cartão (opcional)</span><input name="selo" value="${esc(t.selo||"")}" maxlength="28" placeholder="Favorito do laboratório"></label>
       <label class="f"><span>Preço no site (opcional)</span><input name="preco" value="${esc(t.preco||"")}" inputmode="decimal" placeholder="59,90 · vazio = sob orçamento"></label>
     </div>
     <label class="f" style="margin-top:14px"><span>Descrição</span><textarea name="descricao">${esc(t.descricao)}</textarea></label>
@@ -2460,14 +2509,14 @@ function desenharTrabalho(){
   document.body.style.overflow = "hidden";
 }
 function guardarTrabalho(){ const f = document.getElementById("trab-form"); if(f) Object.assign(trabalhoAberto, lerCampos(f)); }
-function comprimirFoto(arq){
+function comprimirFoto(arq, max = 1100, qualidade = .8){
   return new Promise((ok,erro) => {
     const r = new FileReader();
     r.onload = () => { const img = new Image();
-      img.onload = () => { const max = 1100; let w = img.width, h = img.height;
+      img.onload = () => { let w = img.width, h = img.height;
         if(w>max||h>max){ const k = max/Math.max(w,h); w = Math.round(w*k); h = Math.round(h*k); }
         const cv = document.createElement("canvas"); cv.width = w; cv.height = h; cv.getContext("2d").drawImage(img,0,0,w,h);
-        ok(cv.toDataURL("image/jpeg",.8)); };
+        ok(cv.toDataURL("image/jpeg",qualidade)); };
       img.onerror = () => erro(new Error("imagem")); img.src = r.result; };
     r.onerror = () => erro(r.error); r.readAsDataURL(arq);
   });
@@ -2476,7 +2525,7 @@ async function gravarTrabalho(w){
   const fotos = [];
   for(const f of w.fotos) fotos.push(f.startsWith("data:") ? await subirImagem("vitrine", f) : f);
   const {id, visivel, destaque, fotos:_, ...d} = w;
-  const linha = { visivel: visivel !== false, destaque: !!destaque, dados:{ titulo:d.titulo, categoria:d.categoria, descricao:d.descricao, material:d.material, dimensoes:d.dimensoes, prazo:d.prazo, preco:d.preco || "" }, fotos };
+  const linha = { visivel: visivel !== false, destaque: !!destaque, dados:{ titulo:d.titulo, categoria:d.categoria, descricao:d.descricao, material:d.material, dimensoes:d.dimensoes, prazo:d.prazo, preco:d.preco || "", selo:d.selo || "" }, fotos };
   const r = id ? await sb.from("vitrine").update(linha).eq("id", id).select().single() : await sb.from("vitrine").insert(linha).select().single();
   if(r.error) throw r.error;
   return vitDaLinha(r.data);
@@ -2579,48 +2628,453 @@ function importar(arq){
   r.readAsText(arq);
 }
 
+/* ---------- fotos do site (capa e logo) ---------- */
+const FOTOS_SITE = {
+  heroFoto:{ nome:"Foto de capa", dica:"A foto grande do topo do site. Use uma foto deitada, de pelo menos 1600 px de largura, com as peças mais à direita (o texto fica à esquerda).", padrao:"assets/hero.webp", max:2200, q:.82 },
+  logoFoto:{ nome:"Logo", dica:"Aparece redonda no topo e no rodapé. Use uma imagem quadrada.", padrao:"assets/logo-mark.jpg", max:400, q:.9 }
+};
+let fotoSiteAlvo = null;
+function blocoFotosSite(){
+  const n = dados.negocio;
+  return `<div class="pn rv" style="--d:30ms;margin-bottom:16px">
+    <div class="ph"><h2>Fotos do site</h2><span class="cod">TROCA NA HORA</span></div>
+    ${Object.entries(FOTOS_SITE).map(([k,f]) => `
+      <div class="foto-site ${k === "logoFoto" ? "logo" : ""}">
+        <img src="${esc(n[k] || f.padrao)}" alt="${f.nome} atual">
+        <div><b>${f.nome}</b>${n[k] ? "" : ` <span class="faint p13">(original)</span>`}<p class="muted p13" style="margin:4px 0 10px">${f.dica}</p>
+          <div class="row"><button class="tb" data-acao="site-foto" data-qual="${k}">Trocar foto</button>${n[k] ? `<button class="lk" data-acao="site-foto-padrao" data-qual="${k}">Voltar à original</button>` : ""}</div></div>
+      </div>`).join("")}
+    <p class="dica">As fotos das peças do catálogo ficam em cada trabalho, logo abaixo.</p>
+  </div>`;
+}
+async function trocarFotoSite(arq){
+  const k = fotoSiteAlvo, f = FOTOS_SITE[k]; fotoSiteAlvo = null;
+  if(!k) return;
+  if(!/^image\/(jpeg|png|webp)$/.test(arq.type)) return toast("Use uma foto JPG, PNG ou WEBP.");
+  if(arq.size > 20*1024*1024) return toast("Essa foto é muito grande. Use uma de até 20 MB.");
+  toast("Enviando foto…");
+  const antiga = dados.negocio[k];
+  try{
+    const url = await subirImagem("vitrine", await comprimirFoto(arq, f.max, f.q));
+    dados.negocio[k] = url;
+    await gravarConfig();
+    const nome = antiga && caminhoVitrine(antiga);
+    if(nome) sb.storage.from("vitrine").remove([nome]);
+    render(); toast(`${f.nome} trocada. O site já mostra a nova.`);
+  }catch(err){ dados.negocio[k] = antiga; falhou(err, "trocar a foto"); }
+}
+async function fotoSitePadrao(k){
+  if(!confirm(`Voltar a ${FOTOS_SITE[k].nome.toLowerCase()} original?`)) return;
+  const antiga = dados.negocio[k];
+  dados.negocio[k] = "";
+  try{
+    await gravarConfig();
+    const nome = antiga && caminhoVitrine(antiga);
+    if(nome) sb.storage.from("vitrine").remove([nome]);
+    render(); toast("Foto original de volta.");
+  }catch(err){ dados.negocio[k] = antiga; falhou(err, "voltar a foto"); }
+}
+
+/* ---------- coleção de exemplo → vitrine editável ---------- */
+const EXEMPLOS_VITRINE = [
+  ["Lagarto articulado","Articulados","Favorito do laboratório","89,90","serpente","Uma criatura cheia de detalhes, com movimento em cada segmento. Sai inteira da impressora, já articulada.","PLA seda","cerca de 30 cm","3 a 5 dias"],
+  ["Vaso torcido","Decoração","Design que transforma","59,90","vaso","Texturas e curvas para dar uma nova personalidade ao seu espaço. Ótimo com flores secas.","PLA fosco","18 × 14 cm","2 a 4 dias"],
+  ["Suporte para celular","Utilidades","Para o seu dia a dia","29,90","suporte","Seu celular no lugar certo, com um toque de cor na sua mesa. Funciona com e sem capinha.","PETG","10 × 8 × 11 cm","1 a 3 dias"],
+  ["D20 gigante","Geek & colecionáveis","Para a mesa de RPG","39,90","d20","O dado que todo mestre respeita, em tamanho de enfeite. Escolha a cor e a face do crítico.","PLA seda","8 cm","2 a 3 dias"],
+  ["Vaso espiral","Decoração","Peça de destaque","74,90","espiral","Ondas que giram do pé à boca. Fica bonito sozinho na estante ou com um galho seco.","PLA fosco","22 × 15 cm","3 a 5 dias"],
+  ["Luminária lua","Geek & colecionáveis","Luz aconchegante","119,90","lua","Crateras em relevo que aparecem quando a luz acende. Base de madeira e LED quente.","PLA branco + LED","15 cm","4 a 6 dias"],
+  ["Cachepô geométrico","Decoração","Para suculentas","34,90","geometrico","Facetas que pegam a luz de um jeito diferente. Tem furo de drenagem e prato opcional.","PETG","12 × 10 cm","2 a 3 dias"],
+  ["Torre de engrenagens","Articulados","Antiestresse","44,90","engrenagem","Três engrenagens que giram juntas no eixo. Difícil de largar depois que começa.","PLA","10 cm","2 a 4 dias"]
+];
+async function importarExemplos(btn){
+  if(!confirm("Trazer os 8 produtos de exemplo para a vitrine? Depois é só abrir cada um para trocar a foto, o texto e o preço, ou excluir.")) return;
+  btn.disabled = true; btn.textContent = "Trazendo…";
+  try{
+    for(const [titulo,categoria,selo,preco,img,descricao,material,dimensoes,prazo] of EXEMPLOS_VITRINE.slice().reverse()){
+      const foto = new URL(`assets/demo/${img}.webp`, location.href).href;
+      const r = await sb.from("vitrine").insert({ visivel:true, destaque:false, dados:{ titulo, categoria, selo, preco, descricao, material, dimensoes, prazo }, fotos:[foto] }).select().single();
+      if(r.error) throw r.error;
+      vitrine.unshift(vitDaLinha(r.data));
+    }
+    render(); toast("Exemplos na vitrine. Toque em um para trocar a foto e o preço.");
+  }catch(err){ falhou(err, "trazer os exemplos"); render(); }
+}
+document.addEventListener("click", e => {
+  const b = e.target.closest("[data-acao]"); if(!b) return;
+  if(b.dataset.acao === "site-foto"){ fotoSiteAlvo = b.dataset.qual; document.getElementById("arq-site").click(); }
+  else if(b.dataset.acao === "site-foto-padrao") fotoSitePadrao(b.dataset.qual);
+  else if(b.dataset.acao === "importar-exemplos") importarExemplos(b);
+});
+document.addEventListener("change", e => {
+  if(e.target.id === "arq-site" && e.target.files[0]){ const f = e.target.files[0]; e.target.value = ""; trocarFotoSite(f); }
+});
+
 /* ================================================================
-   14. LOGIN
+   14. LOGIN E SEGURANÇA DA CONTA
    ================================================================ */
-function mostrarLogin(msg, erro){
+const TENT_KEY = "razenlab.tentativas", INAT_KEY = "razenlab.inatividade", ATIV_KEY = "razenlab.ativo";
+let depoisDoCodigo = null;      // o que fazer depois do código de duas etapas
+let sessaoAberta = false;
+
+function lerLS(k, padrao){ try{ const v = localStorage.getItem(k); return v == null ? padrao : JSON.parse(v); }catch(e){ return padrao; } }
+function gravarLS(k, v){ try{ localStorage.setItem(k, JSON.stringify(v)); }catch(e){} }
+
+function aparelho(){
+  const u = navigator.userAgent;
+  const nav = /Edg\//.test(u) ? "Edge" : /OPR\/|Opera/.test(u) ? "Opera" : /Firefox\//.test(u) ? "Firefox" : /Chrome\//.test(u) ? "Chrome" : /Safari\//.test(u) ? "Safari" : "Navegador";
+  const so = /Android/.test(u) ? "Android" : /iPhone|iPad|iPod/.test(u) ? "iPhone/iPad" : /Windows/.test(u) ? "Windows" : /Mac OS X/.test(u) ? "Mac" : /Linux/.test(u) ? "Linux" : "";
+  return so ? `${nav} no ${so}` : nav;
+}
+async function registrar(evento){
+  try{ await sb.rpc("registrar_acesso", { p_evento:evento, p_aparelho:aparelho() }); }catch(e){ /* histórico é opcional */ }
+}
+
+/* ---------- telas do login ---------- */
+function vistaLogin(qual){
+  document.querySelectorAll("#login [data-vista]").forEach(v => v.hidden = v.dataset.vista !== qual);
+  const foco = { entrar:"login-email", esqueci:"rec-email", codigo:"mfa-codigo", "nova-senha":"ns-senha" }[qual];
+  setTimeout(() => { const el = document.getElementById(foco); if(el && !(qual === "entrar" && el.value)) el.focus(); else if(qual === "entrar") document.getElementById("login-senha").focus(); }, 30);
+}
+function mostrarLogin(msg, erro, vista){
   document.getElementById("boot").classList.add("fim");
   document.getElementById("login").hidden = false;
+  vistaLogin(vista || "entrar");
   const m = document.getElementById("login-msg");
   m.innerHTML = msg || ""; m.classList.toggle("erro", !!erro);
 }
+function msgLogin(msg, erro){ const m = document.getElementById("login-msg"); m.innerHTML = msg || ""; m.classList.toggle("erro", !!erro); }
+
+document.querySelectorAll(".ver-senha").forEach(b => b.addEventListener("click", () => {
+  const i = document.getElementById(b.dataset.alvo);
+  i.type = i.type === "password" ? "text" : "password"; b.textContent = i.type === "password" ? "mostrar" : "ocultar";
+}));
+document.querySelectorAll("[data-vista-ir]").forEach(b => b.addEventListener("click", () => {
+  if(b.dataset.vistaIr === "esqueci") document.getElementById("rec-email").value = document.getElementById("login-email").value;
+  vistaLogin(b.dataset.vistaIr); msgLogin("");
+}));
+
+/* ---------- regras da senha ---------- */
+function avaliarSenha(s, email){
+  const falta = [];
+  if(s.length < 10) falta.push("pelo menos 10 caracteres");
+  if(!/[a-zA-Z]/.test(s) || !/\d/.test(s)) falta.push("letras e números");
+  const usuario = String(email||"").split("@")[0].toLowerCase();
+  if(usuario.length >= 4 && s.toLowerCase().includes(usuario)) falta.push("não usar o seu e-mail");
+  if(/^(.)\1+$/.test(s) || /12345|senha|password|razenlab|qwert/i.test(s)) falta.push("evitar sequências e palavras óbvias");
+  let pontos = Math.min(4, Math.floor(s.length / 4)) + (/[a-z]/.test(s) && /[A-Z]/.test(s) ? 1 : 0) + (/\d/.test(s) ? 1 : 0) + (/[^a-zA-Z0-9]/.test(s) ? 1 : 0);
+  if(falta.length) pontos = Math.min(pontos, 2);
+  const nivel = pontos >= 6 ? ["Forte","var(--positive)",100] : pontos >= 4 ? ["Boa","var(--accent)",70] : pontos >= 2 ? ["Fraca","var(--spark)",40] : ["Muito fraca","var(--negative)",15];
+  return { ok: !falta.length, falta, nivel };
+}
+function pintarForca(inputId, boxId, email){
+  const s = document.getElementById(inputId).value, box = document.getElementById(boxId);
+  if(!box) return;
+  const a = avaliarSenha(s, email), i = box.querySelector("i");
+  i.style.setProperty("--p", s ? a.nivel[2] + "%" : "0%"); i.style.setProperty("--c", a.nivel[1]);
+  box.querySelector("span").textContent = !s ? "Use 10 ou mais caracteres, com letras e números." : a.ok ? `Senha ${a.nivel[0].toLowerCase()}.` : "Falta: " + a.falta.join(", ") + ".";
+}
+async function emailAtual(){ const { data } = await sb.auth.getUser(); return data && data.user ? data.user.email : ""; }
+document.getElementById("ns-senha").addEventListener("input", async () => pintarForca("ns-senha", "ns-forca", await emailAtual()));
+
+/* ---------- limite de tentativas neste aparelho ---------- */
+function bloqueio(){
+  const t = lerLS(TENT_KEY, { n:0, ate:0 });
+  return t.ate > Date.now() ? Math.ceil((t.ate - Date.now()) / 1000) : 0;
+}
+function errouSenha(){
+  const t = lerLS(TENT_KEY, { n:0, ate:0 }); t.n++;
+  if(t.n >= 5) t.ate = Date.now() + Math.min(15*60, 30 * 2 ** (t.n - 5)) * 1000;
+  gravarLS(TENT_KEY, t);
+  return t;
+}
+const tempoTexto = s => s >= 60 ? `${Math.ceil(s/60)} min` : `${s} s`;
+
+/* ---------- duas etapas ---------- */
+async function precisaCodigo(){
+  const r = await sb.auth.mfa.getAuthenticatorAssuranceLevel();
+  if(r.error || !r.data) return false;
+  return r.data.nextLevel === "aal2" && r.data.currentLevel !== "aal2";
+}
+async function fatorTotp(){
+  const r = await sb.auth.mfa.listFactors();
+  if(r.error) throw r.error;
+  return (r.data.totp || []).find(f => f.status === "verified") || null;
+}
+function pedirCodigo(depois, msg){
+  depoisDoCodigo = depois;
+  document.getElementById("mfa-codigo").value = "";
+  mostrarLogin(msg || "", false, "codigo");
+}
+document.getElementById("mfa-codigo").addEventListener("input", e => {
+  e.target.value = e.target.value.replace(/\D/g,"").slice(0,6);
+  if(e.target.value.length === 6) document.getElementById("mfa-btn").click();
+});
+document.getElementById("mfa-btn").addEventListener("click", async () => {
+  const btn = document.getElementById("mfa-btn"), code = document.getElementById("mfa-codigo").value;
+  if(code.length !== 6) return msgLogin("Digite os 6 números do app.", true);
+  btn.disabled = true; btn.textContent = "Conferindo…";
+  try{
+    const f = await fatorTotp();
+    if(!f) throw new Error("Nenhum autenticador ativo nesta conta.");
+    const r = await sb.auth.mfa.challengeAndVerify({ factorId:f.id, code });
+    if(r.error){
+      const t = errouSenha(), espera = bloqueio();
+      msgLogin(/invalid|expired/i.test(r.error.message) ? `Código incorreto ou vencido. Confira a hora do celular e tente o código novo.${espera ? ` Aguarde ${tempoTexto(espera)}.` : ""}` : erroTexto(r.error), true);
+      document.getElementById("mfa-codigo").value = "";
+    }else{
+      gravarLS(TENT_KEY, { n:0, ate:0 });
+      const d = depoisDoCodigo; depoisDoCodigo = null;
+      await d();
+    }
+  }catch(err){ msgLogin(erroTexto(err), true); }
+  btn.disabled = false; btn.textContent = "Confirmar";
+});
+document.getElementById("mfa-cancelar").addEventListener("click", async () => { await sb.auth.signOut({ scope:"local" }); mostrarLogin(""); });
+
+/* ---------- entrar ---------- */
 async function iniciarSessao(){
   const adm = await sb.rpc("is_admin");
   if(adm.error) throw adm.error;
   if(!adm.data){
-    await sb.auth.signOut();
+    if(await precisaCodigo()){ pedirCodigo(iniciarSessao); return; }
+    await sb.auth.signOut({ scope:"local" });
     mostrarLogin("Esta conta existe, mas ainda não tem acesso ao painel. Rode o arquivo <b>02_admin.sql</b> com o seu e-mail no Supabase.", true);
     return;
   }
   await carregarTudo();
   document.getElementById("login").hidden = true;
+  msgLogin("");
+  sessaoAberta = true;
+  marcarAtividade();
   ligarTempoReal();
   render();
   inicializar();
 }
-document.getElementById("ver-senha").addEventListener("click", () => {
-  const i = document.getElementById("login-senha"), b = document.getElementById("ver-senha");
-  i.type = i.type === "password" ? "text" : "password"; b.textContent = i.type === "password" ? "mostrar" : "ocultar";
-});
 document.getElementById("login-form").addEventListener("submit", async e => {
   e.preventDefault();
+  const vis = document.querySelector("#login [data-vista]:not([hidden])");
+  if(vis && vis.dataset.vista !== "entrar"){ const alvo = { esqueci:"rec-btn", codigo:"mfa-btn", "nova-senha":"ns-btn" }[vis.dataset.vista]; if(alvo) document.getElementById(alvo).click(); return; }
+  const espera = bloqueio();
+  if(espera) return msgLogin(`Muitas tentativas erradas. Aguarde ${tempoTexto(espera)} para tentar de novo.`, true);
   const btn = document.getElementById("login-btn");
   btn.disabled = true; btn.textContent = "Entrando…";
   const r = await sb.auth.signInWithPassword({ email:document.getElementById("login-email").value.trim(), password:document.getElementById("login-senha").value });
   if(r.error){
     const m = r.error.message || "";
-    mostrarLogin(/invalid login credentials/i.test(m) ? "E-mail ou senha incorretos. Toque em <b>mostrar</b> para conferir o que foi digitado."
-      : /email not confirmed/i.test(m) ? "Este e-mail ainda não foi confirmado no Supabase (Authentication → Users)."
+    if(/invalid login credentials/i.test(m)){
+      const t = errouSenha(), w = bloqueio();
+      msgLogin(w ? `E-mail ou senha incorretos. Por segurança, aguarde ${tempoTexto(w)} para tentar de novo.`
+        : `E-mail ou senha incorretos.${t.n >= 3 ? ` Mais ${5 - t.n} tentativa${5 - t.n === 1 ? "" : "s"} antes de uma pausa. Se esqueceu, use <b>Esqueci minha senha</b>.` : ""}`, true);
+    }else msgLogin(/email not confirmed/i.test(m) ? "Este e-mail ainda não foi confirmado no Supabase (Authentication → Users)."
+      : /rate limit|too many/i.test(m) ? "Muitas tentativas. O Supabase pausou o login por alguns minutos."
       : /api key/i.test(m) ? "A chave do Supabase no config.js não foi aceita."
       : erroTexto(r.error), true);
   }else{
-    try{ await iniciarSessao(); }catch(err){ mostrarLogin(erroTexto(err), true); }
+    gravarLS(TENT_KEY, { n:0, ate:0 });
+    document.getElementById("login-senha").value = "";
+    try{
+      const entrar = async () => { await iniciarSessao(); if(sessaoAberta) registrar("entrou"); };
+      if(await precisaCodigo()) pedirCodigo(entrar); else await entrar();
+    }catch(err){ mostrarLogin(erroTexto(err), true); }
   }
   btn.disabled = false; btn.textContent = "Entrar";
+});
+
+/* ---------- esqueci a senha ---------- */
+document.getElementById("rec-btn").addEventListener("click", async () => {
+  const email = document.getElementById("rec-email").value.trim(), btn = document.getElementById("rec-btn");
+  if(!/^[^@\s]+@[^@\s]+\.[^@\s]+$/.test(email)) return msgLogin("Informe um e-mail válido.", true);
+  btn.disabled = true; btn.textContent = "Enviando…";
+  const volta = location.origin + location.pathname;
+  const r = await sb.auth.resetPasswordForEmail(email, { redirectTo: volta });
+  btn.disabled = false; btn.textContent = "Enviar link de recuperação";
+  if(r.error && /rate limit|seconds/i.test(r.error.message)) return msgLogin("Já enviamos um link há pouco. Espere alguns minutos e confira também o spam.", true);
+  if(r.error && /Failed to fetch|network/i.test(r.error.message)) return msgLogin("Sem conexão com a internet.", true);
+  // mesma resposta exista ou não a conta: não revela quais e-mails estão cadastrados
+  msgLogin("Se esse e-mail tiver conta, o link chega em alguns minutos. Abra o link <b>neste aparelho</b>. Ele vale por 1 hora.");
+});
+
+/* ---------- chegou pelo link do e-mail ---------- */
+async function fluxoRecuperacao(){
+  const definir = () => { document.getElementById("ns-senha").value = document.getElementById("ns-senha2").value = ""; pintarForca("ns-senha","ns-forca",""); mostrarLogin("", false, "nova-senha"); };
+  if(await precisaCodigo()) pedirCodigo(async () => definir(), "Para trocar a senha, confirme também o código do app autenticador.");
+  else definir();
+}
+document.getElementById("ns-btn").addEventListener("click", async () => {
+  const s1 = document.getElementById("ns-senha").value, s2 = document.getElementById("ns-senha2").value, btn = document.getElementById("ns-btn");
+  const email = await emailAtual(), a = avaliarSenha(s1, email);
+  if(!a.ok) return msgLogin("A senha precisa de: " + a.falta.join(", ") + ".", true);
+  if(s1 !== s2) return msgLogin("As duas senhas não são iguais.", true);
+  btn.disabled = true; btn.textContent = "Salvando…";
+  const r = await sb.auth.updateUser({ password:s1 });
+  btn.disabled = false; btn.textContent = "Salvar nova senha e entrar";
+  if(r.error) return msgLogin(/different from the old/i.test(r.error.message) ? "A senha nova precisa ser diferente da antiga." : /weak|pwned|leaked/i.test(r.error.message) ? "Essa senha aparece em vazamentos conhecidos. Escolha outra." : erroTexto(r.error), true);
+  history.replaceState(null, "", location.pathname);
+  await registrar("senha_redefinida");
+  // as outras sessões abertas com a senha antiga são encerradas
+  try{ await sb.auth.signOut({ scope:"others" }); }catch(e){}
+  try{ await iniciarSessao(); toast("Senha nova salva."); }catch(err){ mostrarLogin(erroTexto(err), true); }
+});
+
+/* ---------- saída por inatividade ---------- */
+const minutosInatividade = () => +lerLS(INAT_KEY, 30);
+function marcarAtividade(){ gravarLS(ATIV_KEY, Date.now()); }
+let ultimaMarca = 0;
+["pointerdown","keydown","wheel","touchstart"].forEach(ev => addEventListener(ev, () => {
+  if(!sessaoAberta) return;
+  const agora = Date.now(); if(agora - ultimaMarca > 15000){ ultimaMarca = agora; marcarAtividade(); }
+}, { passive:true }));
+setInterval(async () => {
+  const min = minutosInatividade();
+  if(!sessaoAberta || !min) return;
+  if(Date.now() - (+lerLS(ATIV_KEY, Date.now())) > min * 60000){
+    sessaoAberta = false;
+    await registrar("inatividade");
+    await sb.auth.signOut({ scope:"local" });
+    location.replace(location.pathname + "?saiu=inatividade");
+  }
+}, 20000);
+
+/* ---------- tela "Segurança" nas configurações ---------- */
+let seg = { carregado:false, email:"", fator:null, acessos:[], temHistorico:true };
+const EVENTOS = { entrou:"Entrou no painel", saiu:"Saiu", saiu_todos:"Encerrou todas as sessões", senha_trocada:"Trocou a senha", senha_redefinida:"Criou senha nova pelo e-mail", "2fa_ativada":"Ativou as duas etapas", "2fa_removida":"Desativou as duas etapas", inatividade:"Saiu por inatividade" };
+async function carregarSeguranca(){
+  try{
+    const [u, f, a] = await Promise.all([ sb.auth.getUser(), fatorTotp().catch(() => null), sb.from("acessos").select("evento,aparelho,criado_em").order("criado_em",{ascending:false}).limit(12) ]);
+    seg = { carregado:true, email:(u.data.user||{}).email || "", fator:f, acessos:a.error ? [] : a.data, temHistorico:!a.error };
+  }catch(e){ seg.carregado = true; }
+  const box = document.getElementById("seg-box");
+  if(box) box.outerHTML = blocoSeguranca();
+}
+function blocoSeguranca(){
+  if(!seg.carregado) return `<div class="pn rv" id="seg-box" style="margin-bottom:16px"><div class="ph"><h2>Segurança da conta</h2><span class="cod">LOGIN E SENHA</span></div><p class="muted p13">Carregando…</p></div>`;
+  const quando = d => new Date(d).toLocaleString("pt-BR",{ day:"2-digit", month:"2-digit", year:"2-digit", hour:"2-digit", minute:"2-digit" });
+  const inat = minutosInatividade();
+  return `<div class="pn rv" id="seg-box" style="margin-bottom:16px">
+    <div class="ph"><h2>Segurança da conta</h2><span class="cod">LOGIN E SENHA</span></div>
+    <div class="seg-linha"><div class="g"><b>E-mail de acesso</b><span class="muted p13">${esc(seg.email)}. É para ele que vai o link de recuperação.</span></div></div>
+    <div class="seg-linha"><div class="g"><b>Senha</b><span class="muted p13">Troque de tempos em tempos e não use a mesma de outros sites.</span></div><button class="tb" data-acao="seg-senha">Trocar senha</button></div>
+    <div class="seg-linha"><div class="g"><b>Verificação em duas etapas ${seg.fator ? `<span class="st" style="--c:var(--positive);margin-left:6px">ATIVA</span>` : `<span class="st" style="--c:var(--spark);margin-left:6px">DESLIGADA</span>`}</b>
+      <span class="muted p13">${seg.fator ? `Além da senha, o painel pede o código do app autenticador. Ativada em ${quando(seg.fator.created_at)}.` : "Recomendado. Mesmo que alguém descubra a sua senha, não entra sem o código do seu celular."}</span></div>
+      ${seg.fator ? `<button class="tb perigo" data-acao="seg-2fa-off">Desativar</button>` : `<button class="tb pri" data-acao="seg-2fa-on">Ativar</button>`}</div>
+    <div class="seg-linha"><div class="g"><b>Sair sozinho por inatividade</b><span class="muted p13">Neste aparelho, encerra a sessão se ninguém mexer no painel.</span></div>
+      <select id="seg-inat" style="width:auto">${[[15,"15 minutos"],[30,"30 minutos"],[60,"1 hora"],[240,"4 horas"],[0,"Nunca"]].map(([v,r]) => `<option value="${v}" ${inat===v?"selected":""}>${r}</option>`).join("")}</select></div>
+    <div class="seg-linha"><div class="g"><b>Sessões abertas</b><span class="muted p13">Perdeu o celular ou entrou num computador de outra pessoa? Encerre todas e entre de novo só aqui.</span></div><button class="tb perigo" data-acao="seg-sair-todos">Sair de todos os aparelhos</button></div>
+    <div class="sep"></div>
+    <div class="lbl" style="margin-bottom:6px">Últimos acessos</div>
+    ${!seg.temHistorico ? `<p class="dica">Para guardar o histórico, rode o arquivo <b>03_seguranca.sql</b> no Supabase.</p>`
+      : seg.acessos.length ? `<ul class="seg-ac">${seg.acessos.map(a => `<li><span>${esc(EVENTOS[a.evento] || a.evento)}<span class="faint"> · ${esc(a.aparelho||"")}</span></span><span class="faint">${quando(a.criado_em)}</span></li>`).join("")}</ul>`
+      : `<p class="dica">Nenhum registro ainda.</p>`}
+  </div>`;
+}
+function abrirJanela(html){
+  document.getElementById("modal").innerHTML = `<div class="ov" data-fechar><div class="md est" style="max-width:460px"><div class="pn" id="seg-janela">${html}</div></div></div>`;
+  document.body.style.overflow = "hidden";
+  setTimeout(() => { const i = document.querySelector("#seg-janela input"); if(i) i.focus(); }, 30);
+}
+function janelaSenha(){
+  abrirJanela(`
+    <div class="md-h"><h2>Trocar senha</h2><button class="x" data-fechar aria-label="Fechar">&times;</button></div>
+    <div class="grid">
+      <label class="f"><span>Senha atual</span><input type="password" id="ts-atual" autocomplete="current-password"></label>
+      <label class="f"><span>Nova senha</span><input type="password" id="ts-nova" autocomplete="new-password"></label>
+      <div class="forca" id="ts-forca"><i></i><span>Use 10 ou mais caracteres, com letras e números.</span></div>
+      <label class="f"><span>Repita a nova senha</span><input type="password" id="ts-nova2" autocomplete="new-password"></label>
+      <label class="chk"><input type="checkbox" id="ts-outros" checked> Sair dos outros aparelhos</label>
+      <p class="login-msg" id="ts-msg"></p>
+      <button class="tb pri" data-acao="seg-senha-salvar" style="width:100%">Salvar nova senha</button>
+    </div>`);
+  document.getElementById("ts-nova").addEventListener("input", () => pintarForca("ts-nova","ts-forca",seg.email));
+}
+async function salvarTrocaSenha(btn){
+  const atual = document.getElementById("ts-atual").value, nova = document.getElementById("ts-nova").value, nova2 = document.getElementById("ts-nova2").value;
+  const msg = (t, e) => { const m = document.getElementById("ts-msg"); m.innerHTML = t; m.classList.toggle("erro", !!e); };
+  if(!atual) return msg("Digite a senha atual.", true);
+  const a = avaliarSenha(nova, seg.email);
+  if(!a.ok) return msg("A senha nova precisa de: " + a.falta.join(", ") + ".", true);
+  if(nova !== nova2) return msg("As duas senhas novas não são iguais.", true);
+  if(nova === atual) return msg("A senha nova precisa ser diferente da atual.", true);
+  btn.disabled = true; btn.textContent = "Conferindo…";
+  try{
+    let ok;
+    const c = await sb.rpc("conferir_senha", { p_senha:atual });
+    if(!c.error) ok = c.data;
+    else if(!seg.fator){ ok = !(await sb.auth.signInWithPassword({ email:seg.email, password:atual })).error; }   // antes do 03_seguranca.sql
+    else throw new Error("Rode o arquivo 03_seguranca.sql no Supabase para trocar a senha com as duas etapas ativas.");
+    if(!ok){ msg("A senha atual não confere.", true); return; }
+    const r = await sb.auth.updateUser({ password:nova });
+    if(r.error) throw new Error(/weak|pwned|leaked/i.test(r.error.message) ? "Essa senha aparece em vazamentos conhecidos. Escolha outra." : /reauthenticat/i.test(r.error.message) ? "O Supabase pediu confirmação extra. Saia, use Esqueci minha senha e crie a nova por lá." : r.error.message);
+    if(document.getElementById("ts-outros").checked) await sb.auth.signOut({ scope:"others" });
+    await registrar("senha_trocada");
+    fecharModal(true); toast("Senha trocada."); carregarSeguranca();
+  }catch(err){ msg(erroTexto(err), true); }
+  finally{ if(document.body.contains(btn)){ btn.disabled = false; btn.textContent = "Salvar nova senha"; } }
+}
+let novoFator = null;
+async function ativar2fa(){
+  try{
+    // limpa tentativas antigas que não foram confirmadas
+    const l = await sb.auth.mfa.listFactors();
+    for(const f of ((l.data && l.data.all) || []).filter(f => f.status !== "verified")) await sb.auth.mfa.unenroll({ factorId:f.id });
+    const r = await sb.auth.mfa.enroll({ factorType:"totp", friendlyName:"RazenLab " + new Date().toISOString().slice(0,16), issuer:"RazenLab" });
+    if(r.error) throw r.error;
+    novoFator = r.data;
+    abrirJanela(`
+      <div class="md-h"><h2>Ativar duas etapas</h2><button class="x" data-fechar aria-label="Fechar">&times;</button></div>
+      <ol class="passos" style="margin-top:0">
+        <li>Instale um app autenticador no celular: Google Authenticator, Microsoft Authenticator ou Authy.</li>
+        <li>No app, toque em <b>+</b> e leia este código:</li>
+      </ol>
+      <div class="seg-qr"><img src="${novoFator.totp.qr_code}" alt="Código QR para o app autenticador"></div>
+      <p class="dica" style="text-align:center">Não consegue ler? Digite esta chave no app:</p>
+      <div class="seg-seg">${esc(novoFator.totp.secret)}</div>
+      <label class="f" style="margin-top:14px"><span>3. Digite o código de 6 números que aparece no app</span><input id="f2-codigo" inputmode="numeric" autocomplete="one-time-code" maxlength="6" placeholder="000000" style="letter-spacing:.3em;font-size:20px;text-align:center"></label>
+      <p class="login-msg" id="f2-msg"></p>
+      <button class="tb pri" data-acao="seg-2fa-confirmar" style="width:100%">Confirmar e ativar</button>
+      <p class="dica">Guarde a chave acima num lugar seguro. Se trocar de celular, é com ela que você recadastra o app.</p>`);
+  }catch(err){ falhou(err, "ativar as duas etapas"); }
+}
+async function confirmar2fa(btn){
+  const code = document.getElementById("f2-codigo").value.replace(/\D/g,"");
+  const msg = (t) => { const m = document.getElementById("f2-msg"); m.textContent = t; m.classList.add("erro"); };
+  if(code.length !== 6) return msg("Digite os 6 números do app.");
+  btn.disabled = true; btn.textContent = "Conferindo…";
+  const r = await sb.auth.mfa.challengeAndVerify({ factorId:novoFator.id, code });
+  btn.disabled = false; btn.textContent = "Confirmar e ativar";
+  if(r.error) return msg(/invalid|expired/i.test(r.error.message) ? "Código incorreto. Confira se a hora do celular está automática e tente o próximo código." : erroTexto(r.error));
+  novoFator = null;
+  await registrar("2fa_ativada");
+  fecharModal(true); toast("Duas etapas ativadas. Nos próximos logins o painel vai pedir o código.");
+  carregarSeguranca();
+}
+async function desativar2fa(){
+  if(!seg.fator) return;
+  if(!confirm("Desativar a verificação em duas etapas? Sua conta fica protegida só pela senha.")) return;
+  const r = await sb.auth.mfa.unenroll({ factorId:seg.fator.id });
+  if(r.error) return falhou(r.error, "desativar as duas etapas");
+  await sb.auth.refreshSession();
+  await registrar("2fa_removida");
+  toast("Duas etapas desativadas."); carregarSeguranca();
+}
+async function sairTodos(){
+  if(!confirm("Encerrar a sessão em todos os aparelhos, inclusive este?")) return;
+  await registrar("saiu_todos");
+  sessaoAberta = false;
+  await sb.auth.signOut({ scope:"global" });
+  location.replace(location.pathname + "?saiu=todos");
+}
+document.addEventListener("change", e => {
+  if(e.target.id === "seg-inat"){ gravarLS(INAT_KEY, +e.target.value); marcarAtividade(); toast(+e.target.value ? "Tempo de inatividade salvo neste aparelho." : "O painel não vai sair sozinho neste aparelho."); }
+});
+document.addEventListener("click", e => {
+  const b = e.target.closest("[data-acao]"); if(!b) return;
+  const a = b.dataset.acao;
+  if(a === "seg-senha") janelaSenha();
+  else if(a === "seg-senha-salvar") salvarTrocaSenha(b);
+  else if(a === "seg-2fa-on") ativar2fa();
+  else if(a === "seg-2fa-confirmar") confirmar2fa(b);
+  else if(a === "seg-2fa-off") desativar2fa();
+  else if(a === "seg-sair-todos") sairTodos();
 });
 
 /* ================================================================
@@ -2677,6 +3131,7 @@ document.addEventListener("click", async e => {
   if((el = t.closest("[data-mes]"))){ calRef = new Date(calRef.getFullYear(), calRef.getMonth() + (+el.dataset.mes), 1); document.getElementById("cal").innerHTML = calendario(); return; }
   if((el = t.closest("[data-cliente]"))){ busca = el.dataset.cliente; filtroStatus = "todos"; ir("pedidos"); return; }
   if((el = t.closest("[data-trabalho]"))){ abrirTrabalho(vitrine.find(v => v.id === el.dataset.trabalho)); return; }
+  if((el = t.closest("[data-capa-foto]"))){ guardarTrabalho(); const [f] = trabalhoAberto.fotos.splice(+el.dataset.capaFoto,1); trabalhoAberto.fotos.unshift(f); desenharTrabalho(); return; }
   if((el = t.closest("[data-del-foto]"))){ guardarTrabalho(); trabalhoAberto.fotos.splice(+el.dataset.delFoto,1); desenharTrabalho(); return; }
   if((el = t.closest("[data-edit-fil]"))){ abrirFilamento(el.dataset.editFil); return; }
   if((el = t.closest("[data-rolo]"))){
@@ -2816,7 +3271,7 @@ document.addEventListener("click", async e => {
       break;
     }
     case "sair":
-      if(confirm("Sair do painel neste aparelho?")){ await sb.auth.signOut(); location.reload(); }
+      if(confirm("Sair do painel neste aparelho?")){ await registrar("saiu"); sessaoAberta = false; await sb.auth.signOut({ scope:"local" }); location.replace(location.pathname); }
       break;
   }
 });
@@ -2881,9 +3336,25 @@ if("serviceWorker" in navigator && location.protocol === "https:") navigator.ser
     return;
   }
   if(!sb){ mostrarLogin("Não consegui carregar a biblioteca do Supabase. Verifique a internet e recarregue.", true); return; }
+  const q = new URLSearchParams(location.search), h = new URLSearchParams(location.hash.slice(1));
+  const erroLink = h.get("error_description") || q.get("error_description");
+  if(erroLink){
+    history.replaceState(null, "", location.pathname);
+    document.getElementById("rec-email").value = "";
+    mostrarLogin(/expired|invalid/i.test(erroLink) ? "Esse link de recuperação venceu ou já foi usado. Peça um novo abaixo." : erroTexto(erroLink), true, "esqueci");
+    return;
+  }
+  let recuperando = VEIO_RECUPERACAO;
+  sb.auth.onAuthStateChange(ev => { if(ev === "PASSWORD_RECOVERY" && !recuperando){ recuperando = true; fluxoRecuperacao(); } });
   const { data } = await sb.auth.getSession();
-  if(!data.session){ mostrarLogin(); return; }
-  try{ await iniciarSessao(); }catch(e){ mostrarLogin(erroTexto(e), true); }
+  if(q.get("saiu")){ history.replaceState(null, "", location.pathname); }
+  const avisoSaida = q.get("saiu") === "inatividade" ? "Você saiu por inatividade. Entre de novo." : q.get("saiu") === "todos" ? "Todas as sessões foram encerradas." : "";
+  if(!data.session){ if(recuperando){ history.replaceState(null, "", location.pathname); mostrarLogin("Não consegui abrir esse link de recuperação. Peça um novo abaixo.", true, "esqueci"); return; } mostrarLogin(avisoSaida); return; }
+  if(recuperando){ fluxoRecuperacao(); return; }
+  // sessão guardada há mais tempo que o limite de inatividade: pede login de novo
+  const min = minutosInatividade(), ultima = +lerLS(ATIV_KEY, 0);
+  if(min && ultima && Date.now() - ultima > min * 60000){ await sb.auth.signOut({ scope:"local" }); mostrarLogin("Você saiu por inatividade. Entre de novo."); return; }
+  try{ if(await precisaCodigo()) pedirCodigo(iniciarSessao); else await iniciarSessao(); }catch(e){ mostrarLogin(erroTexto(e), true); }
 })();
 </script>
 </body>
