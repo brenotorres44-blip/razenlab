@@ -320,6 +320,30 @@ input[type=checkbox],input[type=radio]{width:18px;height:18px;min-height:0;paddi
 .seg-ac{list-style:none;margin:0;padding:0;display:grid;gap:0}
 .seg-ac li{display:flex;justify-content:space-between;gap:12px;padding:8px 0;border-top:1px solid var(--rule);font-size:13px}
 .seg-ac li:first-child{border-top:0}
+.capas{display:grid;grid-template-columns:repeat(auto-fill,minmax(180px,1fr));gap:16px}
+.capa-col{display:grid;gap:10px;align-content:start}
+.capa-img{position:relative;display:block;width:100%;aspect-ratio:4/5;padding:0;border-radius:14px;overflow:hidden;border:1px solid var(--rule);background:var(--ground);cursor:pointer;transition:transform .2s,border-color .2s}
+.capa-img:hover{transform:translateY(-3px);border-color:var(--accent)}
+.capa-img>img{width:100%;height:100%;object-fit:cover}
+.capa-mini{display:grid;grid-template-columns:1fr 1fr;height:100%}
+.capa-mini img{width:100%;height:100%;object-fit:cover}
+.capa-mini span{grid-column:1/-1;display:grid;place-items:center;color:var(--faint);font-size:13px}
+.capa-st{position:absolute;left:8px;top:8px;background:rgba(2,10,31,.85)!important}
+.capa-abrir{position:absolute;left:8px;right:8px;bottom:8px;padding:8px;border-radius:10px;background:rgba(2,10,31,.82);color:var(--text);font-size:13px;font-weight:500;opacity:0;transform:translateY(6px);transition:.2s}
+.capa-img:hover .capa-abrir,.capa-img:focus-visible .capa-abrir{opacity:1;transform:none}
+@media (hover:none){.capa-abrir{opacity:1;transform:none}}
+.capa-info b{display:block;font-weight:500}
+.col-topo{display:flex;gap:16px;align-items:center;margin-bottom:14px}
+.col-capa{width:84px;height:105px;object-fit:cover;border-radius:10px;border:1px solid var(--rule)}
+.col-pecas{display:grid;gap:12px}
+.col-peca{display:grid;grid-template-columns:96px 1fr;gap:14px;padding:14px;border-radius:12px;border:1px solid var(--rule);background:var(--ground)}
+.col-peca>img,.col-peca .sem-foto{width:96px;height:96px;border-radius:10px;object-fit:cover;background:var(--raised)}
+.col-linha{display:flex;gap:10px;align-items:flex-end;flex-wrap:wrap}
+.col-cfg{margin-top:16px;border:1px solid var(--rule);border-radius:12px;padding:12px 14px}
+.col-cfg summary{cursor:pointer;font-weight:500}
+.col-cfg[open] summary{margin-bottom:14px}
+.col-acoes{position:sticky;bottom:-20px;margin:16px -20px -20px;padding:14px 20px;background:var(--surface);border-top:1px solid var(--rule);z-index:2}
+@media (max-width:560px){.col-peca{grid-template-columns:64px 1fr;gap:10px;padding:12px}.col-peca>img,.col-peca .sem-foto{width:64px;height:64px}.col-linha label{width:100%!important}.col-acoes .tb.perigo{margin-left:0}}
 .foto .capa{position:absolute;left:4px;bottom:4px;top:auto;right:auto;width:auto;height:auto;font-size:10px;line-height:1;padding:4px 6px;border-radius:6px;border:0;background:rgba(0,0,0,.65);color:#fff;cursor:pointer;text-transform:uppercase;letter-spacing:.06em}
 .foto .capa.on{background:var(--accent);color:var(--accent-ink);cursor:default}
 .foto-site{display:grid;grid-template-columns:160px 1fr;gap:16px;align-items:center;padding:12px 0;border-top:1px solid var(--rule)}
@@ -2748,19 +2772,21 @@ function blocoColecoes(){
   const temNatal = cs.some(c => /natal/i.test(c.nome));
   return `<div class="pn rv" style="--d:20ms;margin-bottom:16px">
     <div class="ph"><h2>Catálogos por época</h2><button class="tb pri min dir" data-acao="nova-colecao">${ico("mais2")} Novo catálogo</button></div>
-    <p class="muted p13" style="margin:0 0 6px">Agrupe as peças de cada época (Natal, Páscoa, Dia das Mães…). Catálogo desligado some do site com todas as peças dele; no modo <b>por datas</b> ele entra e sai sozinho todo ano.</p>
-    ${cs.length ? cs.map(c => {
-      const st = statusColecao(c), qtd = vitrine.filter(v => v.colecao === c.id).length;
-      return `<div class="seg-linha">
-        ${c.banner ? `<img src="${esc(c.banner)}" alt="" style="width:56px;height:70px;object-fit:cover;border-radius:8px;border:1px solid var(--rule)">` : ""}
-        <div class="g"><b>${esc(c.nome)} <span class="st" style="--c:${st.cor};color:${st.cor};margin-left:6px">${st.txt}</span></b>
-          <span class="muted p13">${qtd} peça${qtd===1?"":"s"} · ${c.modo === "datas" ? `de ${ddmm(c.inicio)} a ${ddmm(c.fim)}` : c.modo === "ligada" ? "sempre no ar" : "fora do site"}</span></div>
-        <div class="row" style="gap:8px">
-          <button class="tb min" data-acao="colecao-ligar" data-col="${c.id}">${colecaoNoAr(c) ? "Desligar" : "Ligar agora"}</button>
-          <button class="tb min" data-acao="colecao-editar" data-col="${c.id}">Editar e preços</button>
-        </div></div>`; }).join("")
+    <p class="muted p13" style="margin:0 0 14px">Toque na capa para abrir o catálogo e editar o preço, o nome e a descrição de cada peça. Catálogo desligado some do site com todas as peças dele; no modo <b>por datas</b> ele entra e sai sozinho todo ano.</p>
+    ${cs.length ? `<div class="capas">${cs.map(c => {
+      const st = statusColecao(c), itens = vitrine.filter(v => v.colecao === c.id), qtd = itens.length;
+      const mini = itens.slice(0,4).map(v => v.fotos && v.fotos[0] ? `<img src="${esc(v.fotos[0])}" alt="">` : "").join("");
+      return `<div class="capa-col">
+        <button class="capa-img" data-acao="colecao-editar" data-col="${c.id}" aria-label="Abrir o catálogo ${esc(c.nome)}">
+          ${c.banner ? `<img src="${esc(c.banner)}" alt="">` : `<div class="capa-mini">${mini || `<span>Sem peças</span>`}</div>`}
+          <span class="st capa-st" style="--c:${st.cor};color:${st.cor}">${st.txt}</span>
+          <span class="capa-abrir">Abrir e editar</span>
+        </button>
+        <div class="capa-info"><b>${esc(c.nome)}</b><span class="muted p13">${qtd} peça${qtd===1?"":"s"} · ${c.modo === "datas" ? `${ddmm(c.inicio)} a ${ddmm(c.fim)}` : c.modo === "ligada" ? "sempre no ar" : "fora do site"}</span></div>
+        <button class="tb min" style="width:100%" data-acao="colecao-ligar" data-col="${c.id}">${colecaoNoAr(c) ? "Desligar do site" : "Ligar agora"}</button>
+      </div>`; }).join("")}</div>`
       : `<p class="dica">Nenhum catálogo ainda.</p>`}
-    ${temNatal ? "" : `<div class="seg-linha"><div class="g"><b>Catálogo de Natal pronto</b><span class="muted p13">8 peças com fotos, anúncios e preços sugeridos. Fica no ar de 15/10 a 06/01 todo ano e você muda tudo depois.</span></div><button class="tb" data-acao="importar-natal">Trazer o catálogo de Natal</button></div>`}
+    ${temNatal ? "" : `<div class="seg-linha" style="margin-top:10px"><div class="g"><b>Catálogo de Natal pronto</b><span class="muted p13">8 peças com fotos, anúncios e preços sugeridos. Fica no ar de 15/10 a 06/01 todo ano e você muda tudo depois.</span></div><button class="tb" data-acao="importar-natal">Trazer o catálogo de Natal</button></div>`}
   </div>`;
 }
 
@@ -2772,41 +2798,57 @@ function abrirColecao(id){
 }
 function desenharColecao(){
   const c = colecaoAberta, itens = c.id ? vitrine.filter(v => v.colecao === c.id) : [];
-  document.getElementById("modal").innerHTML = `
-  <div class="ov" data-fechar><div class="md est"><div class="pn" id="col-form">
-    <div class="md-h"><h2>${c.id ? esc(c.nome) : "Novo catálogo"}</h2><button class="x" data-fechar aria-label="Fechar">&times;</button></div>
+  const config = `
     <div class="grid g2">
       <label class="f"><span>Nome no site</span><input name="nome" value="${esc(c.nome)}" maxlength="40" placeholder="Natal, Páscoa, Dia das Mães"></label>
       <label class="f"><span>Quando aparece no site</span><select name="modo">
         ${[["datas","Por datas (todo ano)"],["ligada","Sempre ligado"],["desligada","Desligado"]].map(([v,r]) => `<option value="${v}" ${c.modo===v?"selected":""}>${r}</option>`).join("")}</select></label>
-      <label class="f"><span>Entra no ar em</span><input name="inicio" value="${ddmm(c.inicio)}" placeholder="dd/mm" inputmode="numeric" maxlength="5"><span class="dica">Só no modo por datas.</span></label>
-      <label class="f"><span>Sai do ar depois de</span><input name="fim" value="${ddmm(c.fim)}" placeholder="dd/mm" inputmode="numeric" maxlength="5"><span class="dica">Pode virar o ano: 01/11 a 06/01.</span></label>
+      <label class="f"><span>Entra no ar em</span><input name="inicio" value="${esc(c._inicio != null ? c._inicio : ddmm(c.inicio))}" placeholder="dd/mm" inputmode="numeric" maxlength="5"><span class="dica">Só no modo por datas.</span></label>
+      <label class="f"><span>Sai do ar depois de</span><input name="fim" value="${esc(c._fim != null ? c._fim : ddmm(c.fim))}" placeholder="dd/mm" inputmode="numeric" maxlength="5"><span class="dica">Pode virar o ano: 15/10 a 06/01.</span></label>
     </div>
-    <label class="f" style="margin-top:14px"><span>Frase do catálogo no site</span><textarea name="descricao" maxlength="1200" rows="5" placeholder="Peças para decorar, colecionar e presentear.">${esc(c.descricao)}</textarea><span class="dica">Até 1200 caracteres. As quebras de linha aparecem no site. Frases curtas (1 a 3 linhas) ficam melhor no destaque.</span></label>
+    <label class="f" style="margin-top:14px"><span>Frase do catálogo no site</span><textarea name="descricao" maxlength="1200" rows="4" placeholder="Peças para decorar, colecionar e presentear.">${esc(c.descricao)}</textarea><span class="dica">Até 1200 caracteres. As quebras de linha aparecem no site. Frases curtas (1 a 3 linhas) ficam melhor no destaque.</span></label>
     <div class="foto-site" style="margin-top:6px">
       ${c.banner ? `<img src="${esc(c.banner)}" alt="" style="height:140px;width:112px;object-fit:cover">` : `<div style="width:112px;height:140px;border-radius:10px;border:1px dashed var(--control)"></div>`}
-      <div><b>Imagem do catálogo</b><p class="muted p13" style="margin:4px 0 10px">Aparece em destaque no site e o cliente pode abrir em tela cheia. Formato de post (1080 × 1350) fica melhor.</p>
-        <div class="row"><button class="tb" data-acao="colecao-banner">${c.banner ? "Trocar imagem" : "Escolher imagem"}</button>${c.banner ? `<button class="lk" data-acao="colecao-banner-tirar">Tirar</button>` : ""}</div></div>
+      <div><b>Capa do catálogo</b><p class="muted p13" style="margin:4px 0 10px">Aparece aqui no painel e em destaque no site; o cliente pode abrir em tela cheia. Formato de post (1080 × 1350) fica melhor.</p>
+        <div class="row"><button class="tb" data-acao="colecao-banner">${c.banner ? "Trocar capa" : "Escolher capa"}</button>${c.banner ? `<button class="lk" data-acao="colecao-banner-tirar">Tirar</button>` : ""}</div></div>
+    </div>`;
+  document.getElementById("modal").innerHTML = `
+  <div class="ov" data-fechar><div class="md"><div class="pn" id="col-form">
+    <div class="md-h"><h2>${c.id ? esc(c.nome) : "Novo catálogo"}</h2><button class="x" data-fechar aria-label="Fechar">&times;</button></div>
+    ${c.id ? `
+    <div class="col-topo">
+      ${c.banner ? `<img class="col-capa" src="${esc(c.banner)}" alt="">` : ""}
+      <div><span class="st" style="--c:${statusColecao(c).cor};color:${statusColecao(c).cor}">${statusColecao(c).txt}</span>
+        <p class="muted p13" style="margin:8px 0 0">${itens.length} peça${itens.length===1?"":"s"}. Edite o nome, o preço e a descrição de cada uma e clique em <b>Salvar tudo</b>.</p></div>
     </div>
-    ${c.id ? `<div class="sep"></div>
-    <div class="lbl" style="margin-bottom:8px">Peças deste catálogo · preço no site</div>
-    ${itens.length ? itens.map(v => `<div class="seg-linha" data-item-col="${v.id}">
-        ${v.fotos && v.fotos[0] ? `<img src="${esc(v.fotos[0])}" alt="" style="width:48px;height:48px;object-fit:cover;border-radius:8px">` : ""}
-        <div class="g"><b>${esc(v.titulo||"Sem título")}</b><label class="chk p13" style="margin-top:4px"><input type="checkbox" data-vis ${v.visivel!==false?"checked":""}> Mostrar no site</label></div>
-        <div class="campo" style="width:140px"><span class="u">R$</span><input class="num" data-preco value="${esc(v.preco||"")}" inputmode="decimal" placeholder="sob orçamento"></div>
-        <button class="lk" data-acao="colecao-abrir-item" data-item="${v.id}">fotos e texto</button>
-      </div>`).join("") : `<p class="dica">Nenhuma peça ainda. Ao criar ou editar uma peça, escolha este catálogo no campo <b>Catálogo</b>.</p>`}` : ""}
+    <div class="col-pecas">
+      ${itens.length ? itens.map(v0 => { const v = { ...v0, ...((c.rasc||{})[v0.id]||{}) }; return `<div class="col-peca" data-item-col="${v.id}">
+        ${v.fotos && v.fotos[0] ? `<img src="${esc(v.fotos[0])}" alt="">` : `<div class="sem-foto"></div>`}
+        <div class="grid" style="gap:10px;min-width:0">
+          <div class="col-linha">
+            <label class="f" style="flex:1;min-width:0"><span>Nome</span><input data-titulo value="${esc(v.titulo||"")}" maxlength="80"></label>
+            <label class="f" style="width:150px"><span>Preço</span><div class="campo"><span class="u">R$</span><input class="num" data-preco value="${esc(v.preco||"")}" inputmode="decimal" placeholder="sob orçamento"></div></label>
+          </div>
+          <label class="f"><span>Descrição</span><textarea data-desc rows="2" maxlength="600">${esc(v.descricao||"")}</textarea></label>
+          <div class="row" style="gap:16px"><label class="chk p13"><input type="checkbox" data-vis ${v.visivel!==false?"checked":""}> Mostrar no site</label><button class="lk" data-acao="colecao-abrir-item" data-item="${v.id}">fotos, selo e mais</button></div>
+        </div>
+      </div>`; }).join("") : `<p class="dica">Nenhuma peça ainda. Use <b>Peça neste catálogo</b> ou, ao editar uma peça, escolha este catálogo no campo <b>Catálogo</b>.</p>`}
+    </div>
+    <details class="col-cfg"><summary>Configurações do catálogo: nome, datas, frase e capa</summary>${config}</details>` : config}
     <p class="login-msg" id="col-msg"></p>
-    <div class="row" style="margin-top:16px"><button class="tb pri" data-acao="colecao-salvar">Salvar${c.id && itens.length ? " catálogo e preços" : ""}</button>
+    <div class="row col-acoes"><button class="tb pri" data-acao="colecao-salvar">${c.id ? "Salvar tudo" : "Criar catálogo"}</button>
       ${c.id ? `<button class="tb" data-acao="colecao-nova-peca">${ico("mais2")} Peça neste catálogo</button><button class="tb perigo dir" data-acao="colecao-excluir">Excluir catálogo</button>` : ""}</div>
   </div></div></div>`;
   document.body.style.overflow = "hidden";
 }
+
 function guardarColecao(){
   const f = document.getElementById("col-form"); if(!f) return;
   const v = lerCampos(f);
   colecaoAberta.nome = String(v.nome||"").trim(); colecaoAberta.descricao = String(v.descricao||"").trim(); colecaoAberta.modo = v.modo;
   colecaoAberta._inicio = v.inicio; colecaoAberta._fim = v.fim;
+  colecaoAberta.rasc = colecaoAberta.rasc || {};
+  f.querySelectorAll("[data-item-col]").forEach(l => { colecaoAberta.rasc[l.dataset.itemCol] = { titulo:l.querySelector("[data-titulo]").value, preco:l.querySelector("[data-preco]").value, descricao:l.querySelector("[data-desc]").value, visivel:l.querySelector("[data-vis]").checked }; });
 }
 async function salvarColecao(btn){
   guardarColecao();
@@ -2825,12 +2867,13 @@ async function salvarColecao(btn){
     for(const linha of document.querySelectorAll("#col-form [data-item-col]")){
       const v = vitrine.find(x => x.id === linha.dataset.itemCol); if(!v) continue;
       const preco = linha.querySelector("[data-preco]").value.trim(), vis = linha.querySelector("[data-vis]").checked;
-      if(preco === String(v.preco||"") && vis === (v.visivel !== false)) continue;
-      const salvo = await gravarTrabalho({ ...v, preco, visivel:vis });
+      const titulo = linha.querySelector("[data-titulo]").value.trim() || v.titulo, descricao = linha.querySelector("[data-desc]").value.trim();
+      if(preco === String(v.preco||"") && vis === (v.visivel !== false) && titulo === v.titulo && descricao === String(v.descricao||"")) continue;
+      const salvo = await gravarTrabalho({ ...v, titulo, preco, descricao, visivel:vis });
       vitrine[vitrine.findIndex(x => x.id === v.id)] = salvo;
     }
-    fecharModal(true); render(); toast("Catálogo salvo. O site já mostra as mudanças.");
-  }catch(err){ dados.negocio.colecoes = antes; btn.disabled = false; btn.textContent = "Salvar"; falhou(err, "salvar o catálogo"); }
+    fecharModal(true); render(); toast("Tudo salvo. O site já mostra as mudanças.");
+  }catch(err){ dados.negocio.colecoes = antes; btn.disabled = false; btn.textContent = "Salvar tudo"; falhou(err, "salvar o catálogo"); }
 }
 async function ligarColecao(id){
   const c = colecoes().find(x => x.id === id); if(!c) return;
