@@ -12,7 +12,7 @@
 <link rel="apple-touch-icon" href="assets/apple-touch-icon.png">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-<link href="https://fonts.googleapis.com/css2?family=Stack+Sans+Headline:wght@400&family=Stack+Sans+Text:wght@400;500&display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Chakra+Petch:wght@500;600&family=Stack+Sans+Headline:wght@400&family=Stack+Sans+Text:wght@400;500&display=swap" rel="stylesheet">
 <style>
 /* ==========================================================================
    RazenLab · painel
@@ -378,6 +378,58 @@ input[type=checkbox],input[type=radio]{width:18px;height:18px;min-height:0;paddi
   *,*::before,*::after{animation-duration:.001ms!important;animation-iteration-count:1!important;transition-duration:.001ms!important}
 }
 </style>
+<link rel="stylesheet" href="assets/hud.css">
+<style>
+/* camada HUD do painel: centro de comando com cantoneiras, fios de luz e leituras */
+.pn,.kpis{
+  background-image:
+    linear-gradient(var(--hud),var(--hud)),linear-gradient(var(--hud),var(--hud)),
+    linear-gradient(var(--hud),var(--hud)),linear-gradient(var(--hud),var(--hud)),
+    linear-gradient(var(--hud),var(--hud)),linear-gradient(var(--hud),var(--hud)),
+    linear-gradient(var(--hud),var(--hud)),linear-gradient(var(--hud),var(--hud));
+  background-repeat:no-repeat;
+  background-size:14px 2px,2px 14px,14px 2px,2px 14px,14px 2px,2px 14px,14px 2px,2px 14px;
+  background-position:0 0,0 0,100% 0,100% 0,0 100%,0 100%,100% 100%,100% 100%;
+  background-color:rgba(10,24,56,.82);border-color:var(--hud-line)}
+.kpis > .pn{background-image:none}
+.ph h2{font:500 12px/1.2 var(--hud-font);letter-spacing:.18em;text-transform:uppercase;color:var(--hud);display:flex;align-items:center;gap:8px}
+.ph h2::before{content:"";width:6px;height:6px;border-radius:50%;background:currentColor;box-shadow:0 0 8px currentColor;flex:0 0 auto}
+.lbl{font-family:var(--hud-font);letter-spacing:.1em;text-transform:uppercase;font-size:11.5px}
+.kpi .v,.imp-num b,.preco-big,.it .val b{font-family:var(--hud-font);font-weight:600;letter-spacing:.01em}
+.kpi .v{text-shadow:0 0 18px rgba(92,225,255,.3)}
+.preco-big{color:var(--hud);text-shadow:0 0 24px rgba(92,225,255,.45)}
+.side{background:rgba(2,10,31,.92);border-right-color:var(--hud-line)}
+.marca img{box-shadow:0 0 0 1px rgba(92,225,255,.45),0 0 18px rgba(30,155,255,.5)}
+.nav-it.on{background:rgba(30,155,255,.14);color:var(--text);box-shadow:inset 2px 0 0 var(--hud),0 0 18px rgba(30,155,255,.12)}
+.nav-it.on svg{color:var(--hud);filter:drop-shadow(0 0 4px var(--hud))}
+.top{background:rgba(2,10,31,.9);border-bottom-color:var(--hud-line)}
+.top .sub{font:500 11px/1.2 var(--hud-font);letter-spacing:.2em;text-transform:uppercase;color:var(--hud)}
+.relogio .h{font-family:var(--hud-font);font-size:18px;letter-spacing:.06em;color:var(--hud);text-shadow:0 0 12px rgba(92,225,255,.45)}
+.relogio .d{font-family:var(--hud-font);letter-spacing:.1em;text-transform:uppercase;font-size:11px}
+.online{font-family:var(--hud-font);letter-spacing:.14em;text-transform:uppercase;font-size:12px}
+.online .led{box-shadow:0 0 8px currentColor}
+.st{font-family:var(--hud-font);letter-spacing:.08em;text-transform:uppercase;font-size:11px;box-shadow:0 0 12px color-mix(in srgb,var(--c) 25%,transparent)}
+.st .led{box-shadow:0 0 6px currentColor}
+.tb.pri{box-shadow:0 0 18px rgba(30,155,255,.45)}
+@media (hover:hover) and (pointer:fine){.tb.pri:hover{box-shadow:0 0 26px rgba(92,225,255,.6)}.tb:hover{box-shadow:0 0 14px rgba(92,225,255,.25)}}
+.chip.on{box-shadow:0 0 14px rgba(30,155,255,.35);border-color:var(--hud-dim)}
+.trilho i,.semana li .cam i{box-shadow:0 0 10px rgba(30,155,255,.6)}
+.semana li.cheio .cam i{box-shadow:0 0 12px rgba(242,138,20,.7)}
+.semana li span:first-child{font-family:var(--hud-font);letter-spacing:.08em;text-transform:uppercase;font-size:11.5px}
+.dia.hoje{box-shadow:inset 0 0 0 1px var(--hud),0 0 12px rgba(92,225,255,.4)}
+.dia.sel{box-shadow:0 0 16px rgba(30,155,255,.6)}
+.graf .risco{filter:drop-shadow(0 0 4px currentColor)}
+input:focus-visible,select:focus-visible,textarea:focus-visible,.campo:focus-within{border-color:var(--hud);box-shadow:0 0 0 3px rgba(92,225,255,.15),0 0 16px rgba(92,225,255,.25)}
+.fluxo button.on{box-shadow:0 0 14px color-mix(in srgb,var(--c) 40%,transparent)}
+.boot-logo{box-shadow:0 0 0 1px var(--hud),0 0 40px rgba(30,155,255,.6)}
+.boot-log{font-family:var(--hud-font);letter-spacing:.18em;text-transform:uppercase;color:var(--hud)}
+.boot-bar i{box-shadow:0 0 12px var(--hud)}
+/* medidor de reator: a ocupação da semana */
+.reator{position:relative;width:104px;height:104px;flex:0 0 auto}
+.reator svg{width:100%;height:100%;overflow:visible}
+.reator b{position:absolute;inset:0;display:grid;place-items:center;font:600 20px/1 var(--hud-font);color:var(--hud);text-shadow:0 0 12px rgba(92,225,255,.6)}
+.imp-top{align-items:center}
+</style>
 </head>
 <body>
 <div class="bg" id="bg"></div>
@@ -420,7 +472,7 @@ input[type=checkbox],input[type=radio]{width:18px;height:18px;min-height:0;paddi
 
   <header class="top">
     <div>
-      <div class="sub" translate="no">RazenLab</div>
+      <div class="sub" translate="no">RazenLab · Centro de comando</div>
       <h1 id="titulo-pg">Visão geral</h1>
     </div>
     <div class="top-dir">
@@ -753,6 +805,17 @@ function ocupacao(){
   return { fila, pct: Math.min(100, fila/cap*100) };
 }
 
+/* medidor em anéis, como um reator: o arco mostra a ocupação da semana */
+function reatorSVG(pct){
+  const C = 2*Math.PI*40, cor = pct >= 85 ? "#F28A14" : "#5CE1FF";
+  return `<div class="reator" role="img" aria-label="${dec(pct,0)}% da semana ocupada"><svg viewBox="0 0 104 104">
+    <g class="hud-spin" style="--t:30s"><circle cx="52" cy="52" r="50" fill="none" stroke="rgba(92,225,255,.3)" stroke-dasharray="2 6"/></g>
+    <g class="hud-spin rev" style="--t:16s"><circle cx="52" cy="52" r="46" fill="none" stroke="rgba(92,225,255,.18)" stroke-width="3" stroke-dasharray="18 10"/></g>
+    <circle cx="52" cy="52" r="40" fill="none" stroke="rgba(92,225,255,.12)" stroke-width="6"/>
+    <circle cx="52" cy="52" r="40" fill="none" stroke="${cor}" stroke-width="6" stroke-linecap="round" stroke-dasharray="${C}" stroke-dashoffset="${C*(1-pct/100)}" transform="rotate(-90 52 52)" style="filter:drop-shadow(0 0 6px ${cor})"/>
+  </svg><b>${dec(pct,0)}%</b></div>`;
+}
+
 /* a semana da impressora como camadas: cada dia é uma camada, de hoje (embaixo) para frente */
 function semanaHTML(horasFila){
   const porDia = Math.max(1, num(dados.config.horasDia));
@@ -1071,7 +1134,7 @@ TELAS.painel = () => {
 
     <div class="pn nucleo rv" style="--d:180ms">
       <div class="ph" style="margin-bottom:0"><h2>Impressora</h2></div>
-      <div class="imp-top"><b style="color:${imprimindo.length?"var(--accent)":"var(--text)"}">${imprimindo.length?`Imprimindo ${imprimindo.length>1?imprimindo.length+" pedidos":esc(imprimindo[0].peca||"uma peça")}`:"Livre agora"}</b><span class="p13 muted">${dec(oc.pct,0)}% da semana ocupada</span></div>
+      <div class="imp-top"><div><span class="lbl">Status</span><b style="display:block;color:${imprimindo.length?"var(--hud)":"var(--text)"}">${imprimindo.length?`Imprimindo ${imprimindo.length>1?imprimindo.length+" pedidos":esc(imprimindo[0].peca||"uma peça")}`:"Livre agora"}</b><span class="p13 muted">da semana ocupada</span></div>${reatorSVG(oc.pct)}</div>
       ${semanaHTML(oc.fila)}
       <div class="imp-num">
         <div><span class="lbl">Horas na fila</span><b data-conta="${oc.fila}" data-tipo="h">0 h</b></div>

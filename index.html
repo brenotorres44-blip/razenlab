@@ -23,7 +23,7 @@
 <link rel="apple-touch-icon" href="assets/apple-touch-icon.png">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-<link href="https://fonts.googleapis.com/css2?family=Stack+Sans+Headline:wght@300;400&family=Stack+Sans+Text:wght@400;500&display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Chakra+Petch:wght@500;600&family=Stack+Sans+Headline:wght@300;400&family=Stack+Sans+Text:wght@400;500&display=swap" rel="stylesheet">
 <script>document.documentElement.classList.add("js")</script>
 <style>
 /* ==========================================================================
@@ -162,7 +162,7 @@ section{padding-top:var(--gap-section)}
 .folder .tab{position:absolute;left:0;top:0;height:52px;display:flex;align-items:center;gap:16px;padding:0 44px 0 28px;min-width:min(320px,80%);max-width:calc(100% - 40px);
   background:var(--fc);clip-path:polygon(0 0,calc(100% - 40px) 0,100% 100%,0 100%);border-radius:var(--radius) 0 0 0}
 .folder .tab h3{font-size:var(--step-lead);font-weight:400;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
-.folder .body{background:var(--fc);border-radius:0 var(--radius) var(--radius) var(--radius);padding:clamp(20px,3vw,44px);display:grid;gap:clamp(20px,3vw,40px);align-items:start}
+.folder .body{background-color:var(--fc);border-radius:0 var(--radius) var(--radius) var(--radius);padding:clamp(20px,3vw,44px);display:grid;gap:clamp(20px,3vw,40px);align-items:start}
 .folder .cat{position:absolute;right:clamp(20px,3vw,44px);top:66px;font-size:var(--step-small);color:var(--muted)}
 .folder .pic{aspect-ratio:16/10;background:var(--bg);border-radius:12px;overflow:clip;margin:0}
 .folder .pic img{width:100%;height:100%;object-fit:cover}
@@ -194,9 +194,9 @@ section{padding-top:var(--gap-section)}
 
 /* como funciona: acordeão de painéis do escuro ao claro */
 .how-intro{align-items:end;row-gap:24px}
-.how-intro h2{grid-column:1/-1}
+.how-intro > div{grid-column:1/-1}
 .how-intro p{grid-column:1/-1;max-width:40ch}
-@media (min-width:900px){.how-intro h2{grid-column:1/6}.how-intro p{grid-column:7/12}}
+@media (min-width:900px){.how-intro > div{grid-column:1/6}.how-intro p{grid-column:7/12}}
 .acc{display:flex;margin-top:64px;height:560px;border-radius:var(--radius);overflow:clip}
 .acc .panel{position:relative;flex:1 1 0;min-width:0;background:var(--pc);color:var(--ink);transition:flex-grow 450ms var(--ease-in-out);overflow:clip}
 .acc .panel[data-open]{flex-grow:5.6}
@@ -230,9 +230,9 @@ section{padding-top:var(--gap-section)}
 
 /* dúvidas */
 .faq{row-gap:32px;align-items:start}
-.faq h2{grid-column:1/-1}
+.faq .faq-h{grid-column:1/-1}
 .faq .list{grid-column:1/-1;display:grid;gap:8px}
-@media (min-width:900px){.faq h2{grid-column:1/5;position:sticky;top:104px}.faq .list{grid-column:5/13}}
+@media (min-width:900px){.faq .faq-h{grid-column:1/5;position:sticky;top:104px}.faq .list{grid-column:5/13}}
 details{background:var(--surface);border-radius:var(--radius);transition:background-color var(--t-ui) ease}
 details[open]{background:var(--accent);color:var(--accent-ink)}
 summary{list-style:none;display:flex;align-items:center;justify-content:space-between;gap:20px;min-height:76px;padding:18px 24px;cursor:pointer;font:500 clamp(1.0625rem,1rem + .3vw,1.25rem)/1.3 var(--text)}
@@ -342,6 +342,98 @@ footer{margin-top:clamp(96px,10vw,140px);background:var(--surface);padding:clamp
 }
 @media (prefers-reduced-motion:reduce){*{scroll-behavior:auto!important}}
 </style>
+<link rel="stylesheet" href="assets/hud.css">
+<style>
+/* ---------- camada HUD desta página ---------- */
+
+/* barra: vidro escuro com fio ciano */
+.bar{background:rgba(2,10,31,.86);box-shadow:0 1px 0 var(--hud-line),0 8px 30px rgba(0,0,0,.35)}
+.bead{box-shadow:0 0 18px rgba(30,155,255,.38);transition:transform var(--t-press) var(--ease-out),background-color var(--t-hover) ease,color var(--t-hover) ease,box-shadow var(--t-hover) ease}
+@media (hover:hover) and (pointer:fine){.bead:hover{box-shadow:0 0 28px rgba(92,225,255,.6)}}
+.bead.quiet,.bead.ink{box-shadow:inset 0 0 0 1px var(--hud-line)}
+@media (hover:hover) and (pointer:fine){.bead.quiet:hover,.bead.ink:hover{box-shadow:inset 0 0 0 1px var(--hud),0 0 18px rgba(92,225,255,.3)}}
+
+/* cartão do título */
+.card{background-color:rgba(11,28,64,.78)}
+.card .hud-label{margin-bottom:18px}
+.card .hud-label .hud-blink{display:none}
+.hero h1{text-shadow:0 0 30px rgba(92,225,255,.18)}
+.card .wordmark img{box-shadow:0 0 0 1px rgba(92,225,255,.45),0 0 26px rgba(30,155,255,.55)}
+.sysline{display:flex;gap:18px;justify-content:center;flex-wrap:wrap;font:500 12px/1 var(--hud-font);letter-spacing:.16em;text-transform:uppercase;color:var(--hud-dim);padding:0 20px 14px}
+.sysline span + span::before{content:"";display:inline-block;width:4px;height:4px;border-radius:50%;background:var(--hud);margin:0 18px 2px 0;box-shadow:0 0 6px var(--hud)}
+
+/* a mesa vira um holograma: fundo escuro, impressora em linhas de luz, a peça real no meio */
+.stage{background-color:#041534;color:var(--ink);isolation:isolate}
+.stage::before{content:"";position:absolute;inset:0;z-index:-1;pointer-events:none;
+  background:radial-gradient(60% 50% at 50% 46%,rgba(30,155,255,.22),transparent 70%),
+    linear-gradient(rgba(92,225,255,.06) 1px,transparent 1px) 0 0/24px 24px,
+    linear-gradient(90deg,rgba(92,225,255,.06) 1px,transparent 1px) 0 0/24px 24px}
+.stage .ring-a{left:50%;top:45%;width:min(88%,560px);transform:translate(-50%,-50%);z-index:-1}
+.readouts{display:flex;justify-content:space-between;align-items:center;gap:12px;flex-wrap:wrap;padding:18px clamp(18px,3vw,32px) 0;position:relative;z-index:1}
+.readouts .ro-right{display:flex;gap:16px}
+.readouts b{font-weight:600;color:var(--ink)}
+.readouts.bottom{padding-top:0;padding-bottom:6px;justify-content:center;gap:22px}
+.stage-ui label{color:var(--muted);font:500 12px/1.3 var(--hud-font);letter-spacing:.14em;text-transform:uppercase}
+.stage input[type=text]{background:rgba(2,10,31,.75);color:var(--ink);box-shadow:inset 0 0 0 1px var(--hud-line);transition:box-shadow var(--t-hover) ease}
+.stage input[type=text]::placeholder{color:var(--muted)}
+.stage input[type=text]:focus-visible{outline:none;box-shadow:inset 0 0 0 1px var(--hud),0 0 20px rgba(92,225,255,.35)}
+.swatches button{box-shadow:inset 0 0 0 1px rgba(92,225,255,.35)}
+.swatches button[aria-pressed=true]::after{border-color:var(--hud);box-shadow:0 0 14px rgba(92,225,255,.6)}
+.stage .bead.ink{background:var(--accent);color:var(--accent-ink);box-shadow:0 0 22px rgba(30,155,255,.55)}
+@media (hover:hover) and (pointer:fine){.stage .bead.ink:hover{background:var(--accent-strong);color:var(--accent-ink)}}
+.stage .note{color:var(--muted)}
+
+/* rótulos de módulo antes dos títulos */
+.kicker{display:block;margin-bottom:18px}
+
+/* pastas: cantoneiras, aba com fio de luz e varredura na foto */
+.folder .tab{box-shadow:inset 0 2px 0 var(--hud)}
+.folder .body{box-shadow:inset 0 0 0 1px var(--hud-line)}
+.folder .cat{z-index:2;font:500 12px/1 var(--hud-font);letter-spacing:.16em;text-transform:uppercase;color:var(--hud)}
+.folder .pic.drawn svg{filter:drop-shadow(0 0 18px rgba(30,155,255,.25))}
+.chip{box-shadow:inset 0 0 0 1px var(--hud-line)}
+.chip[aria-pressed=true]{box-shadow:0 0 16px rgba(30,155,255,.5)}
+
+/* etapas */
+.acc{box-shadow:0 0 0 1px var(--hud-line),0 0 40px rgba(30,155,255,.12)}
+.acc .panel[data-open]{box-shadow:inset 0 2px 0 var(--hud)}
+.acc .sliver{font-family:var(--hud-font);letter-spacing:.08em;text-transform:uppercase;font-size:17px}
+.acc .open .hud-label{margin-bottom:16px}
+.acc .open svg{filter:drop-shadow(0 0 24px rgba(92,225,255,.18))}
+
+/* faixa de camadas */
+.band{background-color:rgba(11,28,64,.7);box-shadow:inset 0 1px 0 var(--hud-line),inset 0 -1px 0 var(--hud-line)}
+.band svg rect{filter:drop-shadow(0 0 6px rgba(92,225,255,.45))}
+
+/* dúvidas */
+details{background-color:rgba(11,28,64,.8);box-shadow:inset 0 0 0 1px var(--hud-line)}
+details[open]{background-color:var(--accent);box-shadow:0 0 30px rgba(30,155,255,.4)}
+summary .pm::before,summary .pm::after{box-shadow:0 0 6px currentColor}
+
+/* pedido: o cupom azul da marca com o terminal escuro do lado */
+.coupon{box-shadow:0 0 50px rgba(30,155,255,.25)}
+#caixa-form{background-color:#041534;color:var(--ink);border-radius:0 var(--radius) var(--radius) 0;position:relative}
+@media (max-width:899px){#caixa-form{border-radius:0 0 var(--radius) var(--radius)}}
+#caixa-form .form label > span{font:500 12px/1.3 var(--hud-font);letter-spacing:.14em;text-transform:uppercase;color:var(--hud-dim)}
+#caixa-form .form input,#caixa-form .form textarea{background:rgba(2,10,31,.8);color:var(--ink);border-color:var(--hud-line)}
+#caixa-form .form input::placeholder,#caixa-form .form textarea::placeholder{color:#7F95BC}
+#caixa-form .form input:focus-visible,#caixa-form .form textarea:focus-visible{border-color:var(--hud);box-shadow:0 0 18px rgba(92,225,255,.3)}
+#caixa-form .form input[type=file]::file-selector-button{background:var(--accent);color:var(--accent-ink)}
+#caixa-form .form .aceite{color:var(--muted)}
+#caixa-form .form .aceite input{accent-color:var(--accent)}
+#caixa-form .form .aceite a{color:var(--hud)}
+#caixa-form .bead.ink{background:var(--accent);color:var(--accent-ink);box-shadow:0 0 24px rgba(30,155,255,.55)}
+@media (hover:hover) and (pointer:fine){#caixa-form .bead.ink:hover{background:var(--accent-strong);color:var(--accent-ink)}}
+#caixa-form .note{color:var(--muted)}
+#caixa-form .note.erro{color:var(--hud-hot)}
+#caixa-form .ok-box .bead.quiet{background:var(--surface-2);color:var(--ink)}
+.perf .dots i{background:var(--bg)}
+
+/* rodapé */
+footer{background-color:rgba(11,28,64,.72);box-shadow:inset 0 1px 0 var(--hud-line)}
+.blocks{filter:drop-shadow(0 0 22px rgba(30,155,255,.3))}
+
+</style>
 </head>
 <body>
 <a class="skip" href="#conteudo">Pular para o conteúdo</a>
@@ -360,10 +452,11 @@ footer{margin-top:clamp(96px,10vw,140px);background:var(--surface);padding:clamp
 
 <main id="conteudo">
 <div class="hero" id="inicio">
-  <div class="card">
+  <div class="card hud-frame">
     <div class="layers" aria-hidden="true"><i></i><i></i><i></i><i></i></div>
     <div class="card-body">
       <a class="wordmark" href="#inicio" data-load style="--d:0ms"><img src="assets/logo-mark.jpg" width="64" height="64" alt="" fetchpriority="high"><b translate="no" style="font-weight:400">Razen<span>Lab</span></b></a>
+      <span class="hud-label" data-load style="--d:200ms"><span class="hud-blink" aria-hidden="true"></span>Laboratório de impressão 3D · online</span>
       <h1>
         <span class="line"><span data-line style="--i:0">Sua ideia,</span></span>
         <span class="line"><span data-line style="--i:1">impressa em 3D</span></span>
@@ -371,6 +464,7 @@ footer{margin-top:clamp(96px,10vw,140px);background:var(--surface);padding:clamp
       <p class="lead" id="slogan" data-load style="--d:420ms">Peças sob encomenda, presentes, protótipos e reposições. Você manda a ideia ou o arquivo e recebe o orçamento com frete no WhatsApp.</p>
       <a class="bead" href="#orcamento" data-load style="--d:500ms">Pedir orçamento</a>
     </div>
+    <div class="sysline" aria-hidden="true" data-load style="--d:700ms"><span>PLA · PETG · TPU</span><span>Envio Brasil</span><span>Pix</span></div>
     <nav class="card-links" aria-label="Atalhos" data-load style="--d:620ms">
       <a class="link" href="#trabalhos">Trabalhos</a>
       <a class="link" href="#como-funciona">Como funciona</a>
@@ -378,30 +472,51 @@ footer{margin-top:clamp(96px,10vw,140px);background:var(--surface);padding:clamp
     </nav>
   </div>
 
-  <div class="stage" aria-labelledby="mesa-titulo">
+  <div class="stage hud-frame hud-scan" aria-labelledby="mesa-titulo" id="mesa">
     <h2 class="vh" id="mesa-titulo">Teste: escreva um nome e veja a placa sendo impressa</h2>
-    <svg class="printer" id="impressora" viewBox="0 30 640 460" role="img" aria-label="Desenho de uma impressora 3D imprimindo uma placa com o nome escrito abaixo">
-      <!-- trilho e cabeçote -->
-      <rect x="40" y="58" width="560" height="22" rx="11" fill="#0A2150"/>
-      <rect x="40" y="58" width="560" height="7" rx="3.5" fill="#16305F"/>
-      <circle cx="56" cy="69" r="5" fill="#5CB8FF"/><circle cx="584" cy="69" r="5" fill="#5CB8FF"/>
+    <div class="readouts" aria-hidden="true">
+      <span class="hud-label"><span class="hud-blink"></span>Impressora · <b id="hud-estado">pronta</b></span>
+      <span class="ro-right"><span class="hud-label plain hot">Bico <b class="hud-num" id="hud-bico">215</b>°C</span><span class="hud-label plain">Mesa <b class="hud-num" id="hud-mesa">60</b>°C</span></span>
+    </div>
+    <div class="hud-ring ring-a" aria-hidden="true"><svg viewBox="0 0 400 400">
+      <g class="hud-spin" style="--t:60s"><circle cx="200" cy="200" r="190" fill="none" stroke="rgba(92,225,255,.28)" stroke-width="1" stroke-dasharray="2 10"/></g>
+      <g class="hud-spin rev" style="--t:34s"><circle cx="200" cy="200" r="164" fill="none" stroke="rgba(92,225,255,.16)" stroke-width="10" stroke-dasharray="60 26 8 26"/></g>
+      <g class="hud-spin" style="--t:18s"><path d="M200 66a134 134 0 0 1 116 67" fill="none" stroke="#5CE1FF" stroke-width="2" filter="url(#brilho)"/><path d="M200 334a134 134 0 0 1-116-67" fill="none" stroke="#F28A14" stroke-width="2" filter="url(#brilho)"/></g>
+      <circle cx="200" cy="200" r="120" fill="none" stroke="rgba(92,225,255,.12)"/>
+    </svg></div>
+    <svg class="printer" id="impressora" viewBox="0 30 640 460" role="img" aria-label="Holograma de uma impressora 3D imprimindo uma placa com o nome escrito abaixo">
+      <defs>
+        <filter id="brilho" x="-40%" y="-40%" width="180%" height="180%"><feGaussianBlur stdDeviation="3" result="b"/><feMerge><feMergeNode in="b"/><feMergeNode in="SourceGraphic"/></feMerge></filter>
+        <pattern id="grade-mesa" width="20" height="20" patternUnits="userSpaceOnUse"><path d="M20 0H0V20" fill="none" stroke="rgba(92,225,255,.25)" stroke-width="1"/></pattern>
+        <clipPath id="corte"><rect id="corte-r" x="0" y="420" width="640" height="0"/></clipPath>
+      </defs>
+      <!-- torres e trilho (holograma em linhas) -->
+      <g fill="none" stroke="#5CE1FF" stroke-width="1.5" filter="url(#brilho)" opacity=".85">
+        <rect x="40" y="58" width="560" height="22" rx="11"/>
+        <path d="M60 80V420M580 80V420" stroke-dasharray="4 6" opacity=".5"/>
+      </g>
+      <circle cx="56" cy="69" r="4" fill="#5CE1FF" filter="url(#brilho)"/><circle cx="584" cy="69" r="4" fill="#5CE1FF" filter="url(#brilho)"/>
+      <g fill="rgba(92,225,255,.6)" font-family="Chakra Petch, Segoe UI, sans-serif" font-size="11" letter-spacing="1.5">
+        <text x="36" y="104">Z+</text><text x="590" y="104">Y</text>
+      </g>
       <g id="eixo-z" style="transition:transform 300ms linear">
         <g class="head">
-          <rect x="276" y="44" width="88" height="96" rx="14" fill="#0A2150"/>
-          <rect x="276" y="44" width="88" height="20" rx="10" fill="#16305F"/>
-          <rect x="290" y="78" width="60" height="34" rx="8" fill="#020A1F"/>
-          <circle cx="320" cy="95" r="11" fill="#16305F"/><circle cx="320" cy="95" r="4" fill="#5CB8FF"/>
+          <rect x="276" y="44" width="88" height="96" rx="14" fill="rgba(10,33,80,.85)" stroke="#5CE1FF" stroke-width="1.5" filter="url(#brilho)"/>
+          <rect x="290" y="78" width="60" height="34" rx="8" fill="#020A1F" stroke="rgba(92,225,255,.5)"/>
+          <circle cx="320" cy="95" r="11" fill="none" stroke="#5CE1FF" stroke-width="1.5"/><circle cx="320" cy="95" r="4" fill="#5CE1FF" filter="url(#brilho)" class="hud-blink"/>
           <rect x="306" y="140" width="28" height="14" rx="3" fill="#C9D6EA"/>
-          <path d="M308 154h24l-7 16h-10z" fill="#F28A14"/>
+          <path d="M308 154h24l-7 16h-10z" fill="#F28A14" filter="url(#brilho)"/>
           <path d="M315 170h10l-3 6h-4z" fill="#FFB866"/>
+          <path d="M320 176v10" stroke="#FFB866" stroke-width="2" filter="url(#brilho)" class="hud-blink"/>
         </g>
       </g>
-      <!-- mesa -->
-      <rect x="70" y="420" width="500" height="26" rx="13" fill="#0A2150"/>
-      <rect x="70" y="420" width="500" height="8" rx="4" fill="#16305F"/>
-      <rect x="110" y="446" width="22" height="30" rx="6" fill="#0A2150"/><rect x="508" y="446" width="22" height="30" rx="6" fill="#0A2150"/>
-      <!-- a peça -->
-      <defs><clipPath id="corte"><rect id="corte-r" x="0" y="420" width="640" height="0"/></clipPath></defs>
+      <!-- mesa com grade de holograma -->
+      <path d="M70 420h500l-30 26H100z" fill="url(#grade-mesa)" stroke="#5CE1FF" stroke-width="1.5" filter="url(#brilho)"/>
+      <path d="M100 446v28M540 446v28" stroke="rgba(92,225,255,.5)" stroke-width="1.5"/>
+      <!-- medida da peça -->
+      <g stroke="rgba(92,225,255,.55)" fill="none"><path d="M120 470h400M120 464v12M520 464v12"/></g>
+      <text x="320" y="488" text-anchor="middle" fill="rgba(92,225,255,.8)" font-family="Chakra Petch, Segoe UI, sans-serif" font-size="12" letter-spacing="2" id="hud-medida">150 mm</text>
+      <!-- a peça: o objeto real, chapado, no meio do holograma -->
       <g clip-path="url(#corte)" id="peca">
         <path id="placa-topo" d="M120 300h400l-24 -26H144z" fill="#1E9BFF"/>
         <rect id="placa-frente" x="120" y="300" width="400" height="120" rx="6" fill="#EEF4FF"/>
@@ -409,7 +524,14 @@ footer{margin-top:clamp(96px,10vw,140px);background:var(--surface);padding:clamp
         <text id="nome-sombra" x="322" y="384" text-anchor="middle" font-family="Stack Sans Headline, Segoe UI, system-ui, sans-serif" font-size="64" font-weight="400" fill="#000" opacity=".18">Seu nome</text>
         <text id="nome" x="320" y="380" text-anchor="middle" font-family="Stack Sans Headline, Segoe UI, system-ui, sans-serif" font-size="64" font-weight="400" fill="#020A1F">Seu nome</text>
       </g>
+      <!-- linha da camada atual -->
+      <rect id="linha-camada" x="110" y="420" width="420" height="2" fill="#F28A14" filter="url(#brilho)" opacity="0"/>
     </svg>
+    <div class="readouts bottom" aria-hidden="true">
+      <span class="hud-label plain">Camada <b class="hud-num" id="hud-camada">18/18</b></span>
+      <span class="hud-label plain">Z <b class="hud-num" id="hud-z">3,60</b> mm</span>
+      <span class="hud-label plain">Filamento <b id="hud-fil">PLA branco</b></span>
+    </div>
     <div class="stage-ui">
       <label for="nome-placa">Escreva um nome e veja a placa sair camada por camada</label>
       <div class="stage-row">
@@ -431,7 +553,7 @@ footer{margin-top:clamp(96px,10vw,140px);background:var(--surface);padding:clamp
 <section id="trabalhos" aria-labelledby="t-trabalhos">
   <div class="wrap">
     <div class="work-head">
-      <h2 id="t-trabalhos" data-reveal>Trabalhos recentes</h2>
+      <div data-reveal><span class="hud-label kicker">Arquivo de trabalhos</span><h2 id="t-trabalhos">Trabalhos recentes</h2></div>
       <div class="chips" id="filtros" role="group" aria-label="Filtrar por categoria"></div>
     </div>
     <div class="folders" id="galeria"></div>
@@ -441,7 +563,7 @@ footer{margin-top:clamp(96px,10vw,140px);background:var(--surface);padding:clamp
 <section id="como-funciona" aria-labelledby="t-como">
   <div class="wrap">
     <div class="grid how-intro">
-      <h2 class="sec-title" id="t-como" data-reveal>Do pedido à sua porta</h2>
+      <div data-reveal><span class="hud-label kicker">Protocolo do pedido</span><h2 class="sec-title" id="t-como">Do pedido à sua porta</h2></div>
       <p class="sec-text" data-reveal style="--s:1">Quatro passos, tudo por um link só seu: o orçamento, o pagamento e o rastreio ficam no mesmo lugar.</p>
     </div>
     <div class="acc" id="etapas" data-reveal style="--s:2"></div>
@@ -457,7 +579,7 @@ footer{margin-top:clamp(96px,10vw,140px);background:var(--surface);padding:clamp
 
 <section id="duvidas" aria-labelledby="t-duvidas" style="padding-top:clamp(120px,12vw,180px)">
   <div class="wrap grid faq">
-    <h2 class="sec-title" id="t-duvidas" data-reveal>Dúvidas comuns</h2>
+    <div class="faq-h" data-reveal><span class="hud-label kicker">Base de conhecimento</span><h2 class="sec-title" id="t-duvidas">Dúvidas comuns</h2></div>
     <div class="list">
       <details name="faq" open data-reveal><summary>Preciso ter o arquivo 3D?<span class="pm" aria-hidden="true"></span></summary><p>Não. Descreva a peça e, se puder, mande uma foto de referência. Se você tiver o arquivo (STL, 3MF, OBJ, STEP ou ZIP de até 25&nbsp;MB), anexe no pedido.</p></details>
       <details name="faq" data-reveal style="--s:1"><summary>Quanto custa uma peça?<span class="pm" aria-hidden="true"></span></summary><p>Depende do tamanho, do material e do tempo de impressão. O orçamento chega com o preço da peça e o frete até o seu CEP, sem compromisso.</p></details>
@@ -476,6 +598,7 @@ footer{margin-top:clamp(96px,10vw,140px);background:var(--surface);padding:clamp
     <div class="coupon" data-reveal>
       <div class="stub">
         <div style="display:grid;gap:20px">
+          <span class="hud-label plain" style="color:var(--accent-ink)">Terminal de pedido</span>
           <h2 id="t-orc">Peça seu orçamento</h2>
           <p id="sobre">Preencha o que souber. A resposta chega no seu WhatsApp com:</p>
         </div>
@@ -648,7 +771,7 @@ function desenharGaleria(){
       <article class="folder" style="--k:${k};--fc:${CAMPOS[k%4]}" data-reveal>
         <div class="tab"><h3>${esc(t.titulo)}</h3></div>
         <span class="cat">${esc(t.categoria)}</span>
-        <div class="body">
+        <div class="body hud-frame">
           <figure class="pic drawn">${DESENHOS[t.desenho]()}</figure>
           <div class="txt">
             <p>${esc(t.texto)}</p>
@@ -665,8 +788,8 @@ function desenharGaleria(){
     <article class="folder" style="--k:${k};--fc:${CAMPOS[k%4]}" data-reveal>
       <div class="tab"><h3>${esc(i.titulo)}</h3></div>
       ${i.categoria ? `<span class="cat">${esc(i.categoria)}${i.destaque?" · destaque":""}</span>` : ""}
-      <div class="body">
-        <figure class="pic" data-camadas>${i.fotos && i.fotos[0] ? `<img src="${esc(i.fotos[0])}" alt="${esc(i.titulo)}" width="1600" height="1000" loading="lazy">` : DESENHOS.placa()}</figure>
+      <div class="body hud-frame">
+        <figure class="pic hud-scan" data-camadas>${i.fotos && i.fotos[0] ? `<img src="${esc(i.fotos[0])}" alt="${esc(i.titulo)}" width="1600" height="1000" loading="lazy">` : DESENHOS.placa()}</figure>
         <div class="txt">
           ${i.descricao ? `<p>${esc(i.descricao)}</p>` : ""}
           ${specs.length ? `<dl>${specs.map(s=>`<div><dt>${s[0]}</dt><dd>${esc(s[1])}</dd></div>`).join("")}</dl>` : ""}
@@ -859,7 +982,7 @@ function desenharEtapas(){
     <div class="panel" style="--pc:${e.cor}" ${k===0?"data-open":""}>
       <button type="button" aria-expanded="${k===0}" aria-controls="etapa-${k}" data-etapa="${k}"><span class="sliver">${esc(e.nome)}</span></button>
       <div class="open" id="etapa-${k}">
-        <div class="t"><h3>${esc(e.nome)}</h3><p>${esc(e.texto)}</p></div>
+        <div class="t"><div><span class="hud-label">Etapa 0${k+1} de 04</span><h3>${esc(e.nome)}</h3></div><p>${esc(e.texto)}</p></div>
         ${e.svg}
       </div>
     </div>`).join("");
@@ -914,20 +1037,27 @@ function pintarPlaca(texto, cor){
   let linhas = "";
   for(let i=0;i<14;i++) linhas += `<rect x="120" y="${306 + i*8.4}" width="400" height="1.4" fill="${escuro ? "#16305F" : "#000"}" opacity="${escuro ? 1 : .07}"/>`;
   document.getElementById("camadas").innerHTML = linhas;
+  const nomeCor = { "#EEF4FF":"branco", "#0B1C40":"preto", "#F28A14":"laranja" }[cor] || "";
+  document.getElementById("hud-fil").textContent = `PLA ${nomeCor}`;
+  document.getElementById("hud-medida").textContent = `${Math.max(90, Math.min(220, 60 + texto.length * 12))} mm`;
 }
 let animando = null;
 function imprimir(){
   const r = document.getElementById("corte-r"), z = document.getElementById("eixo-z"), svg = document.getElementById("impressora");
   if(animando) cancelAnimationFrame(animando);
-  if(calmo){ r.setAttribute("y", 260); r.setAttribute("height", 160); z.style.transform = "translateY(84px)"; return; }
-  svg.classList.add("printing");
+  const lc = document.getElementById("linha-camada");
+  const hud = (c, est) => { document.getElementById("hud-camada").textContent = `${String(c).padStart(2,"0")}/18`; document.getElementById("hud-z").textContent = (c*0.2).toFixed(2).replace(".",","); document.getElementById("hud-estado").textContent = est; };
+  if(calmo){ r.setAttribute("y", 260); r.setAttribute("height", 160); z.style.transform = "translateY(84px)"; hud(18, "pronta"); return; }
+  svg.classList.add("printing"); lc.setAttribute("opacity", 1); hud(0, "imprimindo");
   const total = 18, dur = 2600, ini = performance.now();
   const passo = now => {
     const p = Math.min(1, (now - ini) / dur), camada = Math.ceil(p * total), h = camada / total * 160;
     r.setAttribute("y", 420 - h); r.setAttribute("height", h);
+    lc.setAttribute("y", 419 - h); hud(camada, "imprimindo");
+    if(camada % 3 === 0) document.getElementById("hud-bico").textContent = 214 + (camada % 4);
     z.style.transform = `translateY(${244 - h * 1.0 - 4}px)`;
     if(p < 1) animando = requestAnimationFrame(passo);
-    else { svg.classList.remove("printing"); z.style.transform = "translateY(60px)"; animando = null; }
+    else { svg.classList.remove("printing"); z.style.transform = "translateY(60px)"; animando = null; lc.setAttribute("opacity", 0); hud(18, "pronta"); document.getElementById("hud-bico").textContent = 215; }
   };
   animando = requestAnimationFrame(passo);
 }

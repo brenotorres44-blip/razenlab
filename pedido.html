@@ -10,7 +10,7 @@
 <link rel="icon" type="image/png" href="assets/favicon.png">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-<link href="https://fonts.googleapis.com/css2?family=Stack+Sans+Headline:wght@400&family=Stack+Sans+Text:wght@400;500&display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Chakra+Petch:wght@500;600&family=Stack+Sans+Headline:wght@400&family=Stack+Sans+Text:wght@400;500&display=swap" rel="stylesheet">
 <style>
 /* RazenLab · página do pedido (tela de trabalho: o que falta e o que fazer agora) */
 :root{
@@ -110,6 +110,32 @@ footer{color:var(--faint);font-size:13px;margin-top:40px;display:flex;justify-co
 .carregando{color:var(--muted);padding:80px 0;text-align:center}
 @media (max-width:520px){.card{padding:18px}h1{font-size:24px}}
 @media (prefers-reduced-motion:reduce){*{transition:none!important}}
+</style>
+<link rel="stylesheet" href="assets/hud.css">
+<style>
+/* camada HUD: quadros com cantoneiras, rótulos de sistema, brilho no que anda */
+.card{background-color:rgba(10,24,56,.82)}
+.card h2{font:500 12px/1.2 var(--hud-font);letter-spacing:.18em;text-transform:uppercase;color:var(--hud);display:flex;align-items:center;gap:8px}
+.card h2::before{content:"";width:6px;height:6px;border-radius:50%;background:currentColor;box-shadow:0 0 8px currentColor}
+.head .hud-label{margin-bottom:10px}
+h1{text-shadow:0 0 24px rgba(92,225,255,.2)}
+.top img{box-shadow:0 0 0 1px rgba(92,225,255,.45),0 0 18px rgba(30,155,255,.5)}
+.pill{box-shadow:0 0 16px color-mix(in srgb,var(--hue) 35%,transparent);font-family:var(--hud-font);letter-spacing:.08em;text-transform:uppercase;font-size:12px}
+.pilha li{font-family:var(--hud-font);letter-spacing:.06em;text-transform:uppercase;font-size:12px}
+.pilha li.feito i{box-shadow:0 0 10px rgba(30,155,255,.6)}
+.pilha li.agora i{box-shadow:0 0 16px rgba(92,225,255,.9)}
+.aviso{box-shadow:inset 0 0 0 1px color-mix(in srgb,var(--hue) 35%,transparent)}
+.li > span:first-child{font-family:var(--hud-font);letter-spacing:.06em;text-transform:uppercase;font-size:12px}
+.li.total > span:last-child{font-family:var(--hud-font);font-weight:600;text-shadow:0 0 18px rgba(92,225,255,.35)}
+.li.total > span:first-child{font-family:var(--hud-font);letter-spacing:.12em;text-transform:uppercase;font-size:13px}
+.qr{box-shadow:0 0 0 6px rgba(92,225,255,.12),0 0 30px rgba(92,225,255,.35)}
+.cc{border-color:var(--hud-line);color:var(--hud)}
+.btn-main{box-shadow:0 0 20px rgba(30,155,255,.45)}
+@media (hover:hover) and (pointer:fine){.btn-main:hover{box-shadow:0 0 28px rgba(92,225,255,.6)}}
+.btn-line{border-color:var(--hud-line)}
+.arquivo{border-color:var(--hud-dim);font-family:var(--hud-font);letter-spacing:.06em}
+.cod{font-family:var(--hud-font);color:var(--hud);text-shadow:0 0 16px rgba(92,225,255,.45)}
+.recado{box-shadow:inset 2px 0 0 var(--hud)}
 </style>
 </head>
 <body>
@@ -2498,13 +2524,13 @@ function render(){
 
   const cabeca = `
   <div class="head">
-    <div><h1>Pedido ${numPed(P.numero)}</h1><div class="sub">Olá, ${esc((P.cliente || "").split(" ")[0] || "cliente")}. Pedido feito em ${dataBR(P.criado_em)}.</div></div>
+    <div><span class="hud-label">Rastreamento de pedido</span><h1>Pedido ${numPed(P.numero)}</h1><div class="sub">Olá, ${esc((P.cliente || "").split(" ")[0] || "cliente")}. Pedido feito em ${dataBR(P.criado_em)}.</div></div>
     <span class="pill" style="${cor(s)}"><i aria-hidden="true"></i>${ROTULO[s] || s}</span>
   </div>`;
 
   // a coluna da esquerda é o que fazer agora; a da direita, o resumo
   let main = `
-  <section class="card" aria-labelledby="t-and">
+  <section class="card hud-frame hud-scan" aria-labelledby="t-and">
     <h2 id="t-and">Andamento</h2>
     <div class="andamento">
       ${mensagem()}
@@ -2515,7 +2541,7 @@ function render(){
 
   if(temPreco){
     lado += `
-    <section class="card" aria-labelledby="t-orc">
+    <section class="card hud-frame" aria-labelledby="t-orc">
       <h2 id="t-orc">Orçamento</h2>
       <div class="li"><span>Peça</span><span>${esc(P.peca || "Peça impressa em 3D")}</span></div>
       ${P.material ? `<div class="li"><span>Material</span><span>${esc(P.material)}</span></div>` : ""}
@@ -2529,14 +2555,14 @@ function render(){
       ${P.recado ? `<div class="recado">${esc(P.recado)}</div>` : ""}
     </section>`;
   }else if(P.pedidoCliente){
-    lado += `<section class="card" aria-labelledby="t-ped"><h2 id="t-ped">O que você pediu</h2><p style="margin:0;white-space:pre-line;color:var(--muted)">${esc(P.pedidoCliente)}</p></section>`;
+    lado += `<section class="card hud-frame" aria-labelledby="t-ped"><h2 id="t-ped">O que você pediu</h2><p style="margin:0;white-space:pre-line;color:var(--muted)">${esc(P.pedidoCliente)}</p></section>`;
   }
 
   if(["orcamento","aprovado"].includes(s) && P.pix && P.pix.chave){
     const valor = Math.round(num(P.total) * 100) / 100;
     const codigo = brCode(P.pix.chave, P.pix.nome, P.pix.cidade, valor, "RZL" + String(P.numero).padStart(6, "0"));
     main += `
-    <section class="card" id="pagar" aria-labelledby="t-pix">
+    <section class="card hud-frame" id="pagar" aria-labelledby="t-pix">
       <h2 id="t-pix">${P.cartao ? "Opção 1 · Pix, sem taxa" : "Pagar com Pix"}</h2>
       <div class="pix">
         <div class="qr" id="qr" role="img" aria-label="QR Code do Pix"></div>
@@ -2563,7 +2589,7 @@ function render(){
 
   if(P.cartao){
     main += `
-    <section class="card" id="cartao" aria-labelledby="t-cartao">
+    <section class="card hud-frame" id="cartao" aria-labelledby="t-cartao">
       <h2 id="t-cartao">Opção 2 · Cartão ou boleto</h2>
       <p class="sub" style="margin:0 0 12px">Crédito em até ${P.cartao.parcelas}x, débito ou boleto, no ambiente seguro do Mercado Pago. A confirmação é automática, sem precisar enviar comprovante.</p>
       <div class="li total"><span>Valor no cartão ou boleto</span><span>${brl(P.cartao.valor)}</span></div>
@@ -2574,7 +2600,7 @@ function render(){
 
   if((["orcamento","aprovado"].includes(s) && !P.vencido) || s === "comprovante"){
     main += `
-    <section class="card" aria-labelledby="t-comp">
+    <section class="card hud-frame" aria-labelledby="t-comp">
       <h2 id="t-comp">${s === "comprovante" ? "Enviar outro comprovante" : P.cartao ? "Pagou pelo Pix? Envie o comprovante" : "Já pagou? Envie o comprovante"}</h2>
       <label class="arquivo" id="caixa-arq" style="position:relative"><input type="file" id="arq" accept="image/*,application/pdf"><span id="arq-nome">Toque para escolher a imagem ou o PDF do comprovante</span></label>
       <button type="button" class="btn btn-main" style="margin-top:12px" id="enviar" disabled>Enviar comprovante</button>
@@ -2584,7 +2610,7 @@ function render(){
 
   if((s === "enviado" || s === "entregue") && P.rastreio){
     main += `
-    <section class="card" aria-labelledby="t-ras">
+    <section class="card hud-frame" aria-labelledby="t-ras">
       <h2 id="t-ras">Rastreio dos Correios</h2>
       <div class="cod" translate="no">${esc(P.rastreio)}</div>
       <div class="row two" style="margin-top:16px">
@@ -2594,8 +2620,8 @@ function render(){
     </section>`;
   }
 
-  if(end) lado += `<section class="card" aria-labelledby="t-ent"><h2 id="t-ent">Entrega</h2><p style="margin:0;color:var(--muted)">${esc(end)}</p><p class="nota">Algo errado no endereço? Avise antes do envio pelo WhatsApp.</p></section>`;
-  if(zap) lado += `<section class="card contato" aria-labelledby="t-fale"><h2 id="t-fale">Dúvidas sobre o pedido?</h2><a class="btn btn-line" href="${zap}" target="_blank" rel="noopener">Falar com a RazenLab no WhatsApp</a></section>`;
+  if(end) lado += `<section class="card hud-frame" aria-labelledby="t-ent"><h2 id="t-ent">Entrega</h2><p style="margin:0;color:var(--muted)">${esc(end)}</p><p class="nota">Algo errado no endereço? Avise antes do envio pelo WhatsApp.</p></section>`;
+  if(zap) lado += `<section class="card hud-frame contato" aria-labelledby="t-fale"><h2 id="t-fale">Dúvidas sobre o pedido?</h2><a class="btn btn-line" href="${zap}" target="_blank" rel="noopener">Falar com a RazenLab no WhatsApp</a></section>`;
   const html = cabeca + `<div class="tela"><div class="col">${main}</div><div class="col">${lado}</div></div>`;
   raiz.innerHTML = html;
   ligarEventos();
