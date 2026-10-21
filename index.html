@@ -181,6 +181,10 @@ section{padding:clamp(72px,9vw,120px) 0;scroll-margin-top:60px}
 .disc{margin:26px 0 0;font-size:13px;color:var(--ink-3)}
 .prod[hidden]{display:none}
 .tab{display:inline-flex;align-items:center;gap:8px}
+.share-box{display:flex;gap:10px;flex-wrap:wrap;margin-top:12px}
+.share-box[hidden]{display:none}
+.aviso-col{margin:0 0 20px;padding:14px 18px;border-radius:var(--r);border:1px solid rgba(56,182,245,.35);background:var(--accent-soft);color:var(--ink)}
+.aviso-col[hidden]{display:none}
 .tab-col{border-color:rgba(56,182,245,.45);color:var(--accent)}
 .col-dest{display:grid;grid-template-columns:1.2fr 1fr;gap:clamp(20px,4vw,48px);align-items:center;margin:0 0 32px;padding:clamp(22px,3.4vw,40px);border-radius:var(--r-lg);border:1px solid rgba(56,182,245,.28);
   background:radial-gradient(600px 300px at 0% 0%, rgba(56,182,245,.16), transparent 70%), linear-gradient(180deg,var(--card),var(--bg-2));overflow:hidden}
@@ -378,6 +382,7 @@ html:not(.js) [data-reveal]{opacity:1;transform:none}
       </div>
       <a class="more" href="#sob-medida" data-reveal>Pedir uma peça <svg class="arrow" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M5 12h14M13 6l6 6-6 6"/></svg></a>
     </div>
+    <p class="aviso-col" id="aviso-colecao" hidden></p>
     <div id="colecoes"></div>
     <div class="tabs" id="filtros" role="group" aria-label="Filtrar por categoria" style="scroll-margin-top:100px"></div>
     <div class="grid-prod" id="galeria" aria-live="polite"></div>
@@ -551,6 +556,20 @@ function prepararWhats(){
   if(url){ z.href = url; z.hidden = false; }
 }
 
+let veioPorLink = false;
+function abrirPorLink(){
+  const q = new URLSearchParams(location.search).get("catalogo");
+  if(!q) return;
+  veioPorLink = true;
+  const todas = Array.isArray(V.negocio.colecoes) ? V.negocio.colecoes : [];
+  const c = todas.find(x => slug(x.nome) === slug(q) || x.id === q);
+  const aviso = document.getElementById("aviso-colecao");
+  if(c && colecaoNoAr(c)){ filtro = "col:" + c.id; aviso.hidden = true; }
+  else{
+    aviso.hidden = false;
+    aviso.textContent = c ? `O catálogo de ${c.nome} está fora de época agora${c.modo === "datas" && c.inicio ? ` e volta em ${c.inicio.split("-").reverse().join("/")}` : ""}. Enquanto isso, veja as outras peças ou peça uma sob medida.` : "Esse catálogo não está mais disponível. Veja as outras peças abaixo.";
+  }
+}
 async function iniciar(){
   document.getElementById("ano").textContent = new Date().getFullYear();
   try{
@@ -570,7 +589,9 @@ async function iniciar(){
   V.itens = (V.itens || []).filter(i => i.visivel !== false);
   preencherNegocio();
   prepararWhats();
+  abrirPorLink();
   desenharCatalogo();
+  if(veioPorLink) setTimeout(() => document.getElementById("catalogo").scrollIntoView({ behavior: calmo ? "auto" : "smooth" }), 250);
 }
 
 /* ---------- ícones dos canais ---------- */
@@ -620,6 +641,16 @@ function filtrarColecoes(itens){
   const todas = Array.isArray(V.negocio.colecoes) ? V.negocio.colecoes : [];
   return itens.filter(i => { const c = i.colecao && todas.find(x => x.id === i.colecao); return !c || colecaoNoAr(c); });
 }
+const slug = t => String(t||"").normalize("NFD").replace(/[\u0300-\u036f]/g,"").toLowerCase().replace(/[^a-z0-9]+/g,"-").replace(/^-|-$/g,"");
+function linkColecao(c){ const u = new URL(location.href); u.search = ""; u.hash = ""; u.searchParams.set("catalogo", slug(c.nome) || c.id); return u.href; }
+async function compartilharColecao(c, botao){
+  const url = linkColecao(c), texto = `Olha o catálogo de ${c.nome} da RazenLab3d: peças impressas em 3D para decorar, colecionar e presentear.`;
+  if(navigator.share){ try{ await navigator.share({ title:`Catálogo de ${c.nome} · RazenLab3d`, text:texto, url }); return; }catch(e){ if(e && e.name === "AbortError") return; } }
+  const box = botao.closest(".col-tx").querySelector(".share-box");
+  box.hidden = !box.hidden;
+  box.innerHTML = `<a class="btn sm" style="background:#25d366;color:#04140a" href="https://wa.me/?text=${encodeURIComponent(texto + "\n" + url)}" target="_blank" rel="noopener">${IC.whats.replace('fill="#25d366"','fill="#04140a"')} Enviar no WhatsApp</a>
+    <button type="button" class="btn ghost sm" data-copiar="${esc(url)}">Copiar link</button>`;
+}
 function desenharColecoes(){
   const el = document.getElementById("colecoes");
   const cs = demo ? [] : colecoesNoAr().filter(c => lista().some(i => i.colecao === c.id));
@@ -631,7 +662,9 @@ function desenharColecoes(){
         <h3>${esc(c.nome)}</h3>
         ${c.descricao ? `<p>${esc(c.descricao)}</p>` : ""}
         <div class="ctas"><button type="button" class="btn pri" data-cat="col:${esc(c.id)}">Ver as ${qtd} peças <svg class="arrow" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M5 12h14M13 6l6 6-6 6"/></svg></button>
-        ${c.banner ? `<button type="button" class="btn ghost" data-banner="${esc(c.id)}">Ver o catálogo</button>` : ""}</div>
+        ${c.banner ? `<button type="button" class="btn ghost" data-banner="${esc(c.id)}">Ver o catálogo</button>` : ""}
+        <button type="button" class="btn ghost" data-compartilhar="${esc(c.id)}"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="18" cy="5" r="3"/><circle cx="6" cy="12" r="3"/><circle cx="18" cy="19" r="3"/><path d="m8.6 13.5 6.8 4M15.4 6.5l-6.8 4"/></svg>Compartilhar</button></div>
+        <div class="share-box" hidden></div>
       </div>
       ${c.banner ? `<button type="button" class="col-img" data-banner="${esc(c.id)}" aria-label="Abrir o catálogo ${esc(c.nome)}"><img src="${esc(c.banner)}" alt="Catálogo ${esc(c.nome)}" loading="lazy" width="1080" height="1350"></button>` : ""}
     </div>`; }).join("");
@@ -737,6 +770,10 @@ function irParaFormulario(texto){
 
 document.addEventListener("click", e => {
   const t = e.target;
+  const sh = t.closest("[data-compartilhar]");
+  if(sh){ const c = colecoesNoAr().find(x => x.id === sh.dataset.compartilhar); if(c) compartilharColecao(c, sh); return; }
+  const cp = t.closest("[data-copiar]");
+  if(cp){ const u = cp.dataset.copiar; (navigator.clipboard ? navigator.clipboard.writeText(u) : Promise.reject()).then(() => { cp.textContent = "Link copiado!"; }).catch(() => { prompt("Copie o link:", u); }); return; }
   const bn = t.closest("[data-banner]");
   if(bn){ abrirBanner(bn.dataset.banner); return; }
   const cat = t.closest("[data-cat]");
