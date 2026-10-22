@@ -204,6 +204,20 @@ section{padding:clamp(72px,9vw,120px) 0;scroll-margin-top:60px}
 
 /* ---------- chamada sob medida ---------- */
 .cta{padding:0 0 clamp(72px,9vw,110px)}
+.faz-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:16px}
+@media (max-width:920px){.faz-grid{grid-template-columns:1fr}}
+.faz{padding:22px 22px 18px;border-radius:var(--r-lg);border:1px solid var(--line);background:var(--card);--c:var(--accent)}
+.faz.ok{--c:#3fd99a}.faz.meio{--c:#f5b942}.faz.nao{--c:#ff7a6b}
+.faz{border-top:3px solid var(--c)}
+.faz-h{display:flex;align-items:center;gap:12px;margin-bottom:12px}
+.faz-h b{font:600 18px/1.25 var(--head)}
+.faz-ic{width:36px;height:36px;border-radius:10px;display:grid;place-items:center;color:var(--c);background:color-mix(in srgb,var(--c) 14%,transparent);flex:none}
+.faz ul{list-style:none;margin:0;padding:0;display:grid;gap:10px}
+.faz li{position:relative;padding-left:18px;color:var(--ink-2);font-size:15px;line-height:1.45}
+.faz li::before{content:"";position:absolute;left:0;top:.6em;width:7px;height:7px;border-radius:50%;background:var(--c)}
+.faz li b{color:var(--ink);font-weight:600}
+.faz-nota{margin:18px 0 0;padding:14px 18px;border-radius:var(--r);background:var(--accent-soft);border:1px solid rgba(56,182,245,.3);color:var(--ink-2);font-size:15px}
+.faz-nota b{color:var(--ink)}
 .cta-in{position:relative;display:grid;grid-template-columns:auto 1fr auto;gap:28px;align-items:center;padding:clamp(28px,4vw,44px);border-radius:var(--r-lg);border:1px solid var(--line);background:
   radial-gradient(600px 220px at 10% 0%, rgba(56,182,245,.16), transparent 70%),
   linear-gradient(180deg, var(--card), var(--bg-2));overflow:hidden}
@@ -395,6 +409,50 @@ html:not(.js) [data-reveal]{opacity:1;transform:none}
   </div>
 </section>
 
+<section id="o-que-fazemos" aria-labelledby="t-faz" style="padding-top:0">
+  <div class="wrap">
+    <div class="sec-head" data-reveal>
+      <div>
+        <span class="kicker">Antes de pedir</span>
+        <h2 id="t-faz">O que a nossa impressora faz melhor</h2>
+        <p>Trabalhamos com impressão 3D de <b>filamento</b> (PLA e PETG). Ela é ótima para peças de decoração, personagens e objetos do dia a dia. Para peças muito pequenas, transparentes ou de precisão de engenharia, outra tecnologia atende melhor.</p>
+      </div>
+    </div>
+    <div class="faz-grid">
+      <div class="faz ok" data-reveal>
+        <div class="faz-h"><span class="faz-ic"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="m5 12 5 5 9-10"/></svg></span><b>Fazemos muito bem</b></div>
+        <ul>
+          <li><b>Bonecos e personagens</b> a partir de uns 8 cm, colecionáveis e articulados</li>
+          <li><b>Decoração</b>: vasos, cachepôs, luminárias, placas com nome</li>
+          <li><b>Presentes e lembranças</b>: chaveiros, topos de bolo, brindes</li>
+          <li><b>Utilidades</b>: suportes, organizadores, porta-objetos</li>
+          <li><b>Peças em várias cores</b> no mesmo objeto</li>
+        </ul>
+      </div>
+      <div class="faz meio" data-reveal style="--s:1">
+        <div class="faz-h"><span class="faz-ic"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" aria-hidden="true"><path d="M12 8v5M12 16.5v.5"/><circle cx="12" cy="12" r="9"/></svg></span><b>Fazemos, mas vamos conversar antes</b></div>
+        <ul>
+          <li><b>Peças de reposição</b> simples: depende do formato e do uso</li>
+          <li><b>Encaixes</b> e peças que precisam de medida certa</li>
+          <li><b>Peças grandes</b>: podem ser impressas em partes e coladas</li>
+          <li>Peças para <b>sol, calor ou esforço</b>: escolhemos o material certo</li>
+        </ul>
+      </div>
+      <div class="faz nao" data-reveal style="--s:2">
+        <div class="faz-h"><span class="faz-ic"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" aria-hidden="true"><path d="M6 6l12 12M18 6 6 18"/></svg></span><b>Não atendemos</b></div>
+        <ul>
+          <li><b>Miniaturas muito pequenas</b> com rosto e detalhe fino (menos de 5 cm)</li>
+          <li><b>Joias</b>, alianças e peças de ourives</li>
+          <li><b>Transparente</b> como vidro ou acabamento liso de fábrica, sem marcas de camada</li>
+          <li>Peças de <b>motor, máquina</b> ou que precisam de precisão de décimos de milímetro</li>
+          <li>Peças de <b>metal</b> ou que vão ao fogo</li>
+        </ul>
+      </div>
+    </div>
+    <p class="faz-nota" data-reveal>Toda peça de filamento tem <b>linhas de camada</b> visíveis de perto: faz parte do charme da impressão 3D. Na dúvida, mande uma foto do que você quer que a gente diz se dá certo, sem compromisso.</p>
+  </div>
+</section>
+
 <div class="cta">
   <div class="wrap">
     <div class="cta-in" data-reveal>
@@ -421,7 +479,8 @@ html:not(.js) [data-reveal]{opacity:1;transform:none}
       </a>
     </div>
     <div class="list">
-      <details name="faq" open data-reveal><summary>Preciso ter o arquivo 3D?<span class="pm" aria-hidden="true"></span></summary><p>Não. Descreva a peça e, se puder, mande uma foto de referência. Se você tiver o arquivo (STL, 3MF, OBJ, STEP ou ZIP de até 25&nbsp;MB), anexe no pedido.</p></details>
+      <details name="faq" open data-reveal><summary>Vocês imprimem em resina?<span class="pm" aria-hidden="true"></span></summary><p>Não. Trabalhamos só com <b>filamento</b> (PLA e PETG), que é ótimo para bonecos, decoração e peças do dia a dia. Miniaturas muito pequenas e detalhadas, joias e peças transparentes ficam melhores em resina, e essas não fazemos. Veja a lista completa em <a href="#o-que-fazemos" style="color:var(--accent)">O que a nossa impressora faz melhor</a>.</p></details>
+      <details name="faq" data-reveal style="--s:1"><summary>Preciso ter o arquivo 3D?<span class="pm" aria-hidden="true"></span></summary><p>Não. Descreva a peça e, se puder, mande uma foto de referência. Se você tiver o arquivo (STL, 3MF, OBJ, STEP ou ZIP de até 25&nbsp;MB), anexe no pedido.</p></details>
       <details name="faq" data-reveal style="--s:1"><summary>Quanto custa uma peça?<span class="pm" aria-hidden="true"></span></summary><p>Depende do tamanho, do material e do tempo de impressão. O orçamento chega com o preço da peça e o frete até o seu CEP, sem compromisso.</p></details>
       <details name="faq" data-reveal style="--s:2"><summary>Como eu pago?<span class="pm" aria-hidden="true"></span></summary><p>Por Pix, com o QR&nbsp;Code pronto no link do seu pedido. Enviou o comprovante, a peça entra na fila de produção.</p></details>
       <details name="faq" data-reveal style="--s:3"><summary>Quanto tempo demora?<span class="pm" aria-hidden="true"></span></summary><p>O prazo de produção vem no orçamento e começa a contar quando o pagamento é confirmado. Depois soma o prazo da transportadora.</p></details>
@@ -453,7 +512,7 @@ html:not(.js) [data-reveal]{opacity:1;transform:none}
           <label><span>WhatsApp com DDD</span><input name="contato" type="tel" inputmode="tel" autocomplete="tel" placeholder="(11) 90000-0000" maxlength="20"></label>
           <label><span>E-mail (opcional)</span><input name="email" type="email" autocomplete="email" spellcheck="false" maxlength="160" placeholder="voce@email.com"></label>
         </div>
-        <label><span>O que você precisa?</span><textarea name="ideia" maxlength="3000" placeholder="Ex.: suporte de headset com meu nome, na cor preta, uns 20 cm de altura"></textarea></label>
+        <label><span>O que você precisa? <a href="#o-que-fazemos" style="color:var(--accent);font-weight:500">(veja o que fazemos)</a></span><textarea name="ideia" maxlength="3000" placeholder="Ex.: boneco do meu personagem favorito com uns 15 cm, ou um vaso na cor branca"></textarea></label>
         <div class="row2">
           <label><span>Quantidade</span><input name="qtd" inputmode="numeric" value="1" maxlength="5" autocomplete="off"></label>
           <label><span>Para quando?</span><input name="quando" placeholder="Sem pressa, dia 15…" maxlength="120" autocomplete="off"></label>
