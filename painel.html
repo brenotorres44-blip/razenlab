@@ -2187,9 +2187,14 @@ function prepararEnvio(via){
 async function enviarOrcamento(){
   const form = document.getElementById("ped-form");
   if(precificar(lerCampos(form)).preco <= 0){ toast("Preencha peso e tempo para calcular o preço antes de enviar."); return; }
-  const n = dados.negocio;
-  if(!n.pixChave){ toast("Cadastre sua chave Pix em Configurações antes de enviar orçamentos."); return; }
   const janela = janelaWhats();
+  if(!dados.negocio.pixChave){
+    // confere no banco: a chave pode ter sido salva em outro aparelho ou aba
+    const r = await sb.from("config").select("dados").eq("id",1).maybeSingle();
+    const neg = r.data && r.data.dados && r.data.dados.negocio;
+    if(neg && neg.pixChave) Object.assign(dados.negocio, neg);
+  }
+  if(!dados.negocio.pixChave){ if(janela) janela.close(); toast("A chave Pix não está salva. Em Configurações, preencha a chave e clique em Salvar dados do negócio."); return; }
   const desfaz = prepararEnvio("WhatsApp");
   const atual = document.querySelector('#ped-form [name="status"]').value;
   const p = await salvarPedido(true, atual === "solicitado" ? "orcamento" : undefined); if(!p){ desfaz(); if(janela) janela.close(); return; }
