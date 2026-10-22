@@ -2371,7 +2371,7 @@ function carregarJsPDF(){
   if(jsPDFcarregando) return jsPDFcarregando;
   jsPDFcarregando = new Promise((ok, erro) => {
     const sc = document.createElement("script");
-    sc.src = "https://cdn.jsdelivr.net/npm/jspdf@4.2.1/dist/jspdf.umd.min.js";
+    sc.src = "assets/vendor/jspdf-4.2.1.umd.min.js"; sc.integrity = "sha384-qovJwSBbRDPP5cEjCp8S0UP66wrvnjaa60XMOGzTNanrThcrGfXfnZkvgY8N1KT3";
     sc.onload = () => window.jspdf ? ok(window.jspdf.jsPDF) : erro(new Error("biblioteca de PDF"));
     sc.onerror = () => { jsPDFcarregando = null; erro(new Error("Sem internet para gerar o PDF.")); };
     document.head.appendChild(sc);
