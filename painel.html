@@ -2147,11 +2147,23 @@ async function salvarPedido(silencioso, mudarStatus){
     return null;
   }finally{ ocupado = false; }
 }
-function abrirWhats(fone, texto){
+function linkWhatsCliente(fone, texto){
   let n = String(fone||"").replace(/\D/g,"");
   if(n.length >= 10 && n.length <= 11) n = "55" + n;
   const t = encodeURIComponent(texto);
-  window.open(n.length >= 12 ? `https://wa.me/${n}?text=${t}` : `https://wa.me/?text=${t}`, "_blank", "noopener");
+  return n.length >= 12 ? `https://wa.me/${n}?text=${t}` : `https://wa.me/?text=${t}`;
+}
+function abrirWhats(fone, texto, janela){
+  const url = linkWhatsCliente(fone, texto);
+  // a janela é aberta no clique (antes de salvar); assim o navegador não bloqueia
+  if(janela && !janela.closed){ try{ janela.opener = null; }catch(e){} janela.location.href = url; return; }
+  const w = window.open(url, "_blank", "noopener");
+  if(!w) toast("O navegador bloqueou a janela do WhatsApp. Permita pop-ups para este site e tente de novo.");
+}
+function janelaWhats(){
+  const w = window.open("", "_blank");
+  if(w){ try{ w.document.title = "Abrindo o WhatsApp…"; w.document.body.style.cssText = "background:#020A1F;color:#EEF4FF;font:16px system-ui;display:grid;place-items:center;height:100vh;margin:0"; w.document.body.textContent = "Abrindo o WhatsApp…"; }catch(e){} }
+  return w;
 }
 function textoOrcamento(p){
   const c = precificar(p);
@@ -2177,10 +2189,11 @@ async function enviarOrcamento(){
   if(precificar(lerCampos(form)).preco <= 0){ toast("Preencha peso e tempo para calcular o preço antes de enviar."); return; }
   const n = dados.negocio;
   if(!n.pixChave){ toast("Cadastre sua chave Pix em Configurações antes de enviar orçamentos."); return; }
+  const janela = janelaWhats();
   const desfaz = prepararEnvio("WhatsApp");
   const atual = document.querySelector('#ped-form [name="status"]').value;
-  const p = await salvarPedido(true, atual === "solicitado" ? "orcamento" : undefined); if(!p){ desfaz(); return; }
-  abrirWhats(p.contato, textoOrcamento(p));
+  const p = await salvarPedido(true, atual === "solicitado" ? "orcamento" : undefined); if(!p){ desfaz(); if(janela) janela.close(); return; }
+  abrirWhats(p.contato, textoOrcamento(p), janela);
   toast(`Orçamento ${numPed(p.numero)} enviado e registrado em ${dataBR(hoje())}.`);
   desenharPedido(); render();
 }
@@ -2192,8 +2205,9 @@ async function confirmarPagamento(){
 async function marcarEnviado(){
   const f = document.getElementById("ped-form");
   if(!f.querySelector('[name="rastreio"]').value.trim()){ toast("Preencha o código de rastreio dos Correios."); f.querySelector('[name="rastreio"]').focus(); return; }
-  const p = await salvarPedido(true, "enviado"); if(!p) return;
-  abrirWhats(p.contato, textoEnvio(p));
+  const janela = janelaWhats();
+  const p = await salvarPedido(true, "enviado"); if(!p){ if(janela) janela.close(); return; }
+  abrirWhats(p.contato, textoEnvio(p), janela);
   desenharPedido(); render();
 }
 
