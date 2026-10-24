@@ -88,13 +88,18 @@ h1,h2,h3{font-family:var(--head);font-weight:600;letter-spacing:-.02em;margin:0;
 /* ---------- barra ---------- */
 .bar{position:fixed;inset:0 0 auto;z-index:40;transition:background .25s,border-color .25s,backdrop-filter .25s;border-bottom:1px solid transparent}
 .bar.on{background:rgba(17,19,24,.86);backdrop-filter:blur(14px);border-color:var(--line)}
-.bar-in{display:flex;align-items:center;justify-content:space-between;gap:24px;height:76px}
+.bar-in{display:flex;align-items:center;justify-content:space-between;gap:24px;min-height:84px;padding:10px 0;transition:min-height .25s}
 .brand{display:flex;align-items:center;gap:12px;min-width:0}
-.brand img{width:44px;height:44px;border-radius:50%;object-fit:cover;box-shadow:0 0 0 2px rgba(56,182,245,.35)}
+.brand .nm{justify-items:center;text-align:center}
+.brand .lg{display:block;height:96px;width:auto;filter:drop-shadow(0 0 14px rgba(56,182,245,.35));transition:height .25s}
+.brand small{font:600 9.5px/1.45 var(--text)!important;letter-spacing:.09em!important;color:#e8eef7!important;margin-top:6px!important;max-width:none!important;text-transform:uppercase;transition:opacity .2s}
+.bar.on .brand .lg{height:58px}
+.bar.on .brand small{display:none}
+@media (max-width:520px){.brand .lg{height:74px}.bar .brand small{display:block;font-size:7.5px!important;letter-spacing:.06em!important}.bar.on .brand .lg{height:48px}}
 .brand .nm{display:grid;line-height:1.1}
 .brand b{font:600 20px/1.1 var(--head);letter-spacing:-.01em}
 .brand b span{color:var(--accent)}
-.brand small{font:500 10px/1.4 var(--text);letter-spacing:.12em;text-transform:uppercase;color:var(--ink-3);margin-top:3px}
+.brand small{font:500 10px/1.4 var(--text);letter-spacing:.12em;text-transform:uppercase;color:var(--ink-3);margin-top:5px}
 @media (max-width:520px){.bar .brand small{font-size:8.5px;letter-spacing:.05em;max-width:220px}}
 .nav{display:flex;align-items:center;gap:6px}
 .nav a.lk{padding:10px 14px;border-radius:10px;font-weight:500;font-size:15px;color:var(--ink-2);transition:color .2s,background .2s;display:inline-flex;align-items:center;gap:6px}
@@ -103,14 +108,14 @@ h1,h2,h3{font-family:var(--head);font-weight:600;letter-spacing:-.02em;margin:0;
 .menu-btn{display:none;width:44px;height:44px;border-radius:12px;border:1px solid var(--line-2);background:transparent;cursor:pointer;place-items:center}
 @media (max-width:920px){
   .menu-btn{display:grid}
-  .nav{position:fixed;inset:76px 0 auto;flex-direction:column;align-items:stretch;padding:12px 16px 20px;background:rgba(17,19,24,.97);backdrop-filter:blur(14px);border-bottom:1px solid var(--line);transform:translateY(-8px);opacity:0;visibility:hidden;transition:.2s}
+  .nav{position:fixed;inset:84px 0 auto;flex-direction:column;align-items:stretch;padding:12px 16px 20px;background:rgba(17,19,24,.97);backdrop-filter:blur(14px);border-bottom:1px solid var(--line);transform:translateY(-8px);opacity:0;visibility:hidden;transition:.2s}
   .nav.open{transform:none;opacity:1;visibility:visible}
   .nav a.lk{padding:14px 12px;font-size:16px}
   .nav .btn{margin-top:8px}
 }
 
 /* ---------- herói ---------- */
-.hero{position:relative;min-height:min(100svh, 860px);display:flex;align-items:center;padding:120px 0 150px;isolation:isolate;overflow:hidden}
+.hero{position:relative;min-height:min(100svh, 860px);display:flex;align-items:center;padding:170px 0 150px;isolation:isolate;overflow:hidden}
 .hero-img{position:absolute;inset:0;z-index:-2}
 .hero-img img{width:100%;height:100%;object-fit:cover;object-position:62% 60%;transform:scale(1.04);animation:respira 18s ease-in-out infinite alternate}
 @keyframes respira{to{transform:scale(1.1) translateX(-1%)}}
@@ -129,7 +134,7 @@ h1,h2,h3{font-family:var(--head);font-weight:600;letter-spacing:-.02em;margin:0;
 [data-load]{opacity:0;transform:translateY(14px);animation:sobe .8s cubic-bezier(.2,.7,.2,1) forwards;animation-delay:var(--d,0ms)}
 @keyframes sobe{to{opacity:1;transform:none}}
 @media (max-width:760px){
-  .hero{padding:110px 0 60px;align-items:flex-end;min-height:auto}
+  .hero{padding:150px 0 60px;align-items:flex-end;min-height:auto}
   .hero-img{height:62%;bottom:auto}
   .hero-img img{object-position:72% 50%}
   .hero::before{background:linear-gradient(0deg, var(--bg) 38%, rgba(17,19,24,.6) 62%, rgba(17,19,24,.1) 100%)}
@@ -340,8 +345,7 @@ html:not(.js) [data-reveal]{opacity:1;transform:none}
 <header class="bar" id="barra">
   <div class="wrap bar-in">
     <a class="brand" href="#inicio" aria-label="RazenLab, início">
-      <img src="assets/logo-mark.jpg" width="44" height="44" alt="">
-      <span class="nm"><b translate="no">Razen<span>Lab</span></b><small>Transformando ideias em realidade, camada por camada</small></span>
+      <span class="nm"><img class="lg" src="assets/marca/logo-vertical.webp" width="700" height="600" alt="RazenLab"><small>Transformando ideias em realidade,<br>camada por camada.</small></span>
     </a>
     <button class="menu-btn" id="menu-btn" aria-label="Abrir menu" aria-expanded="false" aria-controls="menu">
       <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" aria-hidden="true"><path d="M4 7h16M4 12h16M4 17h16"/></svg>
@@ -546,8 +550,7 @@ html:not(.js) [data-reveal]{opacity:1;transform:none}
   <div class="wrap">
     <div class="foot">
       <a class="brand" href="#inicio" aria-label="RazenLab, voltar ao início">
-        <img src="assets/logo-mark.jpg" width="44" height="44" alt="" loading="lazy">
-        <span class="nm"><b translate="no">Razen<span>Lab</span></b><small>Transformando ideias em realidade, camada por camada</small></span>
+        <span class="nm"><img class="lg" src="assets/marca/logo-vertical.webp" width="700" height="600" alt="RazenLab" loading="lazy"><small>Transformando ideias em realidade,<br>camada por camada.</small></span>
       </a>
       <nav aria-label="Rodapé">
         <a href="#catalogo">Catálogo</a>
@@ -675,7 +678,7 @@ function preencherNegocio(){
   if(n.heroFoto){ if(hero.getAttribute("src") !== n.heroFoto) hero.src = n.heroFoto; }
   else if(hero.getAttribute("src") !== "assets/hero.webp") hero.src = "assets/hero.webp";
   try{ n.heroFoto ? localStorage.setItem("razenlab.site.hero", n.heroFoto) : localStorage.removeItem("razenlab.site.hero"); }catch(e){}
-  if(n.logoFoto) document.querySelectorAll(".brand img").forEach(i => i.src = n.logoFoto);
+  
 
   const canais = [];
   if(n.whatsapp) canais.push(`<a class="channel" href="${esc(linkWhats("Olá! Vim pelo site da RazenLab."))}" target="_blank" rel="noopener"><span class="ic">${IC.whats}</span><span><small>WhatsApp</small>${esc(n.whatsapp)}</span></a>`);
