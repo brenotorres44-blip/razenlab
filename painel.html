@@ -156,6 +156,20 @@ main.pg{padding:24px 32px 64px;max-width:1440px}
 .est:last-child{border-bottom:none}
 .est .t{display:flex;justify-content:space-between;gap:10px;font-size:14px;margin-bottom:8px}
 .est .t span:last-child{color:var(--muted);font-variant-numeric:tabular-nums}
+.guia{display:grid;gap:12px;grid-template-columns:repeat(auto-fill,minmax(300px,1fr));margin-top:14px}
+.gcard{border:1px solid var(--border);border-radius:12px;padding:14px;background:var(--raised);min-width:0}
+.gcard h3{margin:0;font-size:15px}
+.gcard .sub{font-size:12px;color:var(--faint);margin:2px 0 10px}
+.gpar{display:grid;grid-template-columns:auto 1fr;gap:4px 10px;font-size:13px;margin:0 0 10px}
+.gpar dt{color:var(--faint)}.gpar dd{margin:0;color:var(--text)}
+.gpar dd small{color:var(--faint);display:block;font-size:11px}
+.gcores{display:flex;flex-wrap:wrap;gap:6px;margin-top:10px}
+.gcor{display:inline-flex;align-items:center;gap:6px;border:1px solid var(--border);background:none;color:var(--muted);border-radius:999px;padding:3px 10px 3px 4px;font-size:12px;cursor:pointer}
+.gcor:hover{color:var(--text);border-color:var(--control)}
+.gcor i{width:16px;height:16px;border-radius:50%;border:1px solid rgba(255,255,255,.25);flex:none}
+.gcard details{font-size:13px;color:var(--muted)}.gcard summary{cursor:pointer;color:var(--text);font-size:13px}
+.gcard ul{margin:6px 0 0;padding-left:18px}.gcard li{margin:3px 0}
+.gref{font-size:12px;color:var(--faint);margin-top:4px}
 .trilho{height:8px;border-radius:999px;background:var(--raised);overflow:hidden}
 .trilho i{display:block;height:100%;width:0;border-radius:999px;background:var(--accent);transition:width .9s var(--ease-out)}
 .est.baixo{display:block}
@@ -568,6 +582,7 @@ input:focus-visible,select:focus-visible,textarea:focus-visible,.campo:focus-wit
 <input type="file" id="arq-site" accept="image/jpeg,image/png,image/webp" style="display:none">
 <script src="assets/vendor/supabase-2.117.1.js" integrity="sha384-K1nraABOP/zFehpLIUksXebbs7jMpB8gYMlb+uhVKZcWT/9Vkq1+qhv6ndC+1Yuz"></script>
 <script src="config.js"></script>
+<script src="assets/filamentos-voolt.js"></script>
 <script>
 "use strict";
 
@@ -1459,6 +1474,42 @@ TELAS.clientes = () => {
   </div>`;
 };
 
+/* ---------- guia de filamentos Voolt3D (assets/filamentos-voolt.js) ---------- */
+const GUIA = window.GUIA_FILAMENTOS || [];
+let guiaMat = "PLA";
+const guiaDe = id => GUIA.find(g => g.id === id);
+const guiaResumo = g => g ? `bico ${g.ind.bico.split(" ")[0]} °C · mesa ${g.ind.mesa.split(" ")[0]} °C · vent. ${g.ind.vent.split(" ")[0]}` : "";
+const guiaOpcoes = sel => `<option value="">Nenhuma</option>` + GUIA.map(g => `<option value="${g.id}" ${sel===g.id?"selected":""}>${esc(g.linha)}</option>`).join("");
+function guiaCard(g){
+  const f = g.fab, i = g.ind;
+  return `<div class="gcard">
+    <h3>${esc(g.linha)}</h3>
+    <div class="sub">${esc(g.acabamento)} · ${esc(g.ideal)}</div>
+    <dl class="gpar">
+      <dt>Bico</dt><dd>${esc(i.bico)}<small>fabricante: ${esc(f.bico)}</small></dd>
+      <dt>Mesa</dt><dd>${esc(i.mesa)}<small>fabricante: ${esc(f.mesa)}</small></dd>
+      <dt>Ventoinha</dt><dd>${esc(i.vent)}</dd>
+      <dt>${g.material==="TPU"?"Velocidade":"Fluxo máx."}</dt><dd>${esc(i.fluxo)}<small>fabricante: ${esc(f.fluxo)}</small></dd>
+      <dt>Retração</dt><dd>${esc(i.retr)}</dd>
+      <dt>Secagem</dt><dd>${esc(i.seca)}</dd>
+      ${f.bicoMin ? `<dt>Bico mín.</dt><dd style="color:var(--warning)">${esc(f.bicoMin)}</dd>` : ""}
+    </dl>
+    <details><summary>Dicas de uso</summary><ul>${g.dicas.map(d => `<li>${esc(d)}</li>`).join("")}</ul></details>
+    <div class="gcores">${g.cores.map(([n,h],k) => `<button class="gcor" data-guia-cor="${g.id}|${k}" title="Cadastrar ${esc(g.linha)} ${esc(n)} no estoque"><i style="background:${h}"></i>${esc(n)}</button>`).join("")}</div>
+  </div>`;
+}
+function telaGuia(){
+  if(!GUIA.length) return "";
+  const mats = [...new Set(GUIA.map(g => g.material))];
+  return `<div class="pn rv" style="--d:200ms;margin-top:16px" id="guia">
+    <div class="ph"><h2>Guia de filamentos Voolt3D</h2><span class="cod">${GUIA.length} LINHAS</span></div>
+    <p class="dica" style="margin:0 0 12px">Parâmetros de partida para bico 0,4 mm. Toque numa cor para cadastrar o rolo já ligado à linha. No primeiro rolo de cada cor, vale imprimir uma torre de temperatura.</p>
+    <div class="chips">${mats.map(m => `<button class="chip ${guiaMat===m?"on":""}" data-guiamat="${m}">${m}</button>`).join("")}<button class="chip ${guiaMat==="todos"?"on":""}" data-guiamat="todos">Todos</button></div>
+    <div class="guia">${GUIA.filter(g => guiaMat==="todos" || g.material===guiaMat).map(guiaCard).join("")}</div>
+    <p class="gref">Faixas do fabricante: páginas dos produtos em voolt3d.com.br (out/2026). Cores podem variar entre lotes.</p>
+  </div>`;
+}
+
 /* ---------- estoque de filamentos ---------- */
 TELAS.estoque = () => `
   <div class="md-grid">
@@ -1468,7 +1519,7 @@ TELAS.estoque = () => `
         const temEst = f.estoque != null, est = num(f.estoque), baixo = temEst && est <= num(f.minimo);
         const usado = dados.pedidos.filter(p => p.estoqueBaixado && p.estoqueBaixado.id === f.id).reduce((s,p)=>s+num(p.estoqueBaixado.g),0);
         return `<div class="est ${baixo?"baixo":""}" style="padding:14px 0">
-          <div class="t"><span><b>${esc(f.nome)}</b> <span class="faint p13">${esc([f.material,f.cor].filter(Boolean).join(" · "))}</span></span><span>${temEst?`${dec(Math.max(0,est),0)} g${baixo?" · BAIXO":""}`:"sem controle"}</span></div>
+          <div class="t"><span><b>${esc(f.nome)}</b> <span class="faint p13">${esc([f.material,f.cor].filter(Boolean).join(" · "))}</span>${guiaDe(f.guia)?`<br><span class="p13" style="color:var(--accent-strong)">${esc(guiaResumo(guiaDe(f.guia)))}</span>`:""}</span><span>${temEst?`${dec(Math.max(0,est),0)} g${baixo?" · BAIXO":""}`:"sem controle"}</span></div>
           ${temEst?`<div class="trilho"><i data-largura="${Math.max(2,Math.min(100,est/1000*100))}%"></i></div>`:""}
           <div class="row" style="margin-top:10px">
             <span class="p13 muted">${brl(num(f.precoKg))}/kg${usado?` · ${dec(usado,0)} g usados em pedidos`:""}</span>
@@ -1485,6 +1536,7 @@ TELAS.estoque = () => `
           <label class="f"><span>Material</span><input name="material" placeholder="PLA, PETG, TPU"></label>
           <label class="f"><span>Cor</span><input name="cor" placeholder="Preto"></label>
         </div>
+        <label class="f"><span>Linha Voolt3D (parâmetros)</span><select name="guia">${guiaOpcoes("")}</select></label>
         <label class="f"><span>Preço do rolo de 1 kg</span><div class="campo"><span class="u">R$</span><input class="num" name="precoKg" inputmode="decimal" value="0"></div></label>
         <div class="grid g2">
           <label class="f"><span>Tenho em estoque</span><div class="campo"><input class="num" name="estoque" inputmode="decimal" value="1000"><span class="u">g</span></div></label>
@@ -1494,7 +1546,8 @@ TELAS.estoque = () => `
         <button class="tb pri" data-acao="add-filamento">Cadastrar</button>
       </div>
     </div>
-  </div>`;
+  </div>
+  ${telaGuia()}`;
 
 /* ---------- financeiro ---------- */
 /* ---------- financeiro: período escolhido, lucro real e relatório ---------- */
@@ -2529,6 +2582,7 @@ function abrirFilamento(id){
     <div class="grid">
       <label class="f"><span>Nome</span><input name="nome" value="${esc(f.nome)}"></label>
       <div class="grid g2"><label class="f"><span>Material</span><input name="material" value="${esc(f.material||"")}"></label><label class="f"><span>Cor</span><input name="cor" value="${esc(f.cor||"")}"></label></div>
+      <label class="f"><span>Linha Voolt3D (parâmetros)</span><select name="guia">${guiaOpcoes(f.guia||"")}</select></label>
       <label class="f"><span>Preço do rolo de 1 kg</span><div class="campo"><span class="u">R$</span><input class="num" name="precoKg" value="${String(num(f.precoKg)).replace(".",",")}"></div></label>
       <div class="grid g2">
         <label class="f"><span>Em estoque</span><div class="campo"><input class="num" name="estoque" value="${f.estoque==null?"":Math.round(num(f.estoque))}" placeholder="sem controle"><span class="u">g</span></div><span class="dica">Vazio = não controlar.</span></label>
@@ -3507,6 +3561,17 @@ document.addEventListener("click", async e => {
   if((el = t.closest("[data-capa-foto]"))){ guardarTrabalho(); const [f] = trabalhoAberto.fotos.splice(+el.dataset.capaFoto,1); trabalhoAberto.fotos.unshift(f); desenharTrabalho(); return; }
   if((el = t.closest("[data-del-foto]"))){ guardarTrabalho(); trabalhoAberto.fotos.splice(+el.dataset.delFoto,1); desenharTrabalho(); return; }
   if((el = t.closest("[data-edit-fil]"))){ abrirFilamento(el.dataset.editFil); return; }
+  if((el = t.closest("[data-guiamat]"))){ guiaMat = el.dataset.guiamat; const g = document.getElementById("guia"); if(g) g.outerHTML = telaGuia(); return; }
+  if((el = t.closest("[data-guia-cor]"))){
+    const [gid, k] = el.dataset.guiaCor.split("|"), g = guiaDe(gid), cor = g && g.cores[+k], box = document.getElementById("fil-form");
+    if(!cor || !box) return;
+    const put = (n, v) => { const i = box.querySelector(`[name="${n}"]`); if(i) i.value = v; };
+    put("nome", `${g.linha.replace(/ \(.*\)$/, "")} ${cor[0]} Voolt`); put("material", g.material); put("cor", cor[0]); put("guia", g.id);
+    box.scrollIntoView({ behavior:"smooth", block:"center" });
+    const pr = box.querySelector('[name="precoKg"]'); if(pr) setTimeout(() => { pr.focus(); pr.select(); }, 350);
+    toast(`${g.linha} ${cor[0]}: confira o preço e toque em Cadastrar.`);
+    return;
+  }
   if((el = t.closest("[data-rolo]"))){
     const f = dados.filamentos.find(x => x.id === el.dataset.rolo);
     f.estoque = num(f.estoque) + 1000;
@@ -3570,14 +3635,14 @@ document.addEventListener("click", async e => {
     case "add-filamento": {
       const f = lerCampos(document.getElementById("fil-form"));
       if(!f.nome.trim()){ toast("Dê um nome ao filamento."); break; }
-      const novo = { nome:f.nome.trim(), material:f.material.trim(), cor:f.cor.trim(), precoKg:num(f.precoKg), estoque: String(f.estoque).trim()==="" ? null : num(f.estoque), minimo:num(f.minimo) };
+      const novo = { nome:f.nome.trim(), material:f.material.trim(), cor:f.cor.trim(), guia:f.guia||"", precoKg:num(f.precoKg), estoque: String(f.estoque).trim()==="" ? null : num(f.estoque), minimo:num(f.minimo) };
       try{ await gravarFilamento(novo); dados.filamentos.push(novo); render(); toast("Filamento cadastrado."); }catch(err){ falhou(err, "cadastrar o filamento"); }
       break;
     }
     case "salvar-fil": {
       const box = document.getElementById("fil-edit"), f = dados.filamentos.find(x => x.id === box.dataset.id), v = lerCampos(box);
       if(!v.nome.trim()){ toast("Dê um nome ao filamento."); break; }
-      const novo = { ...f, nome:v.nome.trim(), material:v.material.trim(), cor:v.cor.trim(), precoKg:num(v.precoKg), estoque: String(v.estoque).trim()==="" ? null : num(v.estoque), minimo:num(v.minimo) };
+      const novo = { ...f, nome:v.nome.trim(), material:v.material.trim(), cor:v.cor.trim(), guia:v.guia||"", precoKg:num(v.precoKg), estoque: String(v.estoque).trim()==="" ? null : num(v.estoque), minimo:num(v.minimo) };
       try{ await gravarFilamento(novo); Object.assign(f, novo); fecharModal(); render(); toast("Filamento atualizado."); }catch(err){ falhou(err, "salvar o filamento"); }
       break;
     }
