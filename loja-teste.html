@@ -1,0 +1,1255 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="utf-8">
+<meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self' 'unsafe-inline'; style-src 'self' 'unsafe-inline' https://fonts.googleapis.com; font-src 'self' https://fonts.gstatic.com data:; img-src 'self' data: blob: https:; connect-src 'self' data: blob: https://*.supabase.co wss://*.supabase.co https://viacep.com.br; worker-src 'self'; manifest-src 'self'; base-uri 'self'; form-action 'self'; object-src 'none'">
+<meta name="referrer" content="strict-origin-when-cross-origin">
+<meta name="robots" content="noindex, nofollow">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Loja (teste) · RazenLab — Impressão 3D sob encomenda</title>
+<meta name="description" content="Peças únicas impressas em 3D: decoração, colecionáveis, utilidades e peças sob medida. Orçamento com frete, pagamento por Pix e envio para todo o Brasil.">
+<link rel="canonical" href="https://razenlab.com.br/">
+<meta property="og:type" content="website">
+<meta property="og:url" content="https://razenlab.com.br/">
+<meta property="og:site_name" content="RazenLab">
+<meta property="og:locale" content="pt_BR">
+<meta property="og:title" content="RazenLab — Sua ideia ganha uma nova dimensão">
+<meta property="og:description" content="Peças únicas impressas em 3D, camada por camada. Orçamento com frete e envio para todo o Brasil.">
+<meta property="og:image" content="https://razenlab.com.br/assets/og.jpg">
+<meta property="og:image:width" content="1200">
+<meta property="og:image:height" content="675">
+<meta name="twitter:card" content="summary_large_image">
+<script type="application/ld+json">{"@context":"https://schema.org","@type":"Store","name":"RazenLab","description":"Impressão 3D sob encomenda com envio para todo o Brasil.","url":"https://razenlab.com.br/","image":"https://razenlab.com.br/assets/og.jpg","slogan":"Transformando ideias em realidade, camada por camada","areaServed":{"@type":"Country","name":"Brasil"},"paymentAccepted":"Pix","currenciesAccepted":"BRL"}</script>
+<meta name="theme-color" content="#111318">
+<meta name="color-scheme" content="dark">
+<link rel="icon" type="image/png" href="assets/favicon.png">
+<link rel="apple-touch-icon" href="assets/apple-touch-icon.png">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Sora:wght@400;500;600;700&family=Manrope:wght@400;500;600;700&display=swap" rel="stylesheet">
+<link rel="preload" as="image" href="assets/hero.webp" fetchpriority="high">
+<style>
+/* ==========================================================================
+   RazenLab · site
+   Escuro e limpo: fundo grafite, um azul-ciano de destaque, fotos grandes.
+   ========================================================================== */
+:root{
+  --bg:#111318;
+  --bg-2:#16191f;
+  --card:#1b1e25;
+  --card-2:#20242c;
+  --line:rgba(255,255,255,.08);
+  --line-2:rgba(255,255,255,.14);
+  --ink:#f3f5f8;
+  --ink-2:#b7bdc8;
+  --ink-3:#808896;
+  --accent:#38b6f5;
+  --accent-2:#6cccff;
+  --accent-ink:#04121c;
+  --accent-soft:rgba(56,182,245,.12);
+  --whats:#25d366;
+  --erro:#ff7a6b;
+  --r:14px;
+  --r-lg:20px;
+  --wrap:1200px;
+  --head:"Sora",system-ui,-apple-system,"Segoe UI",sans-serif;
+  --text:"Manrope",system-ui,-apple-system,"Segoe UI",sans-serif;
+}
+*{box-sizing:border-box}
+html{scroll-behavior:smooth;-webkit-text-size-adjust:100%}
+@media (prefers-reduced-motion:reduce){html{scroll-behavior:auto}*{animation:none!important;transition:none!important}}
+body{margin:0;background:var(--bg);color:var(--ink);font:400 16px/1.6 var(--text);-webkit-font-smoothing:antialiased;overflow-x:hidden}
+img{max-width:100%;display:block}
+a{color:inherit;text-decoration:none}
+button,input,textarea,select{font:inherit;color:inherit}
+:focus-visible{outline:2px solid var(--accent);outline-offset:3px;border-radius:6px}
+.wrap{width:min(100% - 32px, var(--wrap));margin-inline:auto}
+.vh{position:absolute!important;width:1px;height:1px;overflow:hidden;clip:rect(0 0 0 0);white-space:nowrap}
+.skip{position:absolute;left:16px;top:-60px;z-index:100;background:var(--accent);color:var(--accent-ink);padding:10px 16px;border-radius:10px;font-weight:600}
+.skip:focus{top:12px}
+
+/* ---------- botões ---------- */
+.btn{display:inline-flex;align-items:center;justify-content:center;gap:10px;min-height:48px;padding:0 22px;border-radius:12px;border:1px solid transparent;font:600 15px/1 var(--text);cursor:pointer;transition:background .2s,border-color .2s,transform .2s,color .2s;white-space:nowrap}
+.btn svg{flex:none}
+.btn:active{transform:translateY(1px)}
+.btn.pri{background:var(--accent);color:var(--accent-ink);box-shadow:0 8px 28px -10px rgba(56,182,245,.7)}
+.btn.pri:hover{background:var(--accent-2)}
+.btn.ghost{background:rgba(17,19,24,.55);border-color:var(--line-2);color:var(--ink);backdrop-filter:blur(8px)}
+.btn.ghost:hover{border-color:rgba(255,255,255,.3);background:rgba(255,255,255,.06)}
+.btn.sm{min-height:40px;padding:0 16px;font-size:14px;border-radius:10px}
+.btn.block{width:100%}
+.btn[disabled]{opacity:.6;cursor:progress}
+.arrow{transition:transform .2s}
+.btn:hover .arrow,.more:hover .arrow{transform:translateX(3px)}
+
+.kicker{display:inline-flex;align-items:center;gap:10px;font:600 12px/1 var(--text);letter-spacing:.14em;text-transform:uppercase;color:var(--accent)}
+.kicker.dot::before{content:"";width:6px;height:6px;border-radius:50%;background:var(--accent);box-shadow:0 0 0 4px var(--accent-soft)}
+h1,h2,h3{font-family:var(--head);font-weight:600;letter-spacing:-.02em;margin:0;text-wrap:balance}
+
+/* ---------- barra ---------- */
+.bar{position:fixed;inset:0 0 auto;z-index:40;transition:background .25s,border-color .25s,backdrop-filter .25s;border-bottom:1px solid transparent}
+.bar.on{background:rgba(17,19,24,.86);backdrop-filter:blur(14px);border-color:var(--line)}
+.bar-in{display:flex;align-items:center;justify-content:space-between;gap:24px;min-height:84px;padding:10px 0;transition:min-height .25s}
+.brand{display:flex;align-items:center;gap:12px;min-width:0}
+.brand .nm{justify-items:center;text-align:center}
+.brand .lg{display:block;height:96px;width:auto;filter:drop-shadow(0 0 14px rgba(56,182,245,.35));transition:height .25s}
+.brand small{font:600 9.5px/1.45 var(--text)!important;letter-spacing:.09em!important;color:#e8eef7!important;margin-top:6px!important;max-width:none!important;text-transform:uppercase;transition:opacity .2s}
+.bar.on .brand .lg{height:58px}
+.bar.on .brand small{display:none}
+@media (max-width:520px){.brand .lg{height:74px}.bar .brand small{display:block;font-size:7.5px!important;letter-spacing:.06em!important}.bar.on .brand .lg{height:48px}}
+.brand .nm{display:grid;line-height:1.1}
+.brand b{font:600 20px/1.1 var(--head);letter-spacing:-.01em}
+.brand b span{color:var(--accent)}
+.brand small{font:500 10px/1.4 var(--text);letter-spacing:.12em;text-transform:uppercase;color:var(--ink-3);margin-top:5px}
+@media (max-width:520px){.bar .brand small{font-size:8.5px;letter-spacing:.05em;max-width:220px}}
+.nav{display:flex;align-items:center;gap:6px}
+.nav a.lk{padding:10px 14px;border-radius:10px;font-weight:500;font-size:15px;color:var(--ink-2);transition:color .2s,background .2s;display:inline-flex;align-items:center;gap:6px}
+.nav a.lk:hover{color:var(--ink);background:rgba(255,255,255,.05)}
+.nav a.lk .spark{color:var(--accent)}
+.menu-btn{display:none;width:44px;height:44px;border-radius:12px;border:1px solid var(--line-2);background:transparent;cursor:pointer;place-items:center}
+@media (max-width:920px){
+  .menu-btn{display:grid}
+  .nav{position:fixed;inset:84px 0 auto;flex-direction:column;align-items:stretch;padding:12px 16px 20px;background:rgba(17,19,24,.97);backdrop-filter:blur(14px);border-bottom:1px solid var(--line);transform:translateY(-8px);opacity:0;visibility:hidden;transition:.2s}
+  .nav.open{transform:none;opacity:1;visibility:visible}
+  .nav a.lk{padding:14px 12px;font-size:16px}
+  .nav .btn{margin-top:8px}
+}
+
+/* ---------- herói ---------- */
+.hero{position:relative;min-height:min(100svh, 860px);display:flex;align-items:center;padding:170px 0 150px;isolation:isolate;overflow:hidden}
+.hero-img{position:absolute;inset:0;z-index:-2}
+.hero-img img{width:100%;height:100%;object-fit:cover;object-position:62% 60%;transform:scale(1.04);animation:respira 18s ease-in-out infinite alternate}
+@keyframes respira{to{transform:scale(1.1) translateX(-1%)}}
+.hero::before{content:"";position:absolute;inset:0;z-index:-1;background:
+  linear-gradient(90deg, rgba(17,19,24,.97) 0%, rgba(17,19,24,.88) 30%, rgba(17,19,24,.35) 58%, rgba(17,19,24,0) 80%),
+  linear-gradient(0deg, var(--bg) 0%, rgba(17,19,24,0) 28%),
+  linear-gradient(180deg, rgba(17,19,24,.7) 0%, rgba(17,19,24,0) 22%)}
+.hero-txt{max-width:720px;display:grid;gap:24px}
+.hero h1{font-size:clamp(38px, 5.6vw, 68px);line-height:1.04;letter-spacing:-.035em}
+.hero h1 .hl{color:var(--accent);display:block}
+.hero h1 .nm{display:block}
+.hero .lead{font-size:clamp(16px,1.6vw,19px);color:var(--ink-2);max-width:470px;margin:0}
+.hero .ctas{display:flex;flex-wrap:wrap;gap:12px;margin-top:6px}
+.hero .proof{display:flex;align-items:center;gap:10px;font-size:13px;color:var(--ink-3);margin-top:8px}
+.hero .ilus{position:absolute;right:20px;bottom:120px;font-size:11px;color:rgba(255,255,255,.4)}
+[data-load]{opacity:0;transform:translateY(14px);animation:sobe .8s cubic-bezier(.2,.7,.2,1) forwards;animation-delay:var(--d,0ms)}
+@keyframes sobe{to{opacity:1;transform:none}}
+@media (max-width:760px){
+  .hero{padding:150px 0 60px;align-items:flex-end;min-height:auto}
+  .hero-img{height:62%;bottom:auto}
+  .hero-img img{object-position:72% 50%}
+  .hero::before{background:linear-gradient(0deg, var(--bg) 38%, rgba(17,19,24,.6) 62%, rgba(17,19,24,.1) 100%)}
+  .hero-txt{padding-top:220px}
+  .hero .ilus{bottom:auto;top:calc(62% - 30px);right:16px}
+}
+
+/* ---------- faixa de vantagens ---------- */
+.perks{position:relative;z-index:2;margin-top:-80px}
+.perks-in{display:grid;grid-template-columns:repeat(4,1fr);background:rgba(27,30,37,.82);backdrop-filter:blur(14px);border:1px solid var(--line);border-radius:var(--r-lg);overflow:hidden}
+.perk{display:flex;gap:14px;align-items:flex-start;padding:22px 22px}
+.perk+.perk{border-left:1px solid var(--line)}
+.perk .ic{flex:none;width:40px;height:40px;border-radius:12px;display:grid;place-items:center;background:var(--accent-soft);color:var(--accent)}
+.perk b{display:block;font:600 15px/1.3 var(--head)}
+.perk span{display:block;font-size:13px;color:var(--ink-3);margin-top:3px;line-height:1.45}
+@media (max-width:980px){.perks-in{grid-template-columns:1fr 1fr}.perk:nth-child(3){border-left:0}.perk:nth-child(n+3){border-top:1px solid var(--line)}}
+@media (max-width:760px){.perks{margin-top:0}}
+@media (max-width:480px){.perks-in{grid-template-columns:1fr}.perk+.perk{border-left:0;border-top:1px solid var(--line)}}
+
+/* ---------- seções ---------- */
+section{padding:clamp(72px,9vw,120px) 0;scroll-margin-top:60px}
+.sec-head{display:flex;justify-content:space-between;align-items:flex-end;gap:24px;flex-wrap:wrap;margin-bottom:28px}
+.sec-head h2{font-size:clamp(28px,3.6vw,42px);line-height:1.12;margin-top:14px}
+.sec-head p{margin:10px 0 0;color:var(--ink-2);max-width:560px}
+.more{display:inline-flex;align-items:center;gap:8px;color:var(--accent);font-weight:600;font-size:15px;padding:8px 0}
+.more:hover{color:var(--accent-2)}
+
+/* ---------- catálogo ---------- */
+.tabs{display:flex;gap:8px;flex-wrap:wrap;margin-bottom:28px}
+.tab{min-height:40px;padding:0 18px;border-radius:10px;border:1px solid var(--line-2);background:var(--card);font-weight:600;font-size:14px;color:var(--ink-2);cursor:pointer;transition:.2s}
+.tab:hover{color:var(--ink);border-color:rgba(255,255,255,.26)}
+.tab[aria-pressed="true"]{background:var(--accent);border-color:var(--accent);color:var(--accent-ink)}
+.grid-prod{display:grid;grid-template-columns:repeat(4,1fr);gap:20px}
+@media (max-width:1080px){.grid-prod{grid-template-columns:repeat(3,1fr)}}
+@media (max-width:780px){.grid-prod{grid-template-columns:repeat(2,1fr);gap:14px}}
+.prod{display:flex;flex-direction:column;background:var(--card);border:1px solid var(--line);border-radius:var(--r-lg);overflow:hidden;transition:transform .3s cubic-bezier(.2,.7,.2,1),border-color .3s,box-shadow .3s}
+.prod:hover{transform:translateY(-4px);border-color:rgba(255,255,255,.2);box-shadow:0 24px 48px -24px rgba(0,0,0,.7)}
+.prod .ph{position:relative;aspect-ratio:1/1;background:#2a2d33;overflow:hidden;cursor:pointer;border:0;padding:0;width:100%}
+.prod .ph img{width:100%;height:100%;object-fit:cover;transition:transform .6s cubic-bezier(.2,.7,.2,1)}
+.prod:hover .ph img{transform:scale(1.05)}
+.badge{position:absolute;left:12px;top:12px;padding:6px 10px;border-radius:8px;background:rgba(17,19,24,.78);backdrop-filter:blur(6px);font:600 11px/1 var(--text);color:var(--ink);border:1px solid var(--line)}
+.prod .bd{display:flex;flex-direction:column;gap:8px;padding:18px 18px 18px;flex:1}
+.prod .cat{font-size:12px;color:var(--ink-3);font-weight:500}
+.prod h3{font-size:18px;line-height:1.25}
+.prod p{margin:0;font-size:14px;line-height:1.5;color:var(--ink-2);display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden}
+.prod .pr{display:flex;align-items:baseline;justify-content:space-between;gap:8px;margin-top:auto;padding-top:10px}
+.prod .pr b{font:600 20px/1 var(--head)}
+.prod .pr small{font-size:11px;color:var(--ink-3)}
+.prod .pr .sob{font:600 14px/1.2 var(--head);color:var(--ink-2)}
+.prod .btn{margin-top:12px;background:var(--card-2);border-color:var(--line-2)}
+.prod .btn:hover{background:rgba(56,182,245,.14);border-color:rgba(56,182,245,.45)}
+.disc{margin:26px 0 0;font-size:13px;color:var(--ink-3)}
+.prod[hidden]{display:none}
+.tab{display:inline-flex;align-items:center;gap:8px}
+.share-box{display:flex;gap:10px;flex-wrap:wrap;margin-top:12px}
+.share-box[hidden]{display:none}
+.aviso-col{margin:0 0 20px;padding:14px 18px;border-radius:var(--r);border:1px solid rgba(56,182,245,.35);background:var(--accent-soft);color:var(--ink)}
+.aviso-col[hidden]{display:none}
+.tab-col{border-color:rgba(56,182,245,.45);color:var(--accent)}
+.col-dest{display:grid;grid-template-columns:1.2fr 1fr;gap:clamp(20px,4vw,48px);align-items:center;margin:0 0 32px;padding:clamp(22px,3.4vw,40px);border-radius:var(--r-lg);border:1px solid rgba(56,182,245,.28);
+  background:radial-gradient(600px 300px at 0% 0%, rgba(56,182,245,.16), transparent 70%), linear-gradient(180deg,var(--card),var(--bg-2));overflow:hidden}
+.col-dest h3{font-size:clamp(30px,4vw,46px);line-height:1.08;margin-top:14px}
+.col-dest p{color:var(--ink-2);margin:12px 0 0;max-width:520px;white-space:pre-line}
+.col-dest .ctas{display:flex;gap:12px;flex-wrap:wrap;margin-top:22px}
+.col-img{padding:0;border:0;background:none;cursor:zoom-in;justify-self:end;width:min(100%,340px);border-radius:16px;overflow:hidden;box-shadow:0 30px 60px -30px rgba(0,0,0,.8),0 0 0 1px var(--line);transform:rotate(2deg);transition:transform .3s}
+.col-img:hover{transform:rotate(0) scale(1.02)}
+.col-img img{width:100%;height:auto;aspect-ratio:4/5;object-fit:cover}
+@media (max-width:760px){.col-dest{grid-template-columns:1fr}.col-img{justify-self:center;width:min(100%,300px);transform:none}}
+.md.md-banner{display:block;width:min(520px,100%);padding:0}
+.md.md-banner img{width:100%;height:auto;display:block}
+.md.md-banner .acts{display:grid;grid-template-columns:1fr 1fr;gap:10px;padding:14px}
+
+/* ---------- chamada sob medida ---------- */
+.cta{padding:0 0 clamp(72px,9vw,110px)}
+.faz-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:16px}
+@media (max-width:920px){.faz-grid{grid-template-columns:1fr}}
+.faz{padding:22px 22px 18px;border-radius:var(--r-lg);border:1px solid var(--line);background:var(--card);--c:var(--accent)}
+.faz.ok{--c:#3fd99a}.faz.meio{--c:#f5b942}.faz.nao{--c:#ff7a6b}
+.faz{border-top:3px solid var(--c)}
+.faz-h{display:flex;align-items:center;gap:12px;margin-bottom:12px}
+.faz-h b{font:600 18px/1.25 var(--head)}
+.faz-ic{width:36px;height:36px;border-radius:10px;display:grid;place-items:center;color:var(--c);background:color-mix(in srgb,var(--c) 14%,transparent);flex:none}
+.faz ul{list-style:none;margin:0;padding:0;display:grid;gap:10px}
+.faz li{position:relative;padding-left:18px;color:var(--ink-2);font-size:15px;line-height:1.45}
+.faz li::before{content:"";position:absolute;left:0;top:.6em;width:7px;height:7px;border-radius:50%;background:var(--c)}
+.faz li b{color:var(--ink);font-weight:600}
+.faz-nota{margin:18px 0 0;padding:14px 18px;border-radius:var(--r);background:var(--accent-soft);border:1px solid rgba(56,182,245,.3);color:var(--ink-2);font-size:15px}
+.faz-nota b{color:var(--ink)}
+.cta-in{position:relative;display:grid;grid-template-columns:auto 1fr auto;gap:28px;align-items:center;padding:clamp(28px,4vw,44px);border-radius:var(--r-lg);border:1px solid var(--line);background:
+  radial-gradient(600px 220px at 10% 0%, rgba(56,182,245,.16), transparent 70%),
+  linear-gradient(180deg, var(--card), var(--bg-2));overflow:hidden}
+.cta-in .cube{width:72px;height:72px;color:var(--accent)}
+.cta-in h2{font-size:clamp(24px,3vw,34px);line-height:1.15;margin-top:10px}
+.cta-in p{margin:10px 0 0;color:var(--ink-2);max-width:560px}
+@media (max-width:860px){.cta-in{grid-template-columns:1fr}.cta-in .cube{width:56px;height:56px}}
+
+/* ---------- formulário de orçamento ---------- */
+#sob-medida{padding-top:clamp(40px,6vw,80px)}
+.order{display:grid;grid-template-columns:1fr 1.15fr;gap:clamp(28px,5vw,64px);align-items:start}
+.order .intro{position:sticky;top:100px}
+@media (max-width:920px){.order{grid-template-columns:1fr}.order .intro{position:static}}
+.order h2{font-size:clamp(28px,3.6vw,40px);line-height:1.12;margin-top:14px}
+.order .intro p{color:var(--ink-2);margin:14px 0 0}
+.steps{list-style:none;margin:28px 0 0;padding:0;display:grid;gap:4px;counter-reset:s}
+.steps li{display:grid;grid-template-columns:44px 1fr;gap:14px;padding:14px 0;border-top:1px solid var(--line)}
+.steps li::before{counter-increment:s;content:"0" counter(s);font:600 14px/40px var(--head);text-align:center;width:40px;height:40px;border-radius:12px;background:var(--accent-soft);color:var(--accent)}
+.steps b{display:block;font:600 16px/1.3 var(--head)}
+.steps span{display:block;color:var(--ink-3);font-size:14px;margin-top:3px}
+.channels{display:grid;gap:10px;margin-top:22px}
+.channel{display:flex;align-items:center;gap:14px;padding:12px 14px;border-radius:var(--r);border:1px solid var(--line);background:var(--card);transition:.2s}
+.channel:hover{border-color:var(--line-2);background:var(--card-2)}
+.channel .ic{width:38px;height:38px;border-radius:10px;display:grid;place-items:center;background:rgba(255,255,255,.06);flex:none}
+.channel small{display:block;color:var(--ink-3);font-size:12px}
+.meus{font-size:14px;color:var(--ink-2);margin:6px 0 0}
+.meus a{color:var(--accent)}
+
+.form{display:grid;gap:14px;padding:clamp(20px,3vw,32px);border-radius:var(--r-lg);border:1px solid var(--line);background:var(--card)}
+.form .row2{display:grid;grid-template-columns:1fr 1fr;gap:14px}
+.form .row3{display:grid;grid-template-columns:1fr 120px;gap:14px}
+@media (max-width:540px){.form .row2,.form .row3{grid-template-columns:1fr}}
+.form label{display:grid;gap:6px}
+.form label>span{font-size:13px;font-weight:600;color:var(--ink-2)}
+.form input:not([type=checkbox]):not([type=file]),.form textarea{width:100%;min-height:48px;padding:12px 14px;border-radius:12px;border:1px solid var(--line-2);background:var(--bg-2);color:var(--ink);font-size:16px;transition:border-color .2s,box-shadow .2s}
+.form textarea{min-height:110px;resize:vertical}
+.form input::placeholder,.form textarea::placeholder{color:#5d6472}
+.form input:focus,.form textarea:focus{outline:none;border-color:var(--accent);box-shadow:0 0 0 4px var(--accent-soft)}
+.form input[type=file]{padding:10px;border:1px dashed var(--line-2);border-radius:12px;background:var(--bg-2);font-size:14px;color:var(--ink-2);width:100%}
+.form input[type=file]::file-selector-button{margin-right:12px;border:0;border-radius:8px;padding:8px 12px;background:var(--card-2);color:var(--ink);font-weight:600;cursor:pointer}
+.form .sub{font:600 12px/1 var(--text);letter-spacing:.12em;text-transform:uppercase;color:var(--ink-3);margin-top:8px;padding-top:16px;border-top:1px solid var(--line)}
+.aceite{grid-template-columns:20px 1fr!important;align-items:start;gap:10px!important;font-size:13px;color:var(--ink-2)}
+.aceite input{width:18px;height:18px;margin-top:2px;accent-color:var(--accent)}
+.aceite a{color:var(--accent);text-decoration:underline}
+.note{font-size:13px;color:var(--ink-3);margin:0}
+.note.erro{color:var(--erro)}
+.ok-box{text-align:left}
+.ok-box .num{font:600 12px/1 var(--text);letter-spacing:.14em;text-transform:uppercase;color:var(--accent);margin:0}
+.ok-box h3{font-size:28px}
+.ok-box p{margin:0;color:var(--ink-2)}
+
+/* ---------- dúvidas ---------- */
+.faq{display:grid;grid-template-columns:1fr 1.4fr;gap:clamp(28px,5vw,64px);align-items:start}
+@media (max-width:920px){.faq{grid-template-columns:1fr}}
+.faq h2{font-size:clamp(28px,3.6vw,40px);margin-top:14px}
+.faq .list{display:grid;gap:10px}
+details{border:1px solid var(--line);border-radius:var(--r);background:var(--card);transition:border-color .2s}
+details[open]{border-color:var(--line-2)}
+summary{list-style:none;cursor:pointer;display:flex;justify-content:space-between;align-items:center;gap:16px;padding:18px 20px;font:600 16px/1.35 var(--head)}
+summary::-webkit-details-marker{display:none}
+summary .pm{flex:none;width:28px;height:28px;border-radius:8px;background:rgba(255,255,255,.05);position:relative}
+summary .pm::before,summary .pm::after{content:"";position:absolute;left:8px;right:8px;top:13px;height:2px;border-radius:2px;background:var(--ink-2);transition:transform .2s}
+summary .pm::after{transform:rotate(90deg)}
+details[open] summary .pm::after{transform:rotate(0)}
+details p{margin:0;padding:0 20px 18px;color:var(--ink-2)}
+
+/* ---------- rodapé ---------- */
+footer{border-top:1px solid var(--line);padding:40px 0 calc(28px + env(safe-area-inset-bottom))}
+.foot{display:flex;justify-content:space-between;align-items:center;gap:24px;flex-wrap:wrap}
+.foot nav{display:flex;gap:6px;flex-wrap:wrap}
+.foot nav a{padding:8px 12px;border-radius:8px;color:var(--ink-2);font-size:14px}
+.foot nav a:hover{color:var(--ink);background:rgba(255,255,255,.05)}
+.foot-last{display:flex;justify-content:space-between;gap:16px;flex-wrap:wrap;margin-top:28px;padding-top:22px;border-top:1px solid var(--line);font-size:13px;color:var(--ink-3)}
+.foot-last a{color:var(--ink-2)}
+.foot-last a:hover{color:var(--ink)}
+#rodape-contato{font-size:14px;color:var(--ink-2);line-height:1.7}
+
+/* ---------- WhatsApp flutuante ---------- */
+.zap{position:fixed;right:20px;bottom:calc(20px + env(safe-area-inset-bottom));z-index:45;width:58px;height:58px;border-radius:50%;background:var(--whats);display:grid;place-items:center;box-shadow:0 12px 30px -8px rgba(37,211,102,.6);transition:transform .2s}
+.zap:hover{transform:scale(1.07)}
+.zap[hidden]{display:none}
+
+/* ---------- janela do produto ---------- */
+.ov{position:fixed;inset:0;z-index:60;background:rgba(5,6,8,.72);backdrop-filter:blur(6px);display:grid;place-items:center;padding:16px;animation:fade .2s}
+@keyframes fade{from{opacity:0}}
+.md{position:relative;width:min(960px,100%);max-height:calc(100svh - 32px);overflow:auto;display:grid;grid-template-columns:1.05fr 1fr;background:var(--card);border:1px solid var(--line-2);border-radius:var(--r-lg);animation:sobe .3s cubic-bezier(.2,.7,.2,1)}
+@media (max-width:760px){.md{grid-template-columns:1fr}}
+.md .gal{background:#0d0f13;display:grid;align-content:center}
+.md .gal .main{display:grid;place-items:center}
+.md .gal .main img{width:100%;height:auto;max-height:calc(100svh - 140px);object-fit:contain}
+@media (min-width:761px){.md{align-items:stretch}.md .gal{position:sticky;top:0;align-self:start}}
+.md .thumbs{display:flex;gap:8px;padding:10px}
+.md .thumbs button{width:64px;height:64px;padding:0;border-radius:10px;overflow:hidden;border:2px solid transparent;cursor:pointer;background:none}
+.md .thumbs button[aria-pressed="true"]{border-color:var(--accent)}
+.md .thumbs img{width:100%;height:100%;object-fit:cover}
+.md .txt{padding:clamp(22px,3vw,34px);display:flex;flex-direction:column;gap:14px}
+.md .x{position:absolute;right:12px;top:12px;width:40px;height:40px;border-radius:10px;border:1px solid var(--line-2);background:rgba(17,19,24,.8);font-size:22px;line-height:1;cursor:pointer;z-index:2}
+.md .cat{font-size:13px;color:var(--accent);font-weight:600}
+.md h3{font-size:clamp(24px,3vw,30px);padding-right:40px}
+.md p{margin:0;color:var(--ink-2)}
+.md .preco{font:600 28px/1 var(--head)}
+.md .preco small{display:block;font:400 12px/1.4 var(--text);color:var(--ink-3);margin-top:6px}
+.specs{margin:0;display:grid;gap:0;border-top:1px solid var(--line)}
+.specs div{display:flex;justify-content:space-between;gap:16px;padding:10px 0;border-bottom:1px solid var(--line);font-size:14px}
+.specs dt{color:var(--ink-3)}
+.specs dd{margin:0;text-align:right}
+.md .acts{display:grid;gap:10px;margin-top:auto;padding-top:6px}
+
+[data-reveal]{opacity:0;transform:translateY(18px);transition:opacity .7s cubic-bezier(.2,.7,.2,1),transform .7s cubic-bezier(.2,.7,.2,1);transition-delay:calc(var(--s,0) * 70ms)}
+[data-reveal].is-in{opacity:1;transform:none}
+html:not(.js) [data-reveal]{opacity:1;transform:none}
+@media (max-width:560px){.prod p,.prod .pr small{display:none}.prod .bd{padding:12px 12px 14px;gap:4px}.prod h3{font-size:15px}.prod .pr b{font-size:17px}.prod .btn{font-size:13px;padding:0 8px;min-height:38px}.prod .btn .arrow{display:none}.badge{left:8px;top:8px;font-size:10px;padding:5px 8px}}
+@media (max-width:330px){.grid-prod{grid-template-columns:1fr}}
+
+.faixa-teste{position:fixed;left:0;right:0;bottom:0;z-index:70;background:#f5b942;color:#1a1200;font:700 12px/1.3 var(--text);letter-spacing:.04em;text-align:center;padding:7px 12px}
+.prod-acts{display:grid;grid-template-columns:1fr auto;gap:8px;margin-top:12px}
+.prod-acts .btn{margin-top:0!important}
+.prod .prod-acts .btn.pri{background:var(--accent);border-color:var(--accent);color:var(--accent-ink)}
+.md-compra{display:grid;grid-template-columns:110px 1fr;gap:10px}
+.md-compra label{display:grid;gap:6px;font-size:13px;color:var(--ink-2);font-weight:600}
+.md-compra input,.lj-sec input:not([type=radio]):not([type=checkbox]){width:100%;min-height:46px;padding:10px 12px;border-radius:12px;border:1px solid var(--line-2);background:var(--bg-2);color:var(--ink);font-size:16px}
+.md-compra input:focus,.lj-sec input:focus{outline:none;border-color:var(--accent);box-shadow:0 0 0 4px var(--accent-soft)}
+.btn-carrinho{position:fixed;right:20px;bottom:calc(122px + env(safe-area-inset-bottom));z-index:46;width:58px;height:58px;border-radius:50%;border:0;background:var(--accent);color:var(--accent-ink);display:grid;place-items:center;cursor:pointer;box-shadow:0 12px 30px -8px rgba(56,182,245,.7)}
+.btn-carrinho[hidden]{display:none}
+.btn-carrinho .qt{position:absolute;top:-4px;right:-4px;min-width:22px;height:22px;padding:0 6px;border-radius:11px;background:#fff;color:#04121c;font:700 12px/22px var(--text)}
+.loja-toast{position:fixed;left:50%;bottom:calc(96px + env(safe-area-inset-bottom));transform:translate(-50%,20px);z-index:80;display:flex;gap:14px;align-items:center;padding:12px 16px;border-radius:14px;background:var(--card-2);border:1px solid var(--line-2);box-shadow:0 20px 40px -12px rgba(0,0,0,.7);opacity:0;pointer-events:none;transition:.25s;max-width:calc(100vw - 32px);font-size:14px}
+.loja-toast.on{opacity:1;transform:translate(-50%,0);pointer-events:auto}
+.loja-toast button{border:0;background:none;color:var(--accent);font-weight:700;cursor:pointer;white-space:nowrap}
+.loja-ov{position:fixed;inset:0;z-index:75;visibility:hidden}
+.loja-ov.on{visibility:visible}
+.loja-fundo{position:absolute;inset:0;background:rgba(5,6,8,.7);opacity:0;transition:.25s}
+.loja-ov.on .loja-fundo{opacity:1}
+.loja-painel{position:absolute;top:0;right:0;bottom:0;width:min(460px,100%);background:var(--card);border-left:1px solid var(--line-2);overflow-y:auto;padding:20px 20px 60px;transform:translateX(100%);transition:transform .3s cubic-bezier(.2,.7,.2,1)}
+.loja-ov.on .loja-painel{transform:none}
+.lj-h{display:flex;justify-content:space-between;align-items:center;margin-bottom:12px}
+.lj-h h2{font-size:24px}
+.lj-x{width:40px;height:40px;border-radius:10px;border:1px solid var(--line-2);background:transparent;font-size:22px;cursor:pointer}
+.lj-teste{margin:0 0 14px;padding:10px 12px;border-radius:10px;background:rgba(245,185,66,.12);border:1px solid rgba(245,185,66,.4);font-size:13px;color:var(--ink-2)}
+.lj-vazio{text-align:center;padding:40px 0;color:var(--ink-2)}
+.lj-itens{list-style:none;margin:0;padding:0;display:grid;gap:10px}
+.lj-itens li{display:grid;grid-template-columns:64px 1fr auto auto;gap:12px;align-items:center;padding:10px;border-radius:14px;background:var(--bg-2);border:1px solid var(--line)}
+.lj-itens img,.lj-ph{width:64px;height:64px;border-radius:10px;object-fit:cover;background:#2a2d33}
+.lj-i{display:grid;gap:2px;min-width:0}
+.lj-i b{font:600 15px/1.25 var(--head)}
+.lj-i small,.lj-i span{font-size:12px;color:var(--ink-3)}
+.lj-q{display:flex;align-items:center;gap:6px}
+.lj-q button{width:30px;height:30px;border-radius:8px;border:1px solid var(--line-2);background:transparent;font-size:16px;cursor:pointer}
+.lj-q span{min-width:18px;text-align:center;font-weight:700}
+.lj-rm{border:0;background:none;color:var(--ink-3);font-size:22px;cursor:pointer;padding:4px}
+.lj-sec{margin-top:18px;display:grid;gap:10px}
+.lj-lbl{font:600 12px/1 var(--text);letter-spacing:.12em;text-transform:uppercase;color:var(--ink-3)}
+.lj-cep{display:grid;grid-template-columns:1fr auto;gap:8px}
+.lj-cep .btn{min-height:46px}
+.lj-fretes{display:grid;gap:8px}
+.lj-fr{display:grid;grid-template-columns:auto 1fr auto;gap:10px;align-items:center;padding:12px;border-radius:12px;border:1px solid var(--line-2);cursor:pointer}
+.lj-fr.on{border-color:var(--accent);background:var(--accent-soft)}
+.lj-fr input{accent-color:var(--accent);width:18px;height:18px}
+.lj-fr b{display:block;font-size:14px}
+.lj-fr small{display:block;font-size:12px;color:var(--ink-3)}
+.lj-fr em{font-style:normal;font-weight:700}
+.lj-tot{margin-top:18px;padding:14px;border-radius:14px;background:var(--bg-2);border:1px solid var(--line);display:grid;gap:8px;font-size:14px}
+.lj-tot div{display:flex;justify-content:space-between}
+.lj-tot .t{font:700 20px/1 var(--head);padding-top:8px;border-top:1px solid var(--line)}
+.lj-nota{margin:0;font-size:12px;color:var(--ink-3)}
+.lj-erro{margin:0;font-size:13px;color:var(--erro)}
+.lj-2{display:grid;grid-template-columns:1fr 1fr;gap:8px}
+.lj-3{display:grid;grid-template-columns:1fr 1fr 70px;gap:8px}
+@media (max-width:420px){.lj-2,.lj-3{grid-template-columns:1fr}}
+.lj-aceite{display:grid;grid-template-columns:20px 1fr;gap:10px;font-size:13px;color:var(--ink-2)}
+.lj-aceite input{width:18px;height:18px;accent-color:var(--accent);margin-top:2px}
+.lj-aceite a{color:var(--accent)}
+.zap{bottom:calc(20px + 30px + env(safe-area-inset-bottom))!important}
+</style>
+<script>document.documentElement.classList.add("js")</script>
+</head>
+<body>
+<a class="skip" href="#conteudo">Pular para o conteúdo</a>
+
+<div class="faixa-teste">LOJA EM TESTE · só você está vendo esta página · os pedidos ficam marcados como [TESTE]</div>
+<header class="bar" id="barra">
+  <div class="wrap bar-in">
+    <a class="brand" href="#inicio" aria-label="RazenLab, início">
+      <span class="nm"><img class="lg" src="assets/marca/logo-vertical.webp" width="700" height="600" alt="RazenLab"><small>Transformando ideias em realidade,<br>camada por camada.</small></span>
+    </a>
+    <button class="menu-btn" id="menu-btn" aria-label="Abrir menu" aria-expanded="false" aria-controls="menu">
+      <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" aria-hidden="true"><path d="M4 7h16M4 12h16M4 17h16"/></svg>
+    </button>
+    <nav class="nav" id="menu" aria-label="Seções">
+      <a class="lk" href="#inicio">Início</a>
+      <a class="lk" href="#catalogo">Catálogo</a>
+      <a class="lk" href="#sob-medida">Sob medida <svg class="spark" width="14" height="14" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M12 2l1.8 6.2L20 10l-6.2 1.8L12 18l-1.8-6.2L4 10l6.2-1.8zM19 15l.9 2.1L22 18l-2.1.9L19 21l-.9-2.1L16 18l2.1-.9z"/></svg></a>
+      <a class="lk" href="#duvidas">Fale com a gente</a>
+      <a class="btn ghost sm" href="#sob-medida" data-whats="Olá! Vim pelo site da RazenLab e quero conversar.">
+        <svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M12 2a10 10 0 0 0-8.6 15.1L2 22l5-1.3A10 10 0 1 0 12 2Zm0 18.2c-1.5 0-3-.4-4.3-1.2l-.3-.2-3 .8.8-2.9-.2-.3A8.2 8.2 0 1 1 12 20.2Zm4.5-6.1c-.2-.1-1.5-.7-1.7-.8-.2-.1-.4-.1-.6.1l-.8 1c-.1.2-.3.2-.5.1a6.7 6.7 0 0 1-3.3-2.9c-.2-.4.2-.4.7-1.3.1-.2 0-.3 0-.4l-.8-1.8c-.2-.5-.4-.4-.6-.4h-.5a1 1 0 0 0-.7.3 3 3 0 0 0-.9 2.2 5.2 5.2 0 0 0 1.1 2.7 11.8 11.8 0 0 0 4.5 4c1.7.7 2.3.8 3.2.6.5-.1 1.5-.6 1.7-1.2.2-.6.2-1.1.2-1.2-.1-.1-.3-.2-.5-.3Z"/></svg>
+        Vamos conversar
+      </a>
+    </nav>
+  </div>
+</header>
+
+<main id="conteudo">
+<div class="hero" id="inicio">
+  <div class="hero-img"><img id="hero-foto" src="assets/hero.webp" width="2000" height="1125" alt="Luminária vazada, vaso e dado impressos em 3D em um estúdio escuro com luzes azuis" fetchpriority="high"><script>try{var h=localStorage.getItem("razenlab.site.hero");if(h)document.getElementById("hero-foto").src=h}catch(e){}</script></div>
+  <div class="wrap">
+    <div class="hero-txt">
+      <span class="kicker dot" data-load style="--d:0ms">Criatividade em cada camada</span>
+      <h1 data-load style="--d:120ms"><span class="nm" translate="no">RazenLab.</span> Sua ideia ganha <span class="hl">uma nova dimensão.</span></h1>
+      <p class="lead" id="slogan" data-load style="--d:260ms">Design que surpreende. Peças que têm a sua cara. Transformamos imaginação em realidade, camada por camada.</p>
+      <div class="ctas" data-load style="--d:380ms">
+        <a class="btn pri" href="#catalogo">Explorar produtos <svg class="arrow" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M5 12h14M13 6l6 6-6 6"/></svg></a>
+        <a class="btn ghost" href="#sob-medida" data-whats="Olá! Tenho uma ideia de peça e quero um orçamento na RazenLab.">
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M12 2a10 10 0 0 0-8.6 15.1L2 22l5-1.3A10 10 0 1 0 12 2Zm0 18.2c-1.5 0-3-.4-4.3-1.2l-.3-.2-3 .8.8-2.9-.2-.3A8.2 8.2 0 1 1 12 20.2Zm4.5-6.1c-.2-.1-1.5-.7-1.7-.8-.2-.1-.4-.1-.6.1l-.8 1c-.1.2-.3.2-.5.1a6.7 6.7 0 0 1-3.3-2.9c-.2-.4.2-.4.7-1.3.1-.2 0-.3 0-.4l-.8-1.8c-.2-.5-.4-.4-.6-.4h-.5a1 1 0 0 0-.7.3 3 3 0 0 0-.9 2.2 5.2 5.2 0 0 0 1.1 2.7 11.8 11.8 0 0 0 4.5 4c1.7.7 2.3.8 3.2.6.5-.1 1.5-.6 1.7-1.2.2-.6.2-1.1.2-1.2-.1-.1-.3-.2-.5-.3Z"/></svg>
+          Tenho uma ideia
+        </a>
+      </div>
+      <p class="proof" data-load style="--d:500ms"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linejoin="round" aria-hidden="true"><path d="M12 3 3 8l9 5 9-5-9-5Z"/><path d="m3 13 9 5 9-5"/></svg> Peças únicas, produzidas com propósito.</p>
+    </div>
+  </div>
+  <span class="ilus" aria-hidden="true">Objetos ilustrativos</span>
+</div>
+
+<div class="perks">
+  <div class="wrap">
+    <div class="perks-in">
+      <div class="perk"><span class="ic"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linejoin="round" aria-hidden="true"><path d="M12 3 3 8l9 5 9-5-9-5Z"/><path d="m3 13 9 5 9-5"/><path d="m3 17.5 9 5 9-5" opacity=".5"/></svg></span><div><b>Criado camada por camada</b><span>Detalhes que fazem a diferença</span></div></div>
+      <div class="perk"><span class="ic"><svg width="20" height="20" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M12 2l1.8 6.2L20 10l-6.2 1.8L12 18l-1.8-6.2L4 10l6.2-1.8zM19 15l.9 2.1L22 18l-2.1.9L19 21l-.9-2.1L16 18l2.1-.9z"/></svg></span><div><b>Do seu jeito</b><span>Cores e ideias personalizadas</span></div></div>
+      <div class="perk"><span class="ic"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linejoin="round" aria-hidden="true"><path d="M21 12a8 8 0 0 1-11.6 7.1L4 20l1-4.6A8 8 0 1 1 21 12Z"/></svg></span><div><b>Conversa sem complicação</b><span>Atendimento direto no WhatsApp</span></div></div>
+      <div class="perk"><span class="ic"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linejoin="round" aria-hidden="true"><path d="M21 8 12 3 3 8v8l9 5 9-5V8Z"/><path d="m3 8 9 5 9-5M12 13v8"/></svg></span><div><b>Feito para você</b><span>Peças produzidas sob encomenda</span></div></div>
+    </div>
+  </div>
+</div>
+
+<section id="catalogo" aria-labelledby="t-cat">
+  <div class="wrap">
+    <div class="sec-head">
+      <div data-reveal>
+        <span class="kicker">Do laboratório para a sua vida</span>
+        <h2 id="t-cat">Pequenas ideias. Grandes possibilidades.</h2>
+        <p>Explore peças únicas que unem criatividade, design e impressão 3D.</p>
+      </div>
+      <a class="more" href="#sob-medida" data-reveal>Pedir uma peça <svg class="arrow" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M5 12h14M13 6l6 6-6 6"/></svg></a>
+    </div>
+    <p class="aviso-col" id="aviso-colecao" hidden></p>
+    <div id="colecoes"></div>
+    <div class="tabs" id="filtros" role="group" aria-label="Filtrar por categoria" style="scroll-margin-top:100px"></div>
+    <div class="grid-prod" id="galeria" aria-live="polite"></div>
+    <p class="disc" id="aviso-demo">Coleção demonstrativa: imagens, medidas e preços são ilustrativos. Consulte disponibilidade, valor final e prazo pelo WhatsApp.</p>
+  </div>
+</section>
+
+<section id="o-que-fazemos" aria-labelledby="t-faz" style="padding-top:0">
+  <div class="wrap">
+    <div class="sec-head" data-reveal>
+      <div>
+        <span class="kicker">Antes de pedir</span>
+        <h2 id="t-faz">O que a nossa impressora faz melhor</h2>
+        <p>Trabalhamos com impressão 3D de <b>filamento</b> (PLA e PETG). Ela é ótima para peças de decoração, personagens e objetos do dia a dia. Para peças muito pequenas, transparentes ou de precisão de engenharia, outra tecnologia atende melhor.</p>
+      </div>
+    </div>
+    <div class="faz-grid">
+      <div class="faz ok" data-reveal>
+        <div class="faz-h"><span class="faz-ic"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="m5 12 5 5 9-10"/></svg></span><b>Fazemos muito bem</b></div>
+        <ul>
+          <li><b>Bonecos e personagens</b> a partir de uns 8 cm, colecionáveis e articulados</li>
+          <li><b>Decoração</b>: vasos, cachepôs, luminárias, placas com nome</li>
+          <li><b>Presentes e lembranças</b>: chaveiros, topos de bolo, brindes</li>
+          <li><b>Utilidades</b>: suportes, organizadores, porta-objetos</li>
+          <li><b>Peças em várias cores</b> no mesmo objeto</li>
+        </ul>
+      </div>
+      <div class="faz meio" data-reveal style="--s:1">
+        <div class="faz-h"><span class="faz-ic"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" aria-hidden="true"><path d="M12 8v5M12 16.5v.5"/><circle cx="12" cy="12" r="9"/></svg></span><b>Fazemos, mas vamos conversar antes</b></div>
+        <ul>
+          <li><b>Peças de reposição</b> simples: depende do formato e do uso</li>
+          <li><b>Encaixes</b> e peças que precisam de medida certa</li>
+          <li><b>Peças grandes</b>: podem ser impressas em partes e coladas</li>
+          <li>Peças para <b>sol, calor ou esforço</b>: escolhemos o material certo</li>
+        </ul>
+      </div>
+      <div class="faz nao" data-reveal style="--s:2">
+        <div class="faz-h"><span class="faz-ic"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" aria-hidden="true"><path d="M6 6l12 12M18 6 6 18"/></svg></span><b>Não atendemos</b></div>
+        <ul>
+          <li><b>Miniaturas muito pequenas</b> com rosto e detalhe fino (menos de 5 cm)</li>
+          <li><b>Joias</b>, alianças e peças de ourives</li>
+          <li><b>Transparente</b> como vidro ou acabamento liso de fábrica, sem marcas de camada</li>
+          <li>Peças de <b>motor, máquina</b> ou que precisam de precisão de décimos de milímetro</li>
+          <li>Peças de <b>metal</b> ou que vão ao fogo</li>
+        </ul>
+      </div>
+    </div>
+    <p class="faz-nota" data-reveal>Toda peça de filamento tem <b>linhas de camada</b> visíveis de perto: faz parte do charme da impressão 3D. Na dúvida, mande uma foto do que você quer que a gente diz se dá certo, sem compromisso.</p>
+  </div>
+</section>
+
+<div class="cta">
+  <div class="wrap">
+    <div class="cta-in" data-reveal>
+      <svg class="cube" viewBox="0 0 64 64" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linejoin="round" aria-hidden="true"><path d="M32 6 8 19v26l24 13 24-13V19L32 6Z"/><path d="m8 19 24 13 24-13M32 32v26"/></svg>
+      <div>
+        <span class="kicker">Sua ideia merece sair do papel</span>
+        <h2>Imaginou algo diferente? A gente cria.</h2>
+        <p>Uma peça exclusiva, um presente com significado ou aquela solução que você não encontra por aí. Conte a sua ideia para o nosso laboratório.</p>
+      </div>
+      <a class="btn pri" href="#sob-medida" id="cta-form">Quero uma peça sob medida <svg class="arrow" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M5 12h14M13 6l6 6-6 6"/></svg></a>
+    </div>
+  </div>
+</div>
+
+<section id="duvidas" aria-labelledby="t-duvidas" style="padding-top:0">
+  <div class="wrap faq">
+    <div data-reveal>
+      <span class="kicker">Fale com a gente</span>
+      <h2 id="t-duvidas">Dúvidas comuns</h2>
+      <p style="color:var(--ink-2);margin:14px 0 22px">Não achou o que procurava? Chame no WhatsApp, a gente responde rapidinho.</p>
+      <a class="btn ghost" href="#sob-medida" data-whats="Olá! Tenho uma dúvida sobre as peças da RazenLab.">
+        <svg width="18" height="18" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M12 2a10 10 0 0 0-8.6 15.1L2 22l5-1.3A10 10 0 1 0 12 2Zm0 18.2c-1.5 0-3-.4-4.3-1.2l-.3-.2-3 .8.8-2.9-.2-.3A8.2 8.2 0 1 1 12 20.2Zm4.5-6.1c-.2-.1-1.5-.7-1.7-.8-.2-.1-.4-.1-.6.1l-.8 1c-.1.2-.3.2-.5.1a6.7 6.7 0 0 1-3.3-2.9c-.2-.4.2-.4.7-1.3.1-.2 0-.3 0-.4l-.8-1.8c-.2-.5-.4-.4-.6-.4h-.5a1 1 0 0 0-.7.3 3 3 0 0 0-.9 2.2 5.2 5.2 0 0 0 1.1 2.7 11.8 11.8 0 0 0 4.5 4c1.7.7 2.3.8 3.2.6.5-.1 1.5-.6 1.7-1.2.2-.6.2-1.1.2-1.2-.1-.1-.3-.2-.5-.3Z"/></svg>
+        Chamar no WhatsApp
+      </a>
+    </div>
+    <div class="list">
+      <details name="faq" open data-reveal><summary>Vocês imprimem em resina?<span class="pm" aria-hidden="true"></span></summary><p>Não. Trabalhamos só com <b>filamento</b> (PLA e PETG), que é ótimo para bonecos, decoração e peças do dia a dia. Miniaturas muito pequenas e detalhadas, joias e peças transparentes ficam melhores em resina, e essas não fazemos. Veja a lista completa em <a href="#o-que-fazemos" style="color:var(--accent)">O que a nossa impressora faz melhor</a>.</p></details>
+      <details name="faq" data-reveal style="--s:1"><summary>Preciso ter o arquivo 3D?<span class="pm" aria-hidden="true"></span></summary><p>Não. Descreva a peça e, se puder, mande uma foto de referência. Se você tiver o arquivo (STL, 3MF, OBJ, STEP ou ZIP de até 25&nbsp;MB), anexe no pedido.</p></details>
+      <details name="faq" data-reveal style="--s:1"><summary>Quanto custa uma peça?<span class="pm" aria-hidden="true"></span></summary><p>Depende do tamanho, do material e do tempo de impressão. O orçamento chega com o preço da peça e o frete até o seu CEP, sem compromisso.</p></details>
+      <details name="faq" data-reveal style="--s:2"><summary>Como eu pago?<span class="pm" aria-hidden="true"></span></summary><p>Por Pix, com o QR&nbsp;Code pronto no link do seu pedido. Enviou o comprovante, a peça entra na fila de produção.</p></details>
+      <details name="faq" data-reveal style="--s:3"><summary>Quanto tempo demora?<span class="pm" aria-hidden="true"></span></summary><p>O prazo de produção vem no orçamento e começa a contar quando o pagamento é confirmado. Depois soma o prazo da transportadora.</p></details>
+      <details name="faq" data-reveal style="--s:4"><summary>Vocês entregam na minha cidade?<span class="pm" aria-hidden="true"></span></summary><p>Sim, enviamos para todo o Brasil pelos Correios ou outra transportadora, com o código de rastreio no mesmo link do pedido.</p></details>
+      <details name="faq" data-reveal style="--s:5"><summary>A cor fica igual à da foto?<span class="pm" aria-hidden="true"></span></summary><p>Muito perto. Cada peça é feita sob medida, e pequenas variações de cor, brilho e textura são naturais da impressão 3D.</p></details>
+      <details name="faq" data-reveal style="--s:6"><summary>E se chegar com defeito?<span class="pm" aria-hidden="true"></span></summary><p>Avise em até 7 dias depois de receber, com fotos. A gente refaz a peça ou devolve o valor.</p></details>
+    </div>
+  </div>
+</section>
+
+<section id="sob-medida" aria-labelledby="t-orc">
+  <div class="wrap order">
+    <div class="intro" data-reveal>
+      <span class="kicker dot">Sob medida</span>
+      <h2 id="t-orc">Peça seu orçamento</h2>
+      <p id="sobre">Preencha o que souber. A resposta chega no seu WhatsApp com o preço, o material indicado, o prazo e o frete até o seu CEP.</p>
+      <ol class="steps">
+        <li><div><b>Você conta a ideia</b><span>Uma descrição e, se tiver, uma foto de referência ou o arquivo 3D.</span></div></li>
+        <li><div><b>Recebe o orçamento</b><span>Preço, prazo e frete no WhatsApp, com um link só seu.</span></div></li>
+        <li><div><b>Paga por Pix</b><span>O QR Code fica pronto no link. Pagou, a peça entra na fila.</span></div></li>
+        <li><div><b>Recebe em casa</b><span>Envio para todo o Brasil, com rastreio no mesmo link.</span></div></li>
+      </ol>
+      <div class="channels" id="canais"></div>
+    </div>
+    <div id="caixa-form" data-reveal style="--s:1">
+      <form class="form" id="form-orc" novalidate>
+        <label><span>Seu nome</span><input name="nome" autocomplete="name" maxlength="120" placeholder="Como podemos te chamar"></label>
+        <div class="row2">
+          <label><span>WhatsApp com DDD</span><input name="contato" type="tel" inputmode="tel" autocomplete="tel" placeholder="(11) 90000-0000" maxlength="20"></label>
+          <label><span>E-mail (opcional)</span><input name="email" type="email" autocomplete="email" spellcheck="false" maxlength="160" placeholder="voce@email.com"></label>
+        </div>
+        <label><span>O que você precisa? <a href="#o-que-fazemos" style="color:var(--accent);font-weight:500">(veja o que fazemos)</a></span><textarea name="ideia" maxlength="3000" placeholder="Ex.: boneco do meu personagem favorito com uns 15 cm, ou um vaso na cor branca"></textarea></label>
+        <div class="row2">
+          <label><span>Quantidade</span><input name="qtd" inputmode="numeric" value="1" maxlength="5" autocomplete="off"></label>
+          <label><span>Para quando?</span><input name="quando" placeholder="Sem pressa, dia 15…" maxlength="120" autocomplete="off"></label>
+        </div>
+        <label><span>Foto de referência ou arquivo 3D (opcional)</span><input type="file" name="anexo" accept="image/*,.stl,.3mf,.obj,.step,.stp,.zip"></label>
+        <p class="sub">Endereço de entrega</p>
+        <div class="row3">
+          <label><span>CEP</span><input name="cep" inputmode="numeric" autocomplete="postal-code" placeholder="00000-000" maxlength="9"></label>
+          <label><span>Número</span><input name="numero" maxlength="20" autocomplete="off"></label>
+        </div>
+        <label><span>Rua</span><input name="rua" autocomplete="address-line1" maxlength="160"></label>
+        <div class="row2">
+          <label><span>Bairro</span><input name="bairro" maxlength="100" autocomplete="off"></label>
+          <label><span>Complemento (opcional)</span><input name="complemento" maxlength="100" autocomplete="address-line2"></label>
+        </div>
+        <div class="row3">
+          <label><span>Cidade</span><input name="cidade" autocomplete="address-level2" maxlength="100"></label>
+          <label><span>UF</span><input name="uf" autocomplete="address-level1" maxlength="2" style="text-transform:uppercase"></label>
+        </div>
+        <label class="aceite"><input type="checkbox" name="aceite"><span>Autorizo o uso destes dados só para o orçamento e a entrega deste pedido, conforme a <a href="privacidade.html" target="_blank">política de privacidade</a>.</span></label>
+        <button class="btn pri block" type="submit" id="btn-orc">Pedir orçamento</button>
+        <p class="note" id="form-nota" aria-live="polite">Enviamos para todo o Brasil. O frete vem calculado no orçamento.</p>
+      </form>
+    </div>
+  </div>
+</section>
+
+</main>
+
+<footer>
+  <div class="wrap">
+    <div class="foot">
+      <a class="brand" href="#inicio" aria-label="RazenLab, voltar ao início">
+        <span class="nm"><img class="lg" src="assets/marca/logo-vertical.webp" width="700" height="600" alt="RazenLab" loading="lazy"><small>Transformando ideias em realidade,<br>camada por camada.</small></span>
+      </a>
+      <nav aria-label="Rodapé">
+        <a href="#catalogo">Catálogo</a>
+        <a href="#sob-medida">Sob medida</a>
+        <a href="#duvidas">Contato</a>
+        <a href="privacidade.html">Privacidade e termos</a>
+      </nav>
+    </div>
+    <div class="foot-last">
+      <span>© <span id="ano"></span> <span translate="no">RazenLab</span>. Impressão 3D sob encomenda.</span>
+      <span id="rodape-contato">Feito de criatividade. Impresso com cuidado. Enviamos para todo o Brasil.</span>
+      <span id="meus-rodape"></span>
+    </div>
+  </div>
+</footer>
+
+<a class="zap" id="zap" hidden target="_blank" rel="noopener" aria-label="Conversar no WhatsApp">
+  <svg width="30" height="30" viewBox="0 0 24 24" fill="#fff" aria-hidden="true"><path d="M12 2a10 10 0 0 0-8.6 15.1L2 22l5-1.3A10 10 0 1 0 12 2Zm0 18.2c-1.5 0-3-.4-4.3-1.2l-.3-.2-3 .8.8-2.9-.2-.3A8.2 8.2 0 1 1 12 20.2Zm4.5-6.1c-.2-.1-1.5-.7-1.7-.8-.2-.1-.4-.1-.6.1l-.8 1c-.1.2-.3.2-.5.1a6.7 6.7 0 0 1-3.3-2.9c-.2-.4.2-.4.7-1.3.1-.2 0-.3 0-.4l-.8-1.8c-.2-.5-.4-.4-.6-.4h-.5a1 1 0 0 0-.7.3 3 3 0 0 0-.9 2.2 5.2 5.2 0 0 0 1.1 2.7 11.8 11.8 0 0 0 4.5 4c1.7.7 2.3.8 3.2.6.5-.1 1.5-.6 1.7-1.2.2-.6.2-1.1.2-1.2-.1-.1-.3-.2-.5-.3Z"/></svg>
+</a>
+
+<div id="modal"></div>
+
+<script src="assets/vendor/supabase-2.117.1.js" integrity="sha384-K1nraABOP/zFehpLIUksXebbs7jMpB8gYMlb+uhVKZcWT/9Vkq1+qhv6ndC+1Yuz"></script>
+<script src="config.js"></script>
+<script>
+"use strict";
+const CFG = window.RAZENLAB_CONFIG || {};
+const sb = (window.supabase && CFG.url && CFG.anonKey && !/COLE-AQUI/.test(CFG.url + CFG.anonKey)) ? window.supabase.createClient(CFG.url, CFG.anonKey) : null;
+let V = { negocio:{}, itens:[] };
+let filtro = "Todos";
+let demo = false;
+const calmo = matchMedia("(prefers-reduced-motion: reduce)").matches;
+
+const esc = s => String(s==null?"":s).replace(/[&<>"']/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c]));
+const soDigitos = s => String(s||"").replace(/\D/g,"");
+const num4 = n => String(n).padStart(4,"0");
+const brl = v => Number(v).toLocaleString("pt-BR",{style:"currency",currency:"BRL"});
+function precoTexto(p){
+  if(p == null || p === "") return "";
+  const n = typeof p === "number" ? p : parseFloat(String(p).replace(/[^\d,.-]/g,"").replace(/\.(?=\d{3})/g,"").replace(",","."));
+  return isFinite(n) && n > 0 ? brl(n) : String(p);
+}
+
+/* ---------- coleção demonstrativa: aparece enquanto a vitrine do painel está vazia ---------- */
+const DEMO = [
+  { id:"d-lagarto", titulo:"Lagarto articulado", categoria:"Articulados", selo:"Favorito do laboratório", preco:89.90, foto:"assets/demo/serpente.webp", descricao:"Uma criatura cheia de detalhes, com movimento em cada segmento. Sai inteira da impressora, já articulada.", material:"PLA seda", dimensoes:"cerca de 30 cm", prazo:"3 a 5 dias" },
+  { id:"d-vaso", titulo:"Vaso torcido", categoria:"Decoração", selo:"Design que transforma", preco:59.90, foto:"assets/demo/vaso.webp", descricao:"Texturas e curvas para dar uma nova personalidade ao seu espaço. Ótimo com flores secas.", material:"PLA fosco", dimensoes:"18 × 14 cm", prazo:"2 a 4 dias" },
+  { id:"d-suporte", titulo:"Suporte para celular", categoria:"Utilidades", selo:"Para o seu dia a dia", preco:29.90, foto:"assets/demo/suporte.webp", descricao:"Seu celular no lugar certo, com um toque de cor na sua mesa. Funciona com e sem capinha.", material:"PETG", dimensoes:"10 × 8 × 11 cm", prazo:"1 a 3 dias" },
+  { id:"d-d20", titulo:"D20 gigante", categoria:"Geek & colecionáveis", selo:"Para a mesa de RPG", preco:39.90, foto:"assets/demo/d20.webp", descricao:"O dado que todo mestre respeita, em tamanho de enfeite. Escolha a cor e a face do crítico.", material:"PLA seda", dimensoes:"8 cm", prazo:"2 a 3 dias" },
+  { id:"d-espiral", titulo:"Vaso espiral", categoria:"Decoração", selo:"Peça de destaque", preco:74.90, foto:"assets/demo/espiral.webp", descricao:"Ondas que giram do pé à boca. Fica bonito sozinho na estante ou com um galho seco.", material:"PLA fosco", dimensoes:"22 × 15 cm", prazo:"3 a 5 dias" },
+  { id:"d-lua", titulo:"Luminária lua", categoria:"Geek & colecionáveis", selo:"Luz aconchegante", preco:119.90, foto:"assets/demo/lua.webp", descricao:"Crateras em relevo que aparecem quando a luz acende. Base de madeira e LED quente.", material:"PLA branco + LED", dimensoes:"15 cm", prazo:"4 a 6 dias" },
+  { id:"d-geometrico", titulo:"Cachepô geométrico", categoria:"Decoração", selo:"Para suculentas", preco:34.90, foto:"assets/demo/geometrico.webp", descricao:"Facetas que pegam a luz de um jeito diferente. Tem furo de drenagem e prato opcional.", material:"PETG", dimensoes:"12 × 10 cm", prazo:"2 a 3 dias" },
+  { id:"d-engrenagem", titulo:"Torre de engrenagens", categoria:"Articulados", selo:"Antiestresse", preco:44.90, foto:"assets/demo/engrenagem.webp", descricao:"Três engrenagens que giram juntas no eixo. Difícil de largar depois que começa.", material:"PLA", dimensoes:"10 cm", prazo:"2 a 4 dias" }
+];
+
+/* ---------- WhatsApp ---------- */
+function linkWhats(msg){
+  let n = soDigitos(V.negocio.whatsapp);
+  if(!n) return null;
+  if(n.length <= 11) n = "55" + n;
+  return `https://wa.me/${n}?text=${encodeURIComponent(msg)}`;
+}
+function prepararWhats(){
+  // os botões de WhatsApp abrem a conversa quando o número está configurado no painel;
+  // sem número, levam ao formulário de orçamento
+  document.querySelectorAll("[data-whats]").forEach(a => {
+    const url = linkWhats(a.dataset.whats);
+    if(url){ a.href = url; a.target = "_blank"; a.rel = "noopener"; }
+  });
+  const z = document.getElementById("zap"), url = linkWhats("Olá! Vim pelo site da RazenLab.");
+  if(url){ z.href = url; z.hidden = false; }
+}
+
+let veioPorLink = false;
+function abrirPorLink(){
+  const q = new URLSearchParams(location.search).get("catalogo");
+  if(!q) return;
+  veioPorLink = true;
+  const todas = Array.isArray(V.negocio.colecoes) ? V.negocio.colecoes : [];
+  const c = todas.find(x => slug(x.nome) === slug(q) || x.id === q);
+  const aviso = document.getElementById("aviso-colecao");
+  if(c && colecaoNoAr(c)){ filtro = "col:" + c.id; aviso.hidden = true; }
+  else{
+    aviso.hidden = false;
+    aviso.textContent = c ? `O catálogo de ${c.nome} está fora de época agora${c.modo === "datas" && c.inicio ? ` e volta em ${c.inicio.split("-").reverse().join("/")}` : ""}. Enquanto isso, veja as outras peças ou peça uma sob medida.` : "Esse catálogo não está mais disponível. Veja as outras peças abaixo.";
+  }
+}
+async function iniciar(){
+  document.getElementById("ano").textContent = new Date().getFullYear();
+  try{
+    if(sb){
+      // dados ao vivo do Supabase: o que você salva no painel aparece aqui na hora
+      const [site, vit] = await Promise.all([
+        sb.from("site").select("dados").eq("id",1).maybeSingle(),
+        sb.from("vitrine").select("id,destaque,dados,fotos,criado_em").eq("visivel",true).order("criado_em",{ascending:false})
+      ]);
+      V = { negocio:(site.data && site.data.dados) || {}, itens:(vit.data || []).map(r => ({ ...r.dados, id:r.id, destaque:r.destaque, fotos:r.fotos || [] })) };
+    }else{
+      const r = await fetch("vitrine.json?v=" + Date.now(), {cache:"no-store"});
+      if(r.ok) V = await r.json();
+    }
+  }catch(e){ /* sem vitrine ainda */ }
+  V.negocio = V.negocio || {};
+  V.itens = (V.itens || []).filter(i => i.visivel !== false);
+  preencherNegocio();
+  prepararWhats();
+  abrirPorLink();
+  desenharCatalogo();
+  if(veioPorLink) setTimeout(() => document.getElementById("catalogo").scrollIntoView({ behavior: calmo ? "auto" : "smooth" }), 250);
+}
+
+/* ---------- ícones dos canais ---------- */
+const IC = {
+  whats:`<svg width="20" height="20" viewBox="0 0 24 24" fill="#25d366" aria-hidden="true"><path d="M12 2a10 10 0 0 0-8.6 15.1L2 22l5-1.3A10 10 0 1 0 12 2Zm0 18.2c-1.5 0-3-.4-4.3-1.2l-.3-.2-3 .8.8-2.9-.2-.3A8.2 8.2 0 1 1 12 20.2Zm4.5-6.1c-.2-.1-1.5-.7-1.7-.8-.2-.1-.4-.1-.6.1l-.8 1c-.1.2-.3.2-.5.1a6.7 6.7 0 0 1-3.3-2.9c-.2-.4.2-.4.7-1.3.1-.2 0-.3 0-.4l-.8-1.8c-.2-.5-.4-.4-.6-.4h-.5a1 1 0 0 0-.7.3 3 3 0 0 0-.9 2.2 5.2 5.2 0 0 0 1.1 2.7 11.8 11.8 0 0 0 4.5 4c1.7.7 2.3.8 3.2.6.5-.1 1.5-.6 1.7-1.2.2-.6.2-1.1.2-1.2-.1-.1-.3-.2-.5-.3Z"/></svg>`,
+  insta:`<svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#f3f5f8" stroke-width="2" aria-hidden="true"><rect x="3" y="3" width="18" height="18" rx="5"/><circle cx="12" cy="12" r="4"/><circle cx="17.5" cy="6.5" r="1" fill="#f3f5f8"/></svg>`,
+  mail:`<svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#f3f5f8" stroke-width="2" aria-hidden="true"><rect x="3" y="5" width="18" height="14" rx="2"/><path d="m3 7 9 6 9-6"/></svg>`
+};
+
+function preencherNegocio(){
+  const n = V.negocio;
+  if(n.slogan) document.getElementById("slogan").textContent = n.slogan;
+  if(n.sobre) document.getElementById("sobre").textContent = n.sobre;
+  // fotos trocadas no painel
+  const hero = document.getElementById("hero-foto");
+  if(n.heroFoto){ if(hero.getAttribute("src") !== n.heroFoto) hero.src = n.heroFoto; }
+  else if(hero.getAttribute("src") !== "assets/hero.webp") hero.src = "assets/hero.webp";
+  try{ n.heroFoto ? localStorage.setItem("razenlab.site.hero", n.heroFoto) : localStorage.removeItem("razenlab.site.hero"); }catch(e){}
+  
+
+  const canais = [];
+  if(n.whatsapp) canais.push(`<a class="channel" href="${esc(linkWhats("Olá! Vim pelo site da RazenLab."))}" target="_blank" rel="noopener"><span class="ic">${IC.whats}</span><span><small>WhatsApp</small>${esc(n.whatsapp)}</span></a>`);
+  if(n.instagram){
+    const user = n.instagram.replace(/^@/,"");
+    canais.push(`<a class="channel" href="https://instagram.com/${encodeURIComponent(user)}" target="_blank" rel="noopener"><span class="ic">${IC.insta}</span><span><small>Instagram</small>@${esc(user)}</span></a>`);
+  }
+  if(n.email) canais.push(`<a class="channel" href="mailto:${esc(n.email)}"><span class="ic">${IC.mail}</span><span><small>E-mail</small>${esc(n.email)}</span></a>`);
+  document.getElementById("canais").innerHTML = canais.join("") + meusPedidos();
+
+  const contato = [n.cidade && `De ${esc(n.cidade)} para todo o Brasil`, n.whatsapp && `WhatsApp ${esc(n.whatsapp)}`, n.instagram && `@${esc(n.instagram.replace(/^@/,""))}`].filter(Boolean);
+  if(contato.length) document.getElementById("rodape-contato").innerHTML = contato.join(" · ");
+  const l = lerMeus();
+  if(l.length) document.getElementById("meus-rodape").innerHTML = "Seus pedidos: " + l.slice(0,3).map(x => `<a href="pedido.html?t=${encodeURIComponent(x.token)}">#${num4(x.numero)}</a>`).join(" · ");
+}
+
+/* ---------- catálogos por época ---------- */
+const MD = d => String(d.getMonth()+1).padStart(2,"0") + "-" + String(d.getDate()).padStart(2,"0");
+function colecaoNoAr(c){
+  if(!c) return true;
+  if(c.modo === "ligada") return true;
+  if(c.modo !== "datas" || !c.inicio || !c.fim) return false;
+  const h = MD(new Date());
+  return c.inicio <= c.fim ? (h >= c.inicio && h <= c.fim) : (h >= c.inicio || h <= c.fim);
+}
+const colecoesNoAr = () => (Array.isArray(V.negocio.colecoes) ? V.negocio.colecoes : []).filter(colecaoNoAr);
+function filtrarColecoes(itens){
+  const todas = Array.isArray(V.negocio.colecoes) ? V.negocio.colecoes : [];
+  return itens.filter(i => { const c = i.colecao && todas.find(x => x.id === i.colecao); return !c || colecaoNoAr(c); });
+}
+const slug = t => String(t||"").normalize("NFD").replace(/[\u0300-\u036f]/g,"").toLowerCase().replace(/[^a-z0-9]+/g,"-").replace(/^-|-$/g,"");
+function linkColecao(c){ const u = new URL(location.href); u.search = ""; u.hash = ""; u.searchParams.set("catalogo", slug(c.nome) || c.id); return u.href; }
+async function compartilharColecao(c, botao){
+  const url = linkColecao(c), texto = `Olha o catálogo de ${c.nome} da RazenLab: peças impressas em 3D para decorar, colecionar e presentear.`;
+  if(navigator.share){ try{ await navigator.share({ title:`Catálogo de ${c.nome} · RazenLab`, text:texto, url }); return; }catch(e){ if(e && e.name === "AbortError") return; } }
+  const box = botao.closest(".col-tx").querySelector(".share-box");
+  box.hidden = !box.hidden;
+  box.innerHTML = `<a class="btn sm" style="background:#25d366;color:#04140a" href="https://wa.me/?text=${encodeURIComponent(texto + "\n" + url)}" target="_blank" rel="noopener">${IC.whats.replace('fill="#25d366"','fill="#04140a"')} Enviar no WhatsApp</a>
+    <button type="button" class="btn ghost sm" data-copiar="${esc(url)}">Copiar link</button>`;
+}
+function desenharColecoes(){
+  const el = document.getElementById("colecoes");
+  const cs = demo ? [] : colecoesNoAr().filter(c => lista().some(i => i.colecao === c.id));
+  el.innerHTML = cs.map(c => {
+    const qtd = lista().filter(i => i.colecao === c.id).length;
+    return `<div class="col-dest" data-reveal>
+      <div class="col-tx">
+        <span class="kicker dot">Coleção de temporada</span>
+        <h3>${esc(c.nome)}</h3>
+        ${c.descricao ? `<p>${esc(c.descricao)}</p>` : ""}
+        <div class="ctas"><button type="button" class="btn pri" data-cat="col:${esc(c.id)}">Ver as ${qtd} peças <svg class="arrow" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M5 12h14M13 6l6 6-6 6"/></svg></button>
+        ${c.banner ? `<button type="button" class="btn ghost" data-banner="${esc(c.id)}">Ver o catálogo</button>` : ""}
+        <button type="button" class="btn ghost" data-compartilhar="${esc(c.id)}"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="18" cy="5" r="3"/><circle cx="6" cy="12" r="3"/><circle cx="18" cy="19" r="3"/><path d="m8.6 13.5 6.8 4M15.4 6.5l-6.8 4"/></svg>Compartilhar</button></div>
+        <div class="share-box" hidden></div>
+      </div>
+      ${c.banner ? `<button type="button" class="col-img" data-banner="${esc(c.id)}" aria-label="Abrir o catálogo ${esc(c.nome)}"><img src="${esc(c.banner)}" alt="Catálogo ${esc(c.nome)}" loading="lazy" width="1080" height="1350"></button>` : ""}
+    </div>`; }).join("");
+  observar(el);
+}
+function abrirBanner(id){
+  const c = colecoesNoAr().find(x => x.id === id); if(!c || !c.banner) return;
+  ultimoFoco = document.activeElement;
+  document.getElementById("modal").innerHTML = `<div class="ov" data-fechar><div class="md md-banner" role="dialog" aria-modal="true" aria-label="Catálogo ${esc(c.nome)}">
+    <button type="button" class="x" data-fechar aria-label="Fechar">&times;</button>
+    <img src="${esc(c.banner)}" alt="Catálogo ${esc(c.nome)}">
+    <div class="acts"><button type="button" class="btn pri block" data-cat="col:${esc(c.id)}">Ver as peças</button><a class="btn ghost block" href="${esc(c.banner)}" download target="_blank" rel="noopener">Baixar o catálogo</a></div>
+  </div></div>`;
+  document.body.style.overflow = "hidden";
+  document.querySelector(".md .x").focus();
+}
+
+/* ---------- catálogo ---------- */
+function lista(){
+  demo = !filtrarColecoes(V.itens).length;
+  if(demo) return DEMO;
+  return filtrarColecoes(V.itens).slice().sort((a,b)=>(b.destaque?1:0)-(a.destaque?1:0)).map(i => ({ ...i, foto:(i.fotos||[])[0], selo:i.selo || (i.destaque ? "Favorito do laboratório" : "") }));
+}
+function desenharCatalogo(){
+  const itens = lista();
+  const cats = [];
+  itens.forEach(i => { if(i.categoria && !cats.includes(i.categoria)) cats.push(i.categoria); });
+  const cols = demo ? [] : colecoesNoAr().filter(c => itens.some(i => i.colecao === c.id));
+  const abas = [["Todos","Todos"], ...cols.map(c => ["col:" + c.id, c.nome]), ...cats.map(c => [c, c])];
+  if(!abas.some(a => a[0] === filtro)) filtro = "Todos";
+  document.getElementById("filtros").innerHTML = abas.length < 3 ? "" : abas.map(([k, r]) => `<button type="button" class="tab ${k.startsWith("col:") ? "tab-col" : ""}" aria-pressed="${k===filtro}" data-cat="${esc(k)}">${k.startsWith("col:") ? `<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" aria-hidden="true"><path d="M12 2v20M3.3 7l17.4 10M3.3 17 20.7 7"/></svg>` : ""}${esc(r)}</button>`).join("");
+  document.getElementById("aviso-demo").hidden = !demo;
+  const vis = filtro === "Todos" ? itens : filtro.startsWith("col:") ? itens.filter(i => i.colecao === filtro.slice(4)) : itens.filter(i => i.categoria === filtro);
+  desenharColecoes();
+  const seta = `<svg class="arrow" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M5 12h14M13 6l6 6-6 6"/></svg>`;
+  document.getElementById("galeria").innerHTML = vis.map((i,k) => {
+    const pr = precoTexto(i.preco);
+    return `
+    <article class="prod" data-reveal style="--s:${k%4}">
+      <button type="button" class="ph" data-ver="${esc(i.id)}" aria-label="Ver ${esc(i.titulo)}">
+        ${i.foto ? `<img src="${esc(i.foto)}" alt="${esc(i.titulo)}" width="720" height="720" loading="lazy">` : ""}
+        ${i.selo ? `<span class="badge">${esc(i.selo)}</span>` : ""}
+      </button>
+      <div class="bd">
+        ${i.categoria ? `<span class="cat">${esc(i.categoria)}</span>` : ""}
+        <h3>${esc(i.titulo)}</h3>
+        ${i.descricao ? `<p>${esc(i.descricao)}</p>` : ""}
+        <div class="pr">${pr ? `<b>${esc(pr)}</b>${demo ? `<small>Valor ilustrativo</small>` : ""}` : `<span class="sob">Sob orçamento</span>`}</div>
+        ${podeComprar(i) ? `<div class="prod-acts"><button type="button" class="btn pri sm" data-add="${esc(i.id)}">Adicionar ao carrinho</button><button type="button" class="btn sm" data-ver="${esc(i.id)}" aria-label="Ver detalhes de ${esc(i.titulo)}">Detalhes</button></div>` : `<button type="button" class="btn sm block" data-ver="${esc(i.id)}">Conhecer o produto ${seta}</button>`}
+      </div>
+    </article>`;
+  }).join("");
+  observar(document.getElementById("galeria"));
+}
+
+/* ---------- janela do produto ---------- */
+let ultimoFoco = null, aberto = null;
+function abrirItem(id){
+  const i = lista().find(x => x.id === id);
+  if(!i) return;
+  aberto = i;
+  ultimoFoco = document.activeElement;
+  const fotos = (i.fotos && i.fotos.length) ? i.fotos : (i.foto ? [i.foto] : []);
+  const specs = [["Categoria",i.categoria],["Material",i.material],["Tamanho",i.dimensoes],["Prazo médio",i.prazo]].filter(s=>s[1]);
+  const pr = precoTexto(i.preco);
+  const zap = linkWhats(`Olá! Tenho interesse no produto “${i.titulo}” que vi no site da RazenLab.`);
+  document.getElementById("modal").innerHTML = `
+  <div class="ov" data-fechar>
+    <div class="md" role="dialog" aria-modal="true" aria-labelledby="md-t">
+      <button type="button" class="x" data-fechar aria-label="Fechar">&times;</button>
+      <div class="gal">
+        <div class="main">${fotos[0]?`<img id="foto-principal" src="${esc(fotos[0])}" alt="${esc(i.titulo)}" width="720" height="720">`:""}</div>
+        ${fotos.length>1?`<div class="thumbs">${fotos.map((f,k)=>`<button type="button" aria-pressed="${k===0}" aria-label="Foto ${k+1}" data-foto="${k}"><img src="${esc(f)}" alt="" width="64" height="64"></button>`).join("")}</div>`:""}
+      </div>
+      <div class="txt">
+        ${i.categoria?`<div class="cat">${esc(i.categoria)}</div>`:""}
+        <h3 id="md-t">${esc(i.titulo)}</h3>
+        ${i.descricao?`<p>${esc(i.descricao)}</p>`:""}
+        ${pr?`<div class="preco">${esc(pr)}${demo?`<small>Valor ilustrativo. O preço final vem no orçamento.</small>`:`<small>Mais o frete, calculado no carrinho.</small>`}</div>`:""}
+        ${specs.length?`<dl class="specs">${specs.map(s=>`<div><dt>${s[0]}</dt><dd>${esc(s[1])}</dd></div>`).join("")}</dl>`:""}
+        <div class="acts">
+          ${podeComprar(i) ? `<div class="md-compra"><label><span>Quantidade</span><input data-add-qtd type="number" min="1" max="20" value="1" inputmode="numeric"></label><label><span>Cor (opcional)</span><input data-add-cor maxlength="40" placeholder="Igual à foto"></label></div>
+          <button type="button" class="btn pri block" data-add="${esc(i.id)}">Adicionar ao carrinho</button>
+          <button type="button" class="btn ghost block" data-quero="${esc(i.id)}">Quero com alguma mudança</button>` : `<button type="button" class="btn pri block" data-quero="${esc(i.id)}">Quero esse</button>`}
+          ${zap?`<a class="btn ghost block" href="${esc(zap)}" target="_blank" rel="noopener">${IC.whats} Perguntar no WhatsApp</a>`:""}
+        </div>
+      </div>
+    </div>
+  </div>`;
+  document.body.style.overflow = "hidden";
+  document.querySelector(".md .x").focus();
+}
+function fecharModal(){
+  if(!document.getElementById("modal").innerHTML) return;
+  document.getElementById("modal").innerHTML = ""; document.body.style.overflow = ""; aberto = null;
+  if(ultimoFoco) ultimoFoco.focus();
+}
+function irParaFormulario(texto){
+  const ideia = document.querySelector('#form-orc [name="ideia"]');
+  if(!ideia) return;
+  if(texto) ideia.value = texto;
+  document.getElementById("sob-medida").scrollIntoView({behavior: calmo ? "auto" : "smooth"});
+  setTimeout(() => { ideia.focus({preventScroll:true}); ideia.setSelectionRange(ideia.value.length, ideia.value.length); }, calmo ? 0 : 650);
+}
+
+document.addEventListener("click", e => {
+  const t = e.target;
+  const sh = t.closest("[data-compartilhar]");
+  if(sh){ const c = colecoesNoAr().find(x => x.id === sh.dataset.compartilhar); if(c) compartilharColecao(c, sh); return; }
+  const cp = t.closest("[data-copiar]");
+  if(cp){ const u = cp.dataset.copiar; (navigator.clipboard ? navigator.clipboard.writeText(u) : Promise.reject()).then(() => { cp.textContent = "Link copiado!"; }).catch(() => { prompt("Copie o link:", u); }); return; }
+  const bn = t.closest("[data-banner]");
+  if(bn){ abrirBanner(bn.dataset.banner); return; }
+  const cat = t.closest("[data-cat]");
+  if(cat){
+    filtro = cat.dataset.cat;
+    const doModal = !!cat.closest("#modal"); if(doModal) fecharModal();
+    desenharCatalogo();
+    if(cat.closest(".col-dest") || doModal) document.getElementById("filtros").scrollIntoView({ behavior: calmo ? "auto" : "smooth", block:"start" });
+    return;
+  }
+  const ver = t.closest("[data-ver]");
+  if(ver){ abrirItem(ver.dataset.ver); return; }
+  const f = t.closest("[data-foto]");
+  if(f && aberto){
+    document.getElementById("foto-principal").src = aberto.fotos[+f.dataset.foto];
+    document.querySelectorAll("[data-foto]").forEach(b => b.setAttribute("aria-pressed", b===f));
+    return;
+  }
+  const q = t.closest("[data-quero]");
+  if(q){
+    const i = aberto;
+    fecharModal();
+    irParaFormulario(`Quero o produto “${i.titulo}” que vi no catálogo.\nCor: \n`);
+    return;
+  }
+  if(t.closest("#cta-form")){ e.preventDefault(); irParaFormulario(""); return; }
+  if(t.hasAttribute("data-fechar")) fecharModal();
+  if(t.closest(".nav a")) abrirMenu(false);
+});
+document.addEventListener("keydown", e => { if(e.key === "Escape"){ fecharModal(); abrirMenu(false); } });
+
+/* ---------- menu no celular ---------- */
+const menuBtn = document.getElementById("menu-btn"), menu = document.getElementById("menu");
+function abrirMenu(abre){ menu.classList.toggle("open", abre); menuBtn.setAttribute("aria-expanded", abre); }
+menuBtn.addEventListener("click", () => abrirMenu(!menu.classList.contains("open")));
+
+/* ---------- entradas e barra ---------- */
+const io = "IntersectionObserver" in window ? new IntersectionObserver(es => {
+  for(const e of es) if(e.isIntersecting){ e.target.classList.add("is-in"); io.unobserve(e.target); }
+}, { rootMargin:"0px 0px -8% 0px", threshold:.06 }) : null;
+function observar(raiz){
+  (raiz || document).querySelectorAll("[data-reveal]:not(.is-in)").forEach(el => io ? io.observe(el) : el.classList.add("is-in"));
+}
+const barra = document.getElementById("barra");
+const marcarBarra = () => barra.classList.toggle("on", scrollY > 20);
+addEventListener("scroll", marcarBarra, { passive:true }); marcarBarra();
+
+/* ---------- pedidos feitos neste aparelho ---------- */
+function lerMeus(){ try{ return JSON.parse(localStorage.getItem("razenlab-meus-pedidos") || "[]"); }catch(e){ return []; } }
+function meusPedidos(){
+  const l = lerMeus();
+  if(!l.length) return "";
+  return `<p class="meus">Seus pedidos: ${l.slice(0,5).map(x => `<a href="pedido.html?t=${encodeURIComponent(x.token)}">#${num4(x.numero)}</a>`).join(" · ")}</p>`;
+}
+
+/* ---------- endereço pelo CEP ---------- */
+document.addEventListener("input", async e => {
+  if(e.target.name !== "cep") return;
+  const d = e.target.value.replace(/\D/g,"");
+  if(d.length === 8) e.target.value = d.slice(0,5) + "-" + d.slice(5);
+  if(d.length !== 8) return;
+  try{
+    const r = await fetch(`https://viacep.com.br/ws/${d}/json/`), j = await r.json();
+    if(j.erro) return nota("CEP não encontrado. Confira os números ou preencha o endereço à mão.", true);
+    const f = document.getElementById("form-orc");
+    [["rua",j.logradouro],["bairro",j.bairro],["cidade",j.localidade],["uf",j.uf]].forEach(([k,v]) => { if(v) f.querySelector(`[name="${k}"]`).value = v; });
+    nota("Endereço encontrado. Confira e informe o número.");
+    f.querySelector('[name="numero"]').focus();
+  }catch(err){ /* sem internet para buscar o CEP: o cliente digita */ }
+});
+function nota(msg, erro){
+  const n = document.getElementById("form-nota");
+  n.textContent = msg; n.classList.toggle("erro", !!erro);
+}
+function erroNoCampo(nome, msg){
+  nota(msg, true);
+  const c = document.querySelector(`#form-orc [name="${nome}"]`);
+  if(c) c.focus();
+}
+
+/* ---------- pedido de orçamento ---------- */
+document.getElementById("form-orc").addEventListener("submit", async e => {
+  e.preventDefault();
+  const form = e.target, f = Object.fromEntries(new FormData(form));
+  const v = k => String(f[k] || "").trim();
+  if(!v("nome")) return erroNoCampo("nome", "Preencha seu nome.");
+  if(v("contato").replace(/\D/g,"").length < 10) return erroNoCampo("contato", "Informe seu WhatsApp com DDD, por exemplo (11) 90000-0000.");
+  if(!v("ideia")) return erroNoCampo("ideia", "Conte o que você precisa.");
+
+  // sem banco configurado, cai no WhatsApp
+  if(!sb){
+    const url = linkWhats(["Olá! Quero um orçamento pela RazenLab.", "", `*Nome:* ${v("nome")}`, `*O que preciso:* ${v("ideia")}`,
+      `*Quantidade:* ${v("qtd") || 1}`, v("quando") ? `*Para quando:* ${v("quando")}` : null, v("cep") ? `*CEP:* ${v("cep")}` : null].filter(Boolean).join("\n"));
+    if(url) window.open(url, "_blank", "noopener"); else nota("O WhatsApp ainda não foi configurado neste site.", true);
+    return;
+  }
+  if(v("cep").replace(/\D/g,"").length !== 8) return erroNoCampo("cep", "Informe o CEP com 8 números.");
+  for(const [k, rot] of [["rua","a rua"],["numero","o número"],["cidade","a cidade"]]) if(!v(k)) return erroNoCampo(k, `Preencha ${rot} do endereço.`);
+  if(v("uf").length !== 2) return erroNoCampo("uf", "Informe a UF com 2 letras, por exemplo SP.");
+  if(!f.aceite) return erroNoCampo("aceite", "Marque a autorização de uso dos dados para continuar.");
+
+  const btn = document.getElementById("btn-orc");
+  btn.disabled = true; btn.textContent = "Enviando…"; nota("");
+  try{
+    let anexo = null;
+    const arq = form.querySelector('[name="anexo"]').files[0];
+    if(arq){
+      if(arq.size > 25*1024*1024) throw new Error("O arquivo passa de 25 MB. Envie sem ele e mande pelo WhatsApp depois.");
+      const ext = ((arq.name.split(".").pop() || "bin").toLowerCase().replace(/[^a-z0-9]/g,"") || "bin").slice(0,5);
+      if(!/^(stl|3mf|obj|step|stp|zip|jpg|jpeg|png|webp|gif|heic|heif|avif|bmp|tif|tiff|pdf)$/.test(ext)) throw new Error("Esse tipo de arquivo não é aceito. Envie foto, PDF ou arquivo 3D (STL, 3MF, OBJ, STEP ou ZIP)");
+      const nome = `${crypto.randomUUID()}.${ext}`;
+      const up = await sb.storage.from("anexos").upload(nome, arq, { contentType: arq.type || "application/octet-stream", upsert:false });
+      if(up.error) throw up.error;
+      anexo = "anexos/" + nome;
+    }
+    const r = await sb.rpc("solicitar_orcamento", {
+      p_nome:v("nome"), p_contato:v("contato"), p_email:v("email"), p_descricao:v("ideia"), p_qtd:parseInt(v("qtd"),10) || 1,
+      p_quando:v("quando"), p_cep:v("cep"),
+      p_endereco:{ rua:v("rua"), numero:v("numero"), complemento:v("complemento"), bairro:v("bairro"), cidade:v("cidade"), uf:v("uf").toUpperCase() },
+      p_anexo:anexo
+    });
+    if(r.error) throw r.error;
+    const { numero, token } = r.data;
+    const l = lerMeus(); l.unshift({ numero, token });
+    try{ localStorage.setItem("razenlab-meus-pedidos", JSON.stringify(l.slice(0,20))); }catch(e){}
+    const link = new URL(`pedido.html?t=${token}`, location.href).href;
+    const zap = linkWhats(`Olá! Acabei de pedir um orçamento no site da RazenLab (pedido #${num4(numero)}).\n${link}`);
+    document.getElementById("caixa-form").innerHTML = `
+      <div class="form ok-box" role="status">
+        <p class="num">Pedido #${num4(numero)} recebido</p>
+        <h3>Obrigado, ${esc(v("nome").split(" ")[0])}!</h3>
+        <p>O orçamento com o frete chega no seu WhatsApp. Pelo link abaixo você acompanha tudo e faz o pagamento quando estiver pronto.</p>
+        <a class="btn pri block" href="${esc(link)}">Acompanhar meu pedido</a>
+        ${zap ? `<a class="btn ghost block" href="${esc(zap)}" target="_blank" rel="noopener">${IC.whats} Avisar no WhatsApp</a>` : ""}
+        <p class="note">Salve este link. Ele também fica guardado neste aparelho.</p>
+      </div>`;
+  }catch(err){
+    nota("Não foi possível enviar: " + ((err && err.message) || err) + ". Confira a internet e tente de novo.", true);
+    btn.disabled = false; btn.textContent = "Pedir orçamento";
+  }
+});
+
+desenharCatalogo();
+observar();
+iniciar();
+
+/* ==========================================================================
+   LOJA · carrinho, frete e finalização
+   O preço e o frete são recalculados pela função "loja" no servidor.
+   ========================================================================== */
+const LOJA_TESTE = /loja-teste/.test(location.pathname);
+const CART_KEY = "razenlab.carrinho";
+let carrinho = [];
+try{ carrinho = JSON.parse(localStorage.getItem(CART_KEY) || "[]").filter(x => x && x.id); }catch(e){ carrinho = []; }
+const salvarCarrinho = () => { try{ localStorage.setItem(CART_KEY, JSON.stringify(carrinho)); }catch(e){} desenharBotaoCarrinho(); };
+const valorNum = p => { const n = parseFloat(String(p||"").replace(/[^\d,.-]/g,"").replace(/\.(?=\d{3})/g,"").replace(",", ".")); return isFinite(n) && n > 0 ? n : 0; };
+let loja = { etapa:"itens", cep:"", opcoes:[], escolha:"", subtotal:0, erroFrete:"", simulado:false, enviando:false };
+
+function itemVenda(id){ return lista().find(x => x.id === id); }
+function podeComprar(i){ return !demo && i && valorNum(i.preco) > 0 && /^[0-9a-f-]{36}$/i.test(i.id); }
+function adicionarCarrinho(id, qtd, cor){
+  const i = itemVenda(id); if(!podeComprar(i)) return;
+  const ja = carrinho.find(x => x.id === id && (x.cor||"") === (cor||""));
+  if(ja) ja.qtd = Math.min(20, ja.qtd + qtd); else carrinho.push({ id, titulo:i.titulo, preco:valorNum(i.preco), foto:i.foto || "", qtd, cor:cor||"" });
+  loja.opcoes = []; loja.escolha = "";
+  salvarCarrinho();
+  avisoLoja(`${i.titulo} no carrinho.`, true);
+}
+function avisoLoja(msg, abrir){
+  let t = document.getElementById("loja-toast");
+  if(!t){ t = document.createElement("div"); t.id = "loja-toast"; t.className = "loja-toast"; document.body.appendChild(t); }
+  t.innerHTML = `<span>${esc(msg)}</span>${abrir ? `<button type="button" data-carrinho-abrir>Ver carrinho</button>` : ""}`;
+  t.classList.add("on"); clearTimeout(t._h); t._h = setTimeout(() => t.classList.remove("on"), 3200);
+}
+function desenharBotaoCarrinho(){
+  const n = carrinho.reduce((s, x) => s + x.qtd, 0);
+  let b = document.getElementById("btn-carrinho");
+  if(!b){
+    b = document.createElement("button"); b.id = "btn-carrinho"; b.type = "button"; b.className = "btn-carrinho"; b.setAttribute("data-carrinho-abrir","");
+    b.setAttribute("aria-label","Abrir o carrinho");
+    document.body.appendChild(b);
+  }
+  b.innerHTML = `<svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M6 6h15l-1.5 9h-12z"/><path d="M6 6 5 3H2"/><circle cx="9" cy="20" r="1.5"/><circle cx="18" cy="20" r="1.5"/></svg>${n ? `<span class="qt">${n}</span>` : ""}`;
+  b.hidden = !n && !LOJA_TESTE;
+}
+const subtotalLocal = () => Math.round(carrinho.reduce((s, x) => s + x.preco * x.qtd, 0) * 100) / 100;
+
+async function chamarLoja(corpo){
+  if(!sb) throw Object.assign(new Error("sem banco"), { simular:true });
+  const { data, error } = await sb.functions.invoke("loja", { body:{ ...corpo, teste:LOJA_TESTE } });
+  if(error){
+    // função ainda não publicada (404) ou fora do ar: no modo teste, simula para mostrar a tela
+    const st = error.context && error.context.status;
+    if(LOJA_TESTE && (!st || st === 404 || st >= 500)) throw Object.assign(new Error("simular"), { simular:true });
+    let msg = "Não consegui falar com a loja agora.";
+    try{ const j = await error.context.json(); if(j && j.erro) msg = j.erro; }catch(e){}
+    throw new Error(msg);
+  }
+  if(data && data.erro && !data.opcoes) throw new Error(data.erro);
+  return data;
+}
+async function calcularFrete(){
+  const cep = (document.getElementById("loja-cep").value || "").replace(/\D/g,"");
+  if(cep.length !== 8){ loja.erroFrete = "Digite um CEP com 8 números."; desenharCarrinho(); return; }
+  loja.cep = cep; loja.erroFrete = ""; loja.opcoes = []; loja.escolha = ""; loja.calculando = true; desenharCarrinho();
+  try{
+    const r = await chamarLoja({ acao:"cotar", cep, itens:carrinho.map(x => ({ id:x.id, qtd:x.qtd, cor:x.cor })) });
+    loja.opcoes = r.opcoes || []; loja.subtotal = r.subtotal; loja.erroFrete = r.erro || ""; loja.simulado = false;
+  }catch(e){
+    if(e.simular){
+      loja.simulado = true;
+      loja.opcoes = [
+        { id:"sim-pac", servico:"PAC", empresa:"Correios", preco:24.9, prazo:7 },
+        { id:"sim-sedex", servico:"SEDEX", empresa:"Correios", preco:39.9, prazo:3 },
+        { id:"retirada", servico:"Retirar em mãos", empresa:"Combinamos pelo WhatsApp", preco:0, prazo:null }];
+    }else loja.erroFrete = e.message;
+  }
+  loja.calculando = false;
+  if(loja.opcoes.length) loja.escolha = loja.opcoes[0].id;
+  desenharCarrinho();
+  if(loja.cep && !loja.endereco){ buscarEnderecoLoja(loja.cep); }
+}
+async function buscarEnderecoLoja(cep){
+  try{
+    const j = await (await fetch(`https://viacep.com.br/ws/${cep}/json/`)).json();
+    if(j.erro) return;
+    loja.endereco = { rua:j.logradouro || "", bairro:j.bairro || "", cidade:j.localidade || "", uf:j.uf || "" };
+    ["rua","bairro","cidade","uf"].forEach(k => { const el = document.querySelector(`#loja-form [name="${k}"]`); if(el && !el.value) el.value = loja.endereco[k]; });
+  }catch(e){}
+}
+function freteEscolhido(){ return loja.opcoes.find(o => o.id === loja.escolha); }
+
+function desenharCarrinho(){
+  const box = document.getElementById("loja-painel"); if(!box) return;
+  const f = freteEscolhido(), sub = subtotalLocal(), total = sub + (f ? f.preco : 0);
+  const retirada = loja.escolha === "retirada";
+  const guardado = {}; document.querySelectorAll("#loja-form [name]").forEach(el => { guardado[el.name] = el.type === "checkbox" ? el.checked : el.value; });
+  box.innerHTML = `
+    <div class="lj-h"><h2>Seu carrinho</h2><button type="button" class="lj-x" data-carrinho-fechar aria-label="Fechar">&times;</button></div>
+    ${LOJA_TESTE ? `<p class="lj-teste">Modo teste. Os pedidos feitos aqui aparecem no painel marcados como <b>[TESTE]</b>.${loja.simulado ? " O frete está simulado porque a função da loja ainda não foi publicada." : ""}</p>` : ""}
+    ${!carrinho.length ? `<div class="lj-vazio"><p>O carrinho está vazio.</p><button type="button" class="btn pri" data-carrinho-fechar data-ir-catalogo>Ver o catálogo</button></div>` : `
+    <ul class="lj-itens">${carrinho.map((x, k) => `
+      <li>${x.foto ? `<img src="${esc(x.foto)}" alt="" width="64" height="64">` : `<span class="lj-ph"></span>`}
+        <div class="lj-i"><b>${esc(x.titulo)}</b>${x.cor ? `<small>Cor: ${esc(x.cor)}</small>` : ""}<span>${brl(x.preco)} cada</span></div>
+        <div class="lj-q"><button type="button" data-qtd="${k}" data-d="-1" aria-label="Menos">−</button><span>${x.qtd}</span><button type="button" data-qtd="${k}" data-d="1" aria-label="Mais">+</button></div>
+        <button type="button" class="lj-rm" data-remover="${k}" aria-label="Tirar ${esc(x.titulo)}">&times;</button>
+      </li>`).join("")}</ul>
+    <div class="lj-sec">
+      <label class="lj-lbl" for="loja-cep">Calcular frete</label>
+      <div class="lj-cep"><input id="loja-cep" inputmode="numeric" maxlength="9" placeholder="00000-000" value="${esc(loja.cep ? loja.cep.replace(/(\d{5})(\d{3})/, "$1-$2") : "")}"><button type="button" class="btn sm" data-frete ${loja.calculando ? "disabled" : ""}>${loja.calculando ? "Calculando…" : "Calcular"}</button></div>
+      ${loja.erroFrete ? `<p class="lj-erro">${esc(loja.erroFrete)}</p>` : ""}
+      ${loja.opcoes.length ? `<div class="lj-fretes" role="radiogroup" aria-label="Opções de frete">${loja.opcoes.map(o => `
+        <label class="lj-fr ${loja.escolha === o.id ? "on" : ""}"><input type="radio" name="frete" value="${esc(o.id)}" ${loja.escolha === o.id ? "checked" : ""}>
+          <span><b>${esc(o.servico)}</b><small>${esc(o.empresa)}${o.prazo ? ` · ${o.prazo} dia${o.prazo > 1 ? "s" : ""} úteis após a produção` : ""}</small></span><em>${o.preco > 0 ? brl(o.preco) : "Grátis"}</em></label>`).join("")}</div>` : ""}
+    </div>
+    <div class="lj-tot">
+      <div><span>Produtos</span><span>${brl(sub)}</span></div>
+      <div><span>Frete</span><span>${f ? (f.preco > 0 ? brl(f.preco) : "Grátis") : "calcule acima"}</span></div>
+      <div class="t"><span>Total</span><span>${brl(total)}</span></div>
+      <p class="lj-nota">Peças feitas sob encomenda. A produção começa depois do pagamento.</p>
+    </div>
+    ${f ? `
+    <form id="loja-form" class="lj-sec lj-form" novalidate>
+      <span class="lj-lbl">Seus dados</span>
+      <input name="nome" autocomplete="name" placeholder="Seu nome" maxlength="120">
+      <div class="lj-2"><input name="contato" type="tel" inputmode="tel" autocomplete="tel" placeholder="WhatsApp com DDD" maxlength="20"><input name="email" type="email" autocomplete="email" placeholder="E-mail (opcional)" maxlength="160"></div>
+      ${retirada ? `<p class="lj-nota">Retirada em mãos: combinamos o local e o horário pelo WhatsApp.</p>` : `
+      <span class="lj-lbl">Endereço de entrega</span>
+      <input name="rua" autocomplete="address-line1" placeholder="Rua" maxlength="160">
+      <div class="lj-2"><input name="numero" placeholder="Número" maxlength="20"><input name="complemento" placeholder="Complemento (opcional)" maxlength="100"></div>
+      <div class="lj-3"><input name="bairro" placeholder="Bairro" maxlength="100"><input name="cidade" placeholder="Cidade" maxlength="100"><input name="uf" placeholder="UF" maxlength="2" style="text-transform:uppercase"></div>`}
+      <label class="lj-aceite"><input type="checkbox" name="aceite"><span>Li e aceito a <a href="privacidade.html" target="_blank">política de privacidade e os termos de compra</a>.</span></label>
+      <p class="lj-erro" id="loja-erro" aria-live="polite"></p>
+      <button type="submit" class="btn pri block" ${loja.enviando ? "disabled" : ""}>${loja.enviando ? "Registrando…" : `Ir para o pagamento · ${brl(total)}`}</button>
+      <p class="lj-nota">Na próxima tela você paga por Pix${(V.negocio.mpAtivo===true||V.negocio.mpAtivo==="true") ? " ou cartão" : ""} e acompanha o pedido.</p>
+    </form>` : ""}`}`;
+  Object.entries(guardado).forEach(([k, v]) => { const el = document.querySelector(`#loja-form [name="${k}"]`); if(el){ if(el.type === "checkbox") el.checked = v; else el.value = v; } });
+  if(loja.endereco) ["rua","bairro","cidade","uf"].forEach(k => { const el = document.querySelector(`#loja-form [name="${k}"]`); if(el && !el.value) el.value = loja.endereco[k] || ""; });
+}
+function abrirCarrinho(){
+  let ov = document.getElementById("loja-ov");
+  if(!ov){
+    ov = document.createElement("div"); ov.id = "loja-ov"; ov.className = "loja-ov";
+    ov.innerHTML = `<div class="loja-fundo" data-carrinho-fechar></div><aside class="loja-painel" id="loja-painel" role="dialog" aria-modal="true" aria-label="Carrinho"></aside>`;
+    document.body.appendChild(ov);
+  }
+  desenharCarrinho(); ov.classList.add("on"); document.body.style.overflow = "hidden";
+  setTimeout(() => { const el = document.querySelector("#loja-painel .lj-x"); if(el) el.focus(); }, 50);
+}
+function fecharCarrinho(){ const ov = document.getElementById("loja-ov"); if(ov) ov.classList.remove("on"); document.body.style.overflow = ""; }
+
+async function finalizarCompra(form){
+  const v = Object.fromEntries(new FormData(form)); const erro = document.getElementById("loja-erro");
+  const falha = m => { erro.textContent = m; };
+  if(String(v.nome||"").trim().length < 2) return falha("Informe seu nome.");
+  if(String(v.contato||"").replace(/\D/g,"").length < 10) return falha("Informe seu WhatsApp com DDD.");
+  const retirada = loja.escolha === "retirada";
+  if(!retirada && (!v.rua || !v.numero || !v.cidade || String(v.uf||"").trim().length !== 2)) return falha("Preencha o endereço completo.");
+  if(!v.aceite) return falha("Marque que aceita a política de privacidade e os termos.");
+  if(loja.simulado){
+    falha(""); avisoLoja("Simulação: com a função da loja publicada, este botão cria o pedido e abre a tela de pagamento.");
+    return;
+  }
+  loja.enviando = true; desenharCarrinho();
+  try{
+    const r = await chamarLoja({ acao:"finalizar", cep:loja.cep, servicoId:loja.escolha,
+      itens:carrinho.map(x => ({ id:x.id, qtd:x.qtd, cor:x.cor })),
+      cliente:{ nome:v.nome, contato:v.contato, email:v.email || "", aceite:true },
+      endereco:{ rua:v.rua||"", numero:v.numero||"", complemento:v.complemento||"", bairro:v.bairro||"", cidade:v.cidade||"", uf:String(v.uf||"").toUpperCase() } });
+    try{ const l = JSON.parse(localStorage.getItem("razenlab-meus-pedidos") || "[]"); l.unshift({ numero:r.numero, token:r.token }); localStorage.setItem("razenlab-meus-pedidos", JSON.stringify(l.slice(0,20))); }catch(e){}
+    carrinho = []; salvarCarrinho();
+    location.href = `pedido.html?t=${encodeURIComponent(r.token)}`;
+  }catch(e){
+    loja.enviando = false; desenharCarrinho();
+    const el = document.getElementById("loja-erro"); if(el) el.textContent = e.simular ? "A função da loja ainda não foi publicada." : e.message;
+  }
+}
+
+document.addEventListener("click", e => {
+  const t = e.target;
+  const add = t.closest("[data-add]");
+  if(add){
+    const md = add.closest(".md");
+    const qtd = md ? Math.max(1, Math.min(20, parseInt(md.querySelector("[data-add-qtd]").value, 10) || 1)) : 1;
+    const cor = md ? (md.querySelector("[data-add-cor]").value || "").trim().slice(0, 40) : "";
+    if(md) fecharModal();
+    adicionarCarrinho(add.dataset.add, qtd, cor); return;
+  }
+  if(t.closest("[data-carrinho-abrir]")){ abrirCarrinho(); return; }
+  if(t.closest("[data-carrinho-fechar]")){ fecharCarrinho(); if(t.closest("[data-ir-catalogo]")) document.getElementById("catalogo").scrollIntoView({ behavior:"smooth" }); return; }
+  const q = t.closest("[data-qtd]");
+  if(q){ const x = carrinho[+q.dataset.qtd]; x.qtd = Math.max(1, Math.min(20, x.qtd + (+q.dataset.d))); loja.opcoes = []; loja.escolha = ""; salvarCarrinho(); desenharCarrinho(); return; }
+  const rm = t.closest("[data-remover]");
+  if(rm){ carrinho.splice(+rm.dataset.remover, 1); loja.opcoes = []; loja.escolha = ""; salvarCarrinho(); desenharCarrinho(); return; }
+  if(t.closest("[data-frete]")){ calcularFrete(); return; }
+}, true);
+document.addEventListener("change", e => { if(e.target.name === "frete" && e.target.closest("#loja-painel")){ loja.escolha = e.target.value; desenharCarrinho(); } });
+document.addEventListener("keydown", e => {
+  if(e.key === "Enter" && e.target.id === "loja-cep"){ e.preventDefault(); calcularFrete(); }
+  if(e.key === "Escape") fecharCarrinho();
+});
+document.addEventListener("input", e => { if(e.target.id === "loja-cep"){ const d = e.target.value.replace(/\D/g,""); if(d.length === 8) e.target.value = d.slice(0,5) + "-" + d.slice(5); } });
+document.addEventListener("submit", e => { if(e.target.id === "loja-form"){ e.preventDefault(); finalizarCompra(e.target); } });
+desenharBotaoCarrinho();
+
+</script>
+</body>
+</html>

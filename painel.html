@@ -1800,6 +1800,7 @@ TELAS.config = () => {
       <label class="f"><span>Texto da seção de contato</span><textarea name="sobre">${esc(n.sobre)}</textarea></label>
       <label class="f"><span>Formas de pagamento</span><textarea name="pagamento">${esc(n.pagamento)}</textarea></label>
       ${cn("validadeDias","Validade do orçamento",n.validadeDias,"dias")}
+      ${cn("prazoProducaoDias","Prazo de produção na loja",n.prazoProducaoDias || 5,"dias úteis","Somado ao prazo do frete nas compras pelo site.")}
     </div>
     <div class="sep"></div>
     <div class="ph" style="margin-bottom:10px"><h2>Recebimento por Pix</h2><span class="cod">APARECE PARA O CLIENTE NO LINK DO PEDIDO</span></div>
@@ -2541,7 +2542,7 @@ function abrirFilamento(id){
 
 let trabalhoAberto = null;
 function abrirTrabalho(t){
-  trabalhoAberto = t ? {...t, fotos:[...(t.fotos||[])]} : { id:null, titulo:"", categoria:"", descricao:"", material:"", dimensoes:"", prazo:"", preco:"", selo:"", colecao:"", fotos:[], destaque:false, visivel:true };
+  trabalhoAberto = t ? {...t, fotos:[...(t.fotos||[])]} : { id:null, titulo:"", categoria:"", descricao:"", material:"", dimensoes:"", prazo:"", preco:"", selo:"", colecao:"", pesoG:"", fotos:[], destaque:false, visivel:true };
   desenharTrabalho();
 }
 function desenharTrabalho(){
@@ -2559,6 +2560,7 @@ function desenharTrabalho(){
       <label class="f"><span>Prazo médio</span><input name="prazo" value="${esc(t.prazo)}" placeholder="3 a 5 dias"></label>
       <label class="f"><span>Catálogo</span><select name="colecao"><option value="">Sempre no site (sem catálogo)</option>${colecoes().map(c => `<option value="${esc(c.id)}" ${t.colecao===c.id?"selected":""}>${esc(c.nome)}</option>`).join("")}</select><span class="dica">Peça de um catálogo só aparece quando ele está no ar.</span></label>
       <label class="f"><span>Selo no cartão (opcional)</span><input name="selo" value="${esc(t.selo||"")}" maxlength="28" placeholder="Favorito do laboratório"></label>
+      <label class="f"><span>Peso embalado (g)</span><input name="pesoG" value="${esc(t.pesoG||"")}" inputmode="numeric" placeholder="150"><span class="dica">Usado no frete da loja.</span></label>
       <label class="f"><span>Preço no site (opcional)</span><input name="preco" value="${esc(t.preco||"")}" inputmode="decimal" placeholder="59,90 · vazio = sob orçamento"></label>
     </div>
     <label class="f" style="margin-top:14px"><span>Descrição</span><textarea name="descricao">${esc(t.descricao)}</textarea></label>
@@ -2585,7 +2587,7 @@ async function gravarTrabalho(w){
   const fotos = [];
   for(const f of w.fotos) fotos.push(f.startsWith("data:") ? await subirImagem("vitrine", f) : f);
   const {id, visivel, destaque, fotos:_, ...d} = w;
-  const linha = { visivel: visivel !== false, destaque: !!destaque, dados:{ titulo:d.titulo, categoria:d.categoria, descricao:d.descricao, material:d.material, dimensoes:d.dimensoes, prazo:d.prazo, preco:d.preco || "", selo:d.selo || "", colecao:d.colecao || "" }, fotos };
+  const linha = { visivel: visivel !== false, destaque: !!destaque, dados:{ titulo:d.titulo, categoria:d.categoria, descricao:d.descricao, material:d.material, dimensoes:d.dimensoes, prazo:d.prazo, preco:d.preco || "", selo:d.selo || "", colecao:d.colecao || "", pesoG:String(d.pesoG||"").replace(/\D/g,"") }, fotos };
   const r = id ? await sb.from("vitrine").update(linha).eq("id", id).select().single() : await sb.from("vitrine").insert(linha).select().single();
   if(r.error) throw r.error;
   return vitDaLinha(r.data);
@@ -3621,7 +3623,7 @@ document.addEventListener("click", async e => {
       const antes = { ...dados.negocio };
       Object.keys(v).forEach(k => {
         const x = v[k];
-        dados.negocio[k] = typeof x === "boolean" ? x : ["validadeDias","acrescimoCartao","parcelasMax"].includes(k) ? num(x) : String(x).trim();
+        dados.negocio[k] = typeof x === "boolean" ? x : ["validadeDias","acrescimoCartao","parcelasMax","prazoProducaoDias"].includes(k) ? num(x) : String(x).trim();
       });
       dados.negocio.pixChave = normalizarChave(dados.negocio.pixTipo, dados.negocio.pixChave);
       try{ await gravarConfig(); render(); toast("Dados salvos. O site já mostra as mudanças."); }catch(err){ dados.negocio = antes; falhou(err, "salvar os dados"); }
