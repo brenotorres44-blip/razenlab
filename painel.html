@@ -3357,6 +3357,12 @@ async function sessaoValida(){
   if(u.error){ const r = await sb.auth.refreshSession(); return !r.error && !!r.data.session; }
   return true;
 }
+/* a Supabase devolve o QR como SVG cru (com aspas); vira um data: URI codificado para caber no <img> */
+function qrSrc(q){
+  q = String(q || "");
+  const i = q.indexOf("<svg");
+  return i >= 0 ? "data:image/svg+xml;charset=utf-8," + encodeURIComponent(q.slice(i)) : q;
+}
 async function ativar2fa(){
   if(!(await sessaoValida())){ toast("Sua sessão expirou. Saia e entre de novo no painel para ativar as duas etapas."); return; }
   try{
@@ -3372,7 +3378,7 @@ async function ativar2fa(){
         <li>Instale um app autenticador no celular: Google Authenticator, Microsoft Authenticator ou Authy.</li>
         <li>No app, toque em <b>+</b> e leia este código:</li>
       </ol>
-      <div class="seg-qr"><img src="${novoFator.totp.qr_code}" alt="Código QR para o app autenticador"></div>
+      <div class="seg-qr"><img src="${esc(qrSrc(novoFator.totp.qr_code))}" alt="Código QR para o app autenticador"></div>
       <p class="dica" style="text-align:center">Não consegue ler? Digite esta chave no app:</p>
       <div class="seg-seg">${esc(novoFator.totp.secret)}</div>
       <label class="f" style="margin-top:14px"><span>3. Digite o código de 6 números que aparece no app</span><input id="f2-codigo" inputmode="numeric" autocomplete="one-time-code" maxlength="6" placeholder="000000" style="letter-spacing:.3em;font-size:20px;text-align:center"></label>
