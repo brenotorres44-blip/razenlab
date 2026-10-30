@@ -4,7 +4,9 @@
 //  Ela não confia no aviso: consulta o pagamento direto na API do Mercado Pago
 //  e só então marca o pedido como Pago.
 //
-//  Usa o mesmo segredo MP_ACCESS_TOKEN da função "pagamento".
+//  Usa os mesmos segredos da função "pagamento": MP_ACCESS_TOKEN (produção) e
+//  MP_ACCESS_TOKEN_TESTE (loja-teste). Pagamento de teste só mexe em pedido de
+//  teste, e pagamento real só mexe em pedido real — um nunca confirma o outro.
 //  Opcional: MP_WEBHOOK_SECRET (assinatura secreta dos webhooks) — se
 //  cadastrado, avisos sem assinatura válida são recusados.
 // ==========================================================================
@@ -36,9 +38,10 @@ Deno.serve(async (req) => {
   const SUPABASE_URL = Deno.env.get("SUPABASE_URL")!;
   const SERVICE = Deno.env.get("SUPABASE_SERVICE_ROLE_KEY")!;
   const MP_TOKEN = Deno.env.get("MP_ACCESS_TOKEN");
+  const MP_TOKEN_TESTE = Deno.env.get("MP_ACCESS_TOKEN_TESTE");
   const MP_API = Deno.env.get("MP_API_BASE") ?? "https://api.mercadopago.com";
   const SEGREDO = Deno.env.get("MP_WEBHOOK_SECRET");
-  if (!MP_TOKEN) return ok({ erro: "sem credencial" }, 503);
+  if (!MP_TOKEN && !MP_TOKEN_TESTE) return ok({ erro: "sem credencial" }, 503);
 
   // o aviso pode vir no corpo ({type, data:{id}}) ou na URL (?type=payment&data.id=… / ?topic=payment&id=…)
   const url = new URL(req.url);
@@ -48,11 +51,17 @@ Deno.serve(async (req) => {
   if (tipo !== "payment" || !/^\d+$/.test(id)) return ok({ ignorado: true });
   if (SEGREDO && !(await assinaturaValida(req, id, SEGREDO))) return ok({ erro: "assinatura inválida" }, 401);
 
-  // 1) consulta o pagamento na fonte
-  const rp = await fetch(`${MP_API}/v1/payments/${id}`, { headers: { Authorization: `Bearer ${MP_TOKEN}` } }).catch(() => null);
-  if (rp && rp.status === 404) return ok({ ignorado: true });                  // pagamento não existe nessa conta
-  if (!rp || !rp.ok) return ok({ erro: "pagamento não consultado" }, 502);   // o Mercado Pago tenta de novo depois
-  const pg = await rp.json();
+  // 1) consulta o pagamento na fonte: primeiro na conta de produção, depois na de teste
+  let pg: Record<string, any> | null = null, deTeste = false;
+  for (const [tk, ehTeste] of [[MP_TOKEN, false], [MP_TOKEN_TESTE, true]] as [string | undefined, boolean][]) {
+    if (!tk) continue;
+    const rp = await fetch(`${MP_API}/v1/payments/${id}`, { headers: { Authorization: `Bearer ${tk}` } }).catch(() => null);
+    if (rp && rp.status === 404) continue;                                     // não é dessa conta
+    if (!rp || !rp.ok) return ok({ erro: "pagamento não consultado" }, 502);   // o Mercado Pago tenta de novo depois
+    pg = await rp.json(); deTeste = ehTeste; break;
+  }
+  if (!pg) return ok({ ignorado: true });
+  if (pg.live_mode === false) deTeste = true;
   const pedidoId = String(pg.external_reference ?? "");
   if (!/^[0-9a-f-]{36}$/i.test(pedidoId)) return ok({ ignorado: true });
 
@@ -62,18 +71,24 @@ Deno.serve(async (req) => {
   const [p] = rr.ok ? await rr.json() : [];
   if (!p) return ok({ ignorado: true });
   const d = p.dados ?? {};
+  const pedidoTeste = d.teste === true || d.teste === "true";
+  if (pedidoTeste !== deTeste) return ok({ ignorado: true, motivo: "ambiente diferente" });   // teste não paga pedido real (nem o contrário)
+  const ehPix = pg.payment_type_id === "bank_transfer" || pg.payment_method_id === "pix";
 
   // 3) registra o que aconteceu
   const taxa = (pg.fee_details ?? []).reduce((s: number, f: { amount?: number }) => s + Number(f.amount ?? 0), 0);
   const novo: Record<string, unknown> = {
     ...d,
     mpPagamentoId: String(pg.id),
-    mpStatus: pg.status,
     mpStatusDetalhe: pg.status_detail ?? null,
   };
+  // Pix gerado e ainda não pago não é "processando": a pessoa só não pagou ainda
+  if (!(ehPix && pg.status === "pending")) novo.mpStatus = pg.status;
+  // Pix que venceu ou foi cancelado: libera para gerar outro
+  if (ehPix && ["cancelled", "expired", "rejected"].includes(pg.status) && d.mpPix?.id === String(pg.id)) delete novo.mpPix;
   let status = p.status;
   if (pg.status === "approved") {
-    const esperado = Number(d.mpValor ?? d.total ?? 0);
+    const esperado = ehPix ? Number(d.mpPix?.valor ?? d.total ?? 0) : Number(d.mpValor ?? d.total ?? 0);
     if (Number(pg.transaction_amount) + 0.05 < esperado) {
       novo.mpStatus = "valor_divergente";            // pagou menos que o combinado: fica para você conferir
     } else {
@@ -81,6 +96,7 @@ Deno.serve(async (req) => {
       novo.valorRecebido = Number(pg.transaction_amount);
       novo.taxaMercadoPago = Math.round(taxa * 100) / 100;
       novo.liquidoRecebido = Number(pg.transaction_details?.net_received_amount ?? (pg.transaction_amount - taxa));
+      delete novo.mpPix;
       if (["solicitado", "orcamento", "aprovado", "comprovante"].includes(p.status)) {
         status = "pago";
         novo.dataPago = d.dataPago ?? hojeSP();

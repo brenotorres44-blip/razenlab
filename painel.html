@@ -153,6 +153,8 @@ main.pg{padding:24px 32px 64px;max-width:1440px}
 
 /* estoque */
 .est{padding:10px 0;border-bottom:1px solid var(--rule)}
+.etq{display:inline-block;font:600 10px/1 var(--mono,ui-monospace,monospace);letter-spacing:.12em;padding:3px 6px;border-radius:5px;margin-right:7px;vertical-align:2px;border:1px solid var(--accent);color:var(--accent-strong)}
+.etq.teste{border-color:var(--warning);color:var(--warning)}
 .est:last-child{border-bottom:none}
 .est .t{display:flex;justify-content:space-between;gap:10px;font-size:14px;margin-bottom:8px}
 .est .t span:last-child{color:var(--muted);font-variant-numeric:tabular-nums}
@@ -613,7 +615,8 @@ const NEGOCIO_PADRAO = {
   validadeDias:7, entregas:"",
   pixTipo:"celular", pixChave:"", pixNome:"", pixCidade:"",
   cepOrigem:"",
-  mpAtivo:false, acrescimoCartao:5, parcelasMax:12   // cartão e boleto pelo Mercado Pago
+  mpAtivo:false, acrescimoCartao:5, parcelasMax:12,  // cartão e boleto pelo Mercado Pago
+  pixAutoAtivo:false, mpTesteAtivo:false            // Pix automático e pagamentos de teste (loja-teste)
 };
 const STATUS = {
   // amarelo: espera por você · cinza: espera pelo cliente · azul: em produção · verde: concluído · vermelho: parou
@@ -887,8 +890,11 @@ function resumoFin(l){
   const fat = soma(recebido), taxas = soma(taxaRec), custos = soma(custoDe), lucro = fat - taxas - custos;
   return { qtd:l.length, fat, taxas, custos, lucro, frete:soma(p => num(p.entrega)), pecas:soma(p => num(p.qtd)), margem: fat ? lucro/fat*100 : 0 };
 }
-const pagosEntre = (de, ate) => dados.pedidos.filter(p => FATURADO.includes(p.status) && p.dataPago && p.dataPago >= de && p.dataPago <= ate);
-function resumoMes(k){ return resumoFin(dados.pedidos.filter(p => FATURADO.includes(p.status) && (p.dataPago||"").startsWith(k))); }
+/* pedidos da loja-teste não contam como dinheiro, análise nem cliente */
+const ehTeste = p => p.teste === true || p.teste === "true";
+const reais = () => dados.pedidos.filter(p => !ehTeste(p));
+const pagosEntre = (de, ate) => reais().filter(p => FATURADO.includes(p.status) && p.dataPago && p.dataPago >= de && p.dataPago <= ate);
+function resumoMes(k){ return resumoFin(reais().filter(p => FATURADO.includes(p.status) && (p.dataPago||"").startsWith(k))); }
 const abertos = () => dados.pedidos.filter(p => !ENCERRADO.includes(p.status));
 const emProducao = () => dados.pedidos.filter(p => ["pago","imprimindo","pronto"].includes(p.status));
 const aguardando = () => dados.pedidos.filter(p => AGUARDA_PAGAMENTO.includes(p.status));
@@ -1283,7 +1289,7 @@ function listaPedidos(){
     <div class="it ${selecionando && selecionados.has(p.id) ? "sel" : ""}" data-abrir="${p.id}">
       ${selecionando ? `<span class="ck" aria-hidden="true">✓</span>` : ""}
       <div class="g">
-        <div class="n"><span class="nr">${numPed(p.numero)}</span>${esc(p.peca||"Peça sem nome")}</div>
+        <div class="n"><span class="nr">${numPed(p.numero)}</span>${ehTeste(p)?`<span class="etq teste">TESTE</span>`:p.origem==="loja"?`<span class="etq">LOJA</span>`:""}${esc(p.peca||"Peça sem nome")}</div>
         <div class="s">${esc(p.cliente||"Sem cliente")} · ${num(p.qtd)} un.${p.prazo?` · <span class="${atrasado(p)?"dn":""}">entrega ${dataBR(p.prazo)}</span>`:""}${vencido(p)?` · <span class="dn">venceu em ${dataBR(p.validadeAte)}</span>`:""}${p.status==="perdido"&&p.motivoPerda?` · ${esc(p.motivoPerda)}`:""}${p.dataPago&&FATURADO.includes(p.status)?` · pago em ${dataBR(p.dataPago)}`:""}</div>
       </div>
       <div class="val"><b>${brl(num(p.total))}</b>${stLed(p.status)}</div>
@@ -1450,7 +1456,7 @@ function atualizarSimulador(){
 /* ---------- clientes (montado a partir dos pedidos) ---------- */
 function listaClientes(){
   const m = {};
-  dados.pedidos.filter(p => p.cliente && p.status !== "cancelado").forEach(p => {
+  reais().filter(p => p.cliente && p.status !== "cancelado").forEach(p => {
     const k = p.cliente.trim().toLowerCase();
     const c = m[k] || (m[k] = { nome:p.cliente.trim(), contato:"", pedidos:0, fechados:0, perdidos:0, gasto:0, ultimo:"" });
     c.pedidos++;
@@ -1629,7 +1635,7 @@ function exportarFinanceiro(){
 let periodoAnalise = 90;
 function orcamentosDoPeriodo(){
   const desde = periodoAnalise ? somaDias(hoje(), -periodoAnalise) : "0000-00-00";
-  return dados.pedidos.filter(p => p.status !== "solicitado" && dataOrc(p) >= desde);
+  return reais().filter(p => p.status !== "solicitado" && dataOrc(p) >= desde);
 }
 function taxaFech(l){
   const f = l.filter(p => resultado(p) === "fechado").length, pe = l.filter(p => resultado(p) === "perdido").length;
@@ -1656,10 +1662,10 @@ TELAS.analise = () => {
   const faixas = [[0,50,"Até R$ 50"],[50,150,"De R$ 50 a R$ 150"],[150,300,"De R$ 150 a R$ 300"],[300,Infinity,"Acima de R$ 300"]]
     .map(([a,b,rot]) => ({ rot, ...taxaFech(base.filter(p => num(p.total) >= a && num(p.total) < b)) }));
   const origens = [["site","Pedidos pelo site"],["painel","Criados por você"]]
-    .map(([o,rot]) => ({ rot, ...taxaFech(base.filter(p => (p.origem === "site" ? "site" : "painel") === o)) }));
+    .map(([o,rot]) => ({ rot, ...taxaFech(base.filter(p => (["site","loja"].includes(p.origem) ? "site" : "painel") === o)) }));
 
   const meses = ultimosMeses(6);
-  const doMes = (k, filtro) => dados.pedidos.filter(p => p.status !== "solicitado" && dataOrc(p).startsWith(k) && filtro(p)).reduce((s,p) => s + num(p.total), 0);
+  const doMes = (k, filtro) => reais().filter(p => p.status !== "solicitado" && dataOrc(p).startsWith(k) && filtro(p)).reduce((s,p) => s + num(p.total), 0);
   const orcMes = meses.map(m => doMes(m.k, () => true)), fechMes = meses.map(m => doMes(m.k, p => resultado(p) === "fechado"));
 
   const ultimosPerdidos = perd.slice().sort((a,b) => (b.dataPerdido||"").localeCompare(a.dataPerdido||"")).slice(0, 8);
@@ -1871,7 +1877,14 @@ TELAS.config = () => {
       ${cn("acrescimoCartao","Acréscimo no cartão e boleto",n.acrescimoCartao,"%","Cobre a taxa do Mercado Pago. O Pix continua sem acréscimo.")}
       ${cn("parcelasMax","Parcelas no cartão",n.parcelasMax,"x","Até 12. Os juros do parcelamento ficam com o cliente.")}
     </div>
-    <p class="dica">Só funciona depois de publicar as funções "pagamento" e "mp-webhook" no Supabase (veja o guia).</p>
+    <label class="chk" style="margin:14px 0 4px"><input type="checkbox" name="pixAutoAtivo" ${n.pixAutoAtivo===true||n.pixAutoAtivo==="true"?"checked":""}> Pix com confirmação automática (pelo Mercado Pago)</label>
+    <p class="dica" style="margin:0 0 12px">O cliente gera o QR no link do pedido e, ao pagar, o pedido vira <b>Pago</b> sozinho, sem comprovante. Ligado, ele substitui o seu Pix por chave. O Mercado Pago cobra uma taxa por Pix recebido (confira o valor na sua conta).</p>
+    <div class="sep"></div>
+    <div class="ph" style="margin-bottom:10px"><h2>Pagamentos de teste</h2><span class="cod">LOJA EM TESTE</span></div>
+    <label class="chk" style="margin-bottom:6px"><input type="checkbox" name="mpTesteAtivo" ${n.mpTesteAtivo===true||n.mpTesteAtivo==="true"?"checked":""}> Pagar pedidos de teste com as credenciais de teste do Mercado Pago</label>
+    <p class="dica" style="margin:0 0 10px">Vale só para pedidos feitos na <b>loja-teste.html</b>: eles mostram cartão, boleto e Pix de teste, nunca o seu Pix de verdade, e não entram no financeiro nem na análise. Precisa do segredo <b>MP_ACCESS_TOKEN_TESTE</b> no Supabase (guia, etapa 13).</p>
+    <div class="row" style="gap:10px;flex-wrap:wrap"><button class="tb min" data-acao="apagar-testes">Apagar pedidos de teste (${dados.pedidos.filter(ehTeste).length})</button></div>
+    <p class="dica">Cartão, boleto e Pix automático só funcionam depois de publicar as funções "pagamento" e "mp-webhook" no Supabase (veja o guia).</p>
     <button class="tb pri" style="margin-top:16px" data-acao="salvar-negocio">Salvar dados do negócio</button>
   </div>
   <div class="pn rv" style="--d:120ms;margin-bottom:16px" id="cfg-form">
@@ -1951,7 +1964,7 @@ function desenharPedido(){
     <div class="md" role="dialog" aria-modal="true" aria-label="Pedido">
       <div class="pn" id="ped-form">
         <div class="md-h"><div style="flex:1;min-width:0"><h2>${p.id ? `Orçamento ${numPed(p.numero)}` : "Novo orçamento"}</h2>${p.id ? "" : `<div class="p13 muted" style="margin-top:4px">O preço é calculado enquanto você preenche. Só é salvo quando você clicar em Salvar.</div>`}
-          ${p.id ? `<div class="p13 muted" style="margin-top:4px">${p.cliente?`para <b style="color:var(--text)">${esc(p.cliente)}</b> · `:""}orçado em ${dataBR(dataOrc(p))}${p.validadeAte?` · <span class="${vencido(p)?"dn":""}">${vencido(p)?"venceu":"válido até"} ${dataBR(p.validadeAte)}</span>`:""}${p.origem==="site"?" · pedido pelo site":""}</div>` : `<div class="p13 muted" style="margin-top:4px">O número é gerado ao salvar.</div>`}</div>
+          ${p.id ? `<div class="p13 muted" style="margin-top:4px">${p.cliente?`para <b style="color:var(--text)">${esc(p.cliente)}</b> · `:""}orçado em ${dataBR(dataOrc(p))}${p.validadeAte?` · <span class="${vencido(p)?"dn":""}">${vencido(p)?"venceu":"válido até"} ${dataBR(p.validadeAte)}</span>`:""}${p.origem==="site"?" · pedido pelo site":p.origem==="loja"?" · compra na loja":ehTeste(p)?" · <b style=\"color:var(--warning)\">pedido de teste</b>":""}</div>` : `<div class="p13 muted" style="margin-top:4px">O número é gerado ao salvar.</div>`}</div>
           <button class="x" data-fechar aria-label="Fechar">&times;</button></div>
         <input type="hidden" name="status" value="${p.status}">
         <div class="fluxo" role="group" aria-label="Situação">
@@ -3689,6 +3702,15 @@ document.addEventListener("click", async e => {
         vitrine = vitrine.filter(v => v.id !== w.id); fecharModal(); render();
       }
       break;
+    case "apagar-testes": {
+      const testes = dados.pedidos.filter(ehTeste);
+      if(!testes.length){ toast("Não há pedidos de teste."); break; }
+      if(!confirm(`Apagar ${testes.length} pedido${testes.length>1?"s":""} de teste? Pedidos de verdade não são tocados.`)) break;
+      const r = await sb.from("pedidos").delete().in("id", testes.map(p => p.id)).eq("dados->>teste", "true");
+      if(r.error){ falhou(r.error, "apagar os pedidos de teste"); break; }
+      dados.pedidos = dados.pedidos.filter(p => !ehTeste(p)); render(); toast("Pedidos de teste apagados.");
+      break;
+    }
     case "salvar-negocio": {
       const v = lerCampos(document.getElementById("neg-form"));
       const antes = { ...dados.negocio };

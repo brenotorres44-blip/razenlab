@@ -189,6 +189,42 @@ No painel, abra **Vitrine**:
 
 **Se desconfiar de invasão:** troque a senha, use **Sair de todos os aparelhos**, confira os **Últimos acessos** e, se dados de clientes vazaram, avise os clientes afetados e a ANPD (gov.br/anpd) em até 3 dias úteis.
 
+## 13. Pagamento das compras da loja (testar antes de abrir)
+
+A loja com carrinho fica em **razenlab.com.br/loja-teste.html**, sem link no site. Lá o cliente escolhe as peças, calcula o frete e vai para o link do pedido pagar. Esta etapa liga o pagamento dessas compras e deixa você **simular tudo com dinheiro de mentira** antes de abrir a loja de verdade.
+
+**1. Atualizar o banco**
+No **SQL Editor**, cole todo o `supabase/05_loja_pagamento.sql` e clique em **Run**. Ele faz o link do pedido mostrar os itens comprados, marca os pedidos de teste e prepara o Pix automático.
+
+**2. Publicar as funções**
+Em **Edge Functions**, publique (ou publique de novo, colando o arquivo novo):
+- `loja` → `supabase/functions/loja/index.ts` (usa o mesmo segredo `MELHOR_ENVIO_TOKEN` do frete)
+- `pagamento` → `supabase/functions/pagamento/index.ts`
+- `mp-webhook` → `supabase/functions/mp-webhook/index.ts`, **com a verificação de JWT desligada**
+
+**3. Criar a conta de teste do Mercado Pago**
+1. Em **mercadopago.com.br/developers → Suas integrações → (sua aplicação) → Contas de teste**, crie duas contas: uma **Vendedor** e uma **Comprador**. Anote usuário e senha de cada uma.
+2. Abra uma janela anônima, entre com a conta **Vendedor de teste**, crie uma aplicação nela e copie o **Access Token de produção** dessa conta de teste. É assim que o Mercado Pago pede para testar o Checkout Pro.
+3. Em **Edge Functions → Secrets**, adicione `MP_ACCESS_TOKEN_TESTE` = esse token.
+   - Ele só é usado nos pedidos feitos na `loja-teste.html`. Pedido de verdade continua usando o `MP_ACCESS_TOKEN`.
+   - Um pagamento de teste nunca confirma um pedido de verdade, e um pagamento de verdade nunca confirma um pedido de teste: o `mp-webhook` confere de qual conta veio.
+
+**4. Ligar no painel**
+**Configurações → Pagamentos de teste**: marque **Pagar pedidos de teste com as credenciais de teste do Mercado Pago** e salve.
+
+**5. Fazer uma compra de teste**
+1. Abra `loja-teste.html`, coloque peças no carrinho, calcule o frete e finalize. O pedido aparece no painel com a etiqueta **TESTE**.
+2. No link do pedido, toque em **Pagar com cartão ou boleto**. Entre com a conta **Comprador de teste** e pague com um **cartão de teste** do Mercado Pago (lista em mercadopago.com.br/developers → Cartões de teste). Para aprovar, use o nome do titular **APRO**. Para simular recusa, use **OTHE**.
+3. Volte para o link do pedido: em alguns segundos ele vira **Pagamento confirmado** e, no painel, **Pago**.
+4. O **Pix** de teste gera o QR Code normalmente, mas nenhum banco paga um QR de teste. Use o Pix só para ver a tela. Quem confirma o fluxo de ponta a ponta é o cartão.
+5. Pedidos de teste não entram no Financeiro, na Análise nem em Clientes. Para limpar, use **Configurações → Pagamentos de teste → Apagar pedidos de teste**.
+
+**6. Quando for abrir a loja de verdade**
+- Ligue **Oferecer cartão e boleto** (etapa 8) e, se quiser, **Pix com confirmação automática**. Com o Pix automático ligado, o cliente gera o QR no link do pedido e o pedido vira Pago sozinho, sem comprovante. Ele substitui o Pix por chave em todos os pedidos, e o Mercado Pago cobra uma taxa por Pix recebido.
+- O Pix automático pede o e-mail do cliente (exigência do Mercado Pago). Se a pessoa não informou no carrinho, o link do pedido pergunta.
+- A compra fica reservada por 2 dias para pagamento. Depois disso aparece como **Vencido** no painel.
+- Peça para eu ligar a loja no site (botões de comprar e o carrinho na página principal).
+
 ---
 
 ## Como funciona o dia a dia
@@ -233,5 +269,7 @@ Quando uma atualização mexer no banco, rode de novo o `supabase/01_estrutura.s
 - **Avaliar link do MakerWorld diz que a função não foi publicada** → faça a etapa 9.
 - **"Não foi possível abrir o pagamento"** no link do cliente → confira se a função `pagamento` foi publicada, o segredo `MP_ACCESS_TOKEN` e se a opção está ligada no painel.
 - **Cliente pagou no cartão e o pedido não virou Pago** → confira se a função `mp-webhook` foi publicada **com a verificação de JWT desligada**.
+- **Pedido de teste diz "O pagamento de teste está desligado"** → ligue em **Configurações → Pagamentos de teste** (etapa 13).
+- **Pedido de teste diz "As credenciais de TESTE do Mercado Pago ainda não foram cadastradas"** → falta o segredo `MP_ACCESS_TOKEN_TESTE` (etapa 13).
 - **"Falta atualizar o banco"** ao marcar "Não fechou" → rode de novo o `01_estrutura.sql`.
 - **Mudou algo e o celular mostra a versão antiga** → feche e abra o app, ou recarregue a página.

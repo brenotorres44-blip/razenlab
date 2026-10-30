@@ -107,7 +107,7 @@ async function tratar(req: Request): Promise<Response> {
   // ---------- frete ----------
   const cepDestino = soDigitos(b.cep);
   const cepOrigem = soDigitos(neg.cepOrigem);
-  const retirada = { id: "retirada", servico: "Retirar em mãos", empresa: neg.cidade ? `Em ${neg.cidade} · combinamos pelo WhatsApp` : "Combinamos pelo WhatsApp", preco: 0, prazo: null };
+  const retirada: { id: string; servico: string; empresa: string; preco: number; prazo: number | null } = { id: "retirada", servico: "Retirar em mãos", empresa: neg.cidade ? `Em ${neg.cidade} · combinamos pelo WhatsApp` : "Combinamos pelo WhatsApp", preco: 0, prazo: null };
   async function cotar() {
     if (cepDestino.length !== 8) throw new Error("Informe um CEP com 8 números.");
     if (!TOKEN) throw new Error("O cálculo de frete ainda não foi configurado.");

@@ -106,6 +106,16 @@ h2{font:500 16px/1.3 var(--font);margin:0 0 14px}
 .arquivo:focus-within{border-color:var(--accent);color:var(--text)}
 .arquivo input{position:absolute;opacity:0;width:1px;height:1px}
 .nota{font-size:13px;color:var(--faint);margin:10px 0 0}
+.faixa-teste{margin:0 0 16px;padding:12px 16px;border-radius:12px;background:var(--warning-bg);color:var(--warning);border:1px solid color-mix(in srgb,var(--warning) 45%,transparent);font-size:14px}
+.faixa-teste b{color:var(--text)}
+.li small.cor{display:block;color:var(--faint);font-size:12px}
+.inp{width:100%;min-height:46px;border-radius:10px;border:1px solid var(--border);background:var(--ground);color:var(--text);padding:0 14px;font:inherit;font-size:15px}
+.inp:focus{outline:2px solid var(--accent);outline-offset:1px}
+.qr img{width:100%;height:100%;display:block;image-rendering:pixelated}
+.espera{display:flex;align-items:center;gap:10px;margin-top:12px;font-size:14px;color:var(--muted)}
+.espera i{width:9px;height:9px;border-radius:50%;background:var(--positive);box-shadow:0 0 10px var(--positive);animation:pisca 1.4s ease-in-out infinite}
+@keyframes pisca{50%{opacity:.25}}
+@media (prefers-reduced-motion:reduce){.espera i{animation:none}}
 .ok{color:var(--positive)} .erro{color:var(--negative)}
 .cod{font:400 26px/1.2 var(--display);letter-spacing:.04em;font-variant-numeric:tabular-nums}
 .contato .btn{margin-top:4px}
@@ -2462,6 +2472,9 @@ const numPed = n => "#" + String(n || 0).padStart(4, "0");
 function dataBR(s){ if(!s) return "—"; const [a,m,d] = String(s).slice(0,10).split("-"); return d && m && a ? `${d}/${m}/${a}` : s; }
 
 const ETAPAS = ["Pedido recebido","Orçamento","Pagamento","Produção","Enviado","Entregue"];
+const ETAPAS_LOJA = ["Pedido recebido","Pedido","Pagamento","Produção","Enviado","Entregue"];
+const compraLoja = () => !!(P && Array.isArray(P.itens) && P.itens.length);
+const temPagamento = () => !!(P && ((P.pix && P.pix.chave) || P.cartao || P.pixAuto));
 const ETAPA = { solicitado:0, orcamento:1, aprovado:2, comprovante:2, pago:3, imprimindo:3, pronto:3, enviado:4, entregue:5, cancelado:-1, perdido:-1 };
 // cor diz o que a pessoa precisa saber: azul anda sozinho, amarelo espera por você, verde chegou, vermelho parou
 const TOM = { solicitado:"andando", orcamento:"voce", aprovado:"voce", comprovante:"voce", pago:"andando", imprimindo:"andando", pronto:"andando", enviado:"bom", entregue:"bom", cancelado:"parou", perdido:"parou" };
@@ -2513,8 +2526,11 @@ function mensagem(){
   if(["orcamento","aprovado"].includes(s) && retornoMP === "ok") m = ["Pagamento recebido!", "Estamos confirmando com o Mercado Pago. Esta página atualiza sozinha em alguns segundos."];
   if(["orcamento","aprovado"].includes(s) && retornoMP === "erro") m = ["O pagamento não foi concluído", "Nada foi cobrado. Tente de novo com outro cartão ou pague pelo Pix abaixo."];
   if(s === "pago" && P.formaPagamento) m = ["Pagamento confirmado!", `Recebemos pelo ${P.formaPagamento.replace("Mercado Pago · ", "Mercado Pago (").replace(/$/, ")")}. Seu pedido está na fila de impressão.`];
-  if(s === "orcamento" && P.vencido) m = ["Este orçamento venceu", `Ele era válido até ${dataBR(P.validadeAte)}. Fale com a gente pelo WhatsApp que atualizamos os valores para você.`];
-  const acao = ["orcamento","aprovado"].includes(s) && !P.vencido && P.pix && P.pix.chave ? `<div class="acao"><a class="btn btn-main" href="#pagar" style="width:auto">Ir para o pagamento</a></div>` : "";
+  if(compraLoja() && s === "orcamento" && !P.mpStatus && retornoMP !== "ok" && retornoMP !== "erro") m = ["Pedido registrado! Falta só o pagamento", "Escolha como pagar abaixo. A produção começa assim que o pagamento for confirmado."];
+  if(P.teste && ["orcamento","aprovado"].includes(s) && !P.vencido && !temPagamento()) m = ["Pedido de teste", "O pagamento de teste está desligado. Ligue em Painel → Configurações → Pagamentos de teste para simular a compra."];
+  if(compraLoja() && s === "orcamento" && P.vencido) m = ["O prazo para pagar venceu", `Era até ${dataBR(P.validadeAte)}. Fale com a gente pelo WhatsApp que reativamos o seu pedido.`];
+  else if(s === "orcamento" && P.vencido) m = ["Este orçamento venceu", `Ele era válido até ${dataBR(P.validadeAte)}. Fale com a gente pelo WhatsApp que atualizamos os valores para você.`];
+  const acao = ["orcamento","aprovado"].includes(s) && !P.vencido && temPagamento() ? `<div class="acao"><a class="btn btn-main" href="#pagar" style="width:auto">Ir para o pagamento</a></div>` : "";
   return `<div class="aviso" style="${cor(s)}"><b>${m[0]}</b><p>${m[1]}</p>${acao}</div>`;
 }
 
@@ -2527,22 +2543,33 @@ function render(){
 
   const cabeca = `
   <div class="head">
-    <div><span class="hud-label">Rastreamento de pedido</span><h1>Pedido ${numPed(P.numero)}</h1><div class="sub">Olá, ${esc((P.cliente || "").split(" ")[0] || "cliente")}. Pedido feito em ${dataBR(P.criado_em)}.</div></div>
+    <div><span class="hud-label">Rastreamento de pedido</span><h1>Pedido ${numPed(P.numero)}</h1><div class="sub">Olá, ${esc((P.cliente || "").replace(/^\[TESTE\]\s*/, "").split(" ")[0] || "cliente")}. Pedido feito em ${dataBR(P.criado_em)}.</div></div>
     <span class="pill" style="${cor(s)}"><i aria-hidden="true"></i>${ROTULO[s] || s}</span>
   </div>`;
 
   // a coluna da esquerda é o que fazer agora; a da direita, o resumo
-  let main = `
+  let main = (P.teste ? `<div class="faixa-teste" role="note"><b>Pedido de teste.</b> Pague com os cartões e o Pix de teste do Mercado Pago: nada é cobrado de verdade.</div>` : "") + `
   <section class="card hud-frame hud-scan" aria-labelledby="t-and">
     <h2 id="t-and">Andamento</h2>
     <div class="andamento">
       ${mensagem()}
-      ${!["cancelado","perdido"].includes(s) ? `<ol class="pilha" aria-label="Etapas do pedido, de baixo para cima">${ETAPAS.map((t,i) => `<li class="${i < etapa ? "feito" : i === etapa ? "agora" : ""}" ${i === etapa ? 'aria-current="step"' : ""}><i aria-hidden="true"></i><span>${t}</span></li>`).join("")}</ol>` : ""}
+      ${!["cancelado","perdido"].includes(s) ? `<ol class="pilha" aria-label="Etapas do pedido, de baixo para cima">${(compraLoja() ? ETAPAS_LOJA : ETAPAS).map((t,i) => `<li class="${i < etapa ? "feito" : i === etapa ? "agora" : ""}" ${i === etapa ? 'aria-current="step"' : ""}><i aria-hidden="true"></i><span>${t}</span></li>`).join("")}</ol>` : ""}
     </div>
   </section>`;
   let lado = "";
 
-  if(temPreco){
+  if(temPreco && compraLoja()){
+    lado += `
+    <section class="card hud-frame" aria-labelledby="t-orc">
+      <h2 id="t-orc">Resumo da compra</h2>
+      ${P.itens.map(i => `<div class="li"><span>${esc(i.titulo)}${i.cor ? `<small class="cor">Cor: ${esc(i.cor)}</small>` : ""}<small class="cor">${num(i.qtd)} × ${brl(i.preco)}</small></span><span>${brl(num(i.qtd) * num(i.preco))}</span></div>`).join("")}
+      <div class="li"><span>Frete${P.freteServico ? `<small>${esc(P.freteServico)}</small>` : ""}</span><span>${num(P.frete) > 0 ? brl(P.frete) : "grátis"}</span></div>
+      ${P.prazo ? `<div class="li"><span>Previsão de envio</span><span>${dataBR(P.prazo)}</span></div>` : ""}
+      <div class="li total"><span>Total</span><span>${brl(P.total)}</span></div>
+      ${P.validadeAte && s === "orcamento" ? `<p class="nota ${P.vencido ? "erro" : ""}">${P.vencido ? "O prazo para pagar venceu em" : "Pague até"} ${dataBR(P.validadeAte)}</p>` : ""}
+      ${P.recado ? `<div class="recado">${esc(P.recado)}</div>` : ""}
+    </section>`;
+  }else if(temPreco){
     lado += `
     <section class="card hud-frame" aria-labelledby="t-orc">
       <h2 id="t-orc">Orçamento</h2>
@@ -2561,7 +2588,31 @@ function render(){
     lado += `<section class="card hud-frame" aria-labelledby="t-ped"><h2 id="t-ped">O que você pediu</h2><p style="margin:0;white-space:pre-line;color:var(--muted)">${esc(P.pedidoCliente)}</p></section>`;
   }
 
-  if(["orcamento","aprovado"].includes(s) && P.pix && P.pix.chave){
+  if(P.pixAuto){
+    const a = P.pixAuto.atual;
+    main += `
+    <section class="card hud-frame" id="pagar" aria-labelledby="t-pixa">
+      <h2 id="t-pixa">${P.cartao ? "Opção 1 · Pix" : "Pagar com Pix"}</h2>
+      ${a && a.codigo ? `
+      <div class="pix">
+        <div class="qr" role="img" aria-label="QR Code do Pix">${a.qr ? `<img src="data:image/png;base64,${esc(a.qr)}" alt="">` : `<span style="color:#333;font-size:13px;text-align:center;padding:10px">Use o código<br>copia e cola</span>`}</div>
+        <div>
+          <p class="sub" style="margin:0 0 12px">Abra o app do seu banco e escolha <b>Pix → Ler QR Code</b> ou <b>Pix Copia e Cola</b>. Valor: <b style="color:var(--text)">${brl(a.valor)}</b>.</p>
+          <div class="cc" id="cc">${esc(a.codigo)}</div>
+          <button type="button" class="btn btn-main" style="margin-top:12px" id="copiar-pixa">Copiar código Pix</button>
+          <div class="espera" aria-live="polite"><i aria-hidden="true"></i><span>Esperando o pagamento. Esta página atualiza sozinha, não precisa mandar comprovante.</span></div>
+          ${a.expira ? `<p class="nota">O código vale até ${new Date(a.expira).toLocaleString("pt-BR", { day:"2-digit", month:"2-digit", hour:"2-digit", minute:"2-digit" })}.</p>` : ""}
+        </div>
+      </div>` : `
+      <p class="sub" style="margin:0 0 12px">Gere o QR Code e pague pelo app do seu banco. A confirmação é automática, sem precisar mandar comprovante.</p>
+      ${P.temEmail ? "" : `<label class="f" style="display:block;margin-bottom:12px"><span class="nota" style="display:block;margin:0 0 6px">Seu e-mail (o Mercado Pago pede para gerar o Pix)</span><input class="inp" id="pixa-email" type="email" autocomplete="email" inputmode="email" maxlength="160" placeholder="voce@email.com"></label>`}
+      <div class="li total"><span>Valor no Pix</span><span>${brl(P.pixAuto.valor)}</span></div>
+      <button type="button" class="btn btn-main" style="margin-top:12px" id="gerar-pixa">Gerar Pix de ${brl(P.pixAuto.valor)}</button>
+      <p class="nota" id="pixa-msg" aria-live="polite">Pagamento processado pelo Mercado Pago.</p>`}
+    </section>`;
+  }
+
+  if(["orcamento","aprovado"].includes(s) && P.pix && P.pix.chave && !P.pixAuto){
     const valor = Math.round(num(P.total) * 100) / 100;
     const codigo = brCode(P.pix.chave, P.pix.nome, P.pix.cidade, valor, "RZL" + String(P.numero).padStart(6, "0"));
     main += `
@@ -2593,15 +2644,15 @@ function render(){
   if(P.cartao){
     main += `
     <section class="card hud-frame" id="cartao" aria-labelledby="t-cartao">
-      <h2 id="t-cartao">Opção 2 · Cartão ou boleto</h2>
+      <h2 id="t-cartao">${(P.pix && P.pix.chave) || P.pixAuto ? "Opção 2 · Cartão ou boleto" : "Pagar com cartão ou boleto"}</h2>
       <p class="sub" style="margin:0 0 12px">Crédito em até ${P.cartao.parcelas}x, débito ou boleto, no ambiente seguro do Mercado Pago. A confirmação é automática, sem precisar enviar comprovante.</p>
       <div class="li total"><span>Valor no cartão ou boleto</span><span>${brl(P.cartao.valor)}</span></div>
       <button type="button" class="btn btn-main" style="margin-top:12px" id="pagar-cartao">Pagar com cartão ou boleto</button>
-      <p class="nota" id="cartao-msg" aria-live="polite">Pelo Pix o valor é ${brl(P.total)}, sem taxa.</p>
+      <p class="nota" id="cartao-msg" aria-live="polite">${(P.pix && P.pix.chave) || P.pixAuto ? `Pelo Pix o valor é ${brl(P.total)}, sem acréscimo.` : ""}</p>
     </section>`;
   }
 
-  if((["orcamento","aprovado"].includes(s) && !P.vencido) || s === "comprovante"){
+  if((["orcamento","aprovado"].includes(s) && !P.vencido && P.pix && P.pix.chave && !P.pixAuto) || s === "comprovante"){
     main += `
     <section class="card hud-frame" aria-labelledby="t-comp">
       <h2 id="t-comp">${s === "comprovante" ? "Enviar outro comprovante" : P.cartao ? "Pagou pelo Pix? Envie o comprovante" : "Já pagou? Envie o comprovante"}</h2>
@@ -2648,13 +2699,36 @@ function ligarEventos(){
     bc.disabled = true; bc.textContent = "Abrindo o Mercado Pago…";
     const msg = document.getElementById("cartao-msg");
     try{
-      const { data, error } = await sb.functions.invoke("pagamento", { body:{ token } });
+      const { data, error } = await sb.functions.invoke("pagamento", { body:{ token, metodo:"cartao" } });
       if(error){ let t = error.message; try{ const j = await error.context.json(); if(j && j.erro) t = j.erro; }catch(_){} throw new Error(t); }
       location.href = data.url;
     }catch(e){
-      msg.className = "nota erro"; msg.textContent = "Não foi possível abrir o pagamento: " + (e.message || e) + " Você pode pagar pelo Pix.";
+      msg.className = "nota erro"; msg.textContent = "Não foi possível abrir o pagamento: " + (e.message || e) + (temPagamento() && (P.pix || P.pixAuto) ? " Você pode pagar pelo Pix." : "");
       bc.disabled = false; bc.textContent = "Pagar com cartão ou boleto";
     }
+  };
+  const gp = document.getElementById("gerar-pixa");
+  if(gp) gp.onclick = async () => {
+    const msg = document.getElementById("pixa-msg"), em = document.getElementById("pixa-email");
+    const email = em ? em.value.trim() : "";
+    if(em && !/^[^@\s]+@[^@\s]+\.[^@\s]{2,}$/.test(email)){ msg.className = "nota erro"; msg.textContent = "Confira o e-mail."; em.focus(); return; }
+    gp.disabled = true; gp.textContent = "Gerando o Pix…"; msg.className = "nota"; msg.textContent = "";
+    try{
+      const { data, error } = await sb.functions.invoke("pagamento", { body:{ token, metodo:"pix", email } });
+      if(error){ let t = error.message; try{ const j = await error.context.json(); if(j && j.erro) t = j.erro; }catch(_){} throw new Error(t); }
+      P.pixAuto.atual = { codigo:data.codigo, qr:data.qr, valor:data.valor, expira:data.expira };
+      if(email) P.temEmail = true;
+      render(); esperarPix();
+      const box = document.getElementById("pagar"); if(box) box.scrollIntoView({ behavior:"smooth", block:"start" });
+    }catch(e){
+      msg.className = "nota erro"; msg.textContent = "Não foi possível gerar o Pix: " + (e.message || e);
+      gp.disabled = false; gp.textContent = `Gerar Pix de ${brl(P.pixAuto.valor)}`;
+    }
+  };
+  const cpa = document.getElementById("copiar-pixa");
+  if(cpa) cpa.onclick = async () => {
+    try{ await navigator.clipboard.writeText(P.pixAuto.atual.codigo); cpa.textContent = "Código copiado"; }
+    catch(err){ const r = document.createRange(); r.selectNodeContents(document.getElementById("cc")); getSelection().removeAllRanges(); getSelection().addRange(r); cpa.textContent = "Selecionado — copie"; }
   };
   const cr = document.getElementById("copiar-rastreio");
   if(cr) cr.onclick = async () => { try{ await navigator.clipboard.writeText(P.rastreio); cr.textContent = "Código copiado"; }catch(e){} };
@@ -2686,6 +2760,22 @@ function ligarEventos(){
   };
 }
 
+/* Pix automático: confere a cada 5 s se o pagamento caiu (até 20 min) e só redesenha quando muda */
+let esperando = false;
+async function esperarPix(){
+  if(esperando) return; esperando = true;
+  const inicio = Date.now();
+  while(Date.now() - inicio < 20 * 60e3 && P && ["orcamento","aprovado"].includes(P.status) && P.pixAuto && P.pixAuto.atual){
+    await new Promise(r => setTimeout(r, 5000));
+    if(document.hidden) continue;
+    try{
+      const r = await sb.rpc("ver_pedido", { p_token: token });
+      if(r.data && (r.data.status !== P.status || JSON.stringify(r.data.pixAuto) !== JSON.stringify(P.pixAuto))){ P = r.data; render(); }
+    }catch(e){}
+  }
+  esperando = false;
+}
+
 async function carregar(){
   const r = await sb.rpc("ver_pedido", { p_token: token });
   if(r.error) throw r.error;
@@ -2694,6 +2784,7 @@ async function carregar(){
   document.title = `Pedido ${numPed(P.numero)} · RazenLab`;
   if(P.anonimizado){ raiz.innerHTML = `<div class="card"><h1>Pedido ${numPed(P.numero)} encerrado</h1><p class="sub">Os dados pessoais deste pedido foram apagados, como prevê a nossa política de privacidade. Para um novo pedido, fale com a gente pelo WhatsApp.</p></div>`; return; }
   render();
+  if(P.pixAuto && P.pixAuto.atual) esperarPix();
 }
 
 (async function(){

@@ -1179,7 +1179,7 @@ function desenharCarrinho(){
       <label class="lj-aceite"><input type="checkbox" name="aceite"><span>Li e aceito a <a href="privacidade.html" target="_blank">política de privacidade e os termos de compra</a>.</span></label>
       <p class="lj-erro" id="loja-erro" aria-live="polite"></p>
       <button type="submit" class="btn pri block" ${loja.enviando ? "disabled" : ""}>${loja.enviando ? "Registrando…" : `Ir para o pagamento · ${brl(total)}`}</button>
-      <p class="lj-nota">Na próxima tela você paga por Pix${(V.negocio.mpAtivo===true||V.negocio.mpAtivo==="true") ? " ou cartão" : ""} e acompanha o pedido.</p>
+      <p class="lj-nota">${LOJA_TESTE ? "Na próxima tela você paga com o cartão, o boleto ou o Pix de TESTE do Mercado Pago (nada é cobrado) e acompanha o pedido." : `Na próxima tela você paga por Pix${(V.negocio.mpAtivo===true||V.negocio.mpAtivo==="true") ? " ou cartão" : ""} e acompanha o pedido.`}</p>
     </form>` : ""}`}`;
   Object.entries(guardado).forEach(([k, v]) => { const el = document.querySelector(`#loja-form [name="${k}"]`); if(el){ if(el.type === "checkbox") el.checked = v; else el.value = v; } });
   if(loja.endereco) ["rua","bairro","cidade","uf"].forEach(k => { const el = document.querySelector(`#loja-form [name="${k}"]`); if(el && !el.value) el.value = loja.endereco[k] || ""; });
