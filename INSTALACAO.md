@@ -243,6 +243,25 @@ A aba **Shopee** do painel prepara cada item para vender na Shopee: custo, preç
 
 **Licença dos modelos:** só venda modelo seu ou com licença de uso comercial. Personagens de filmes, jogos e desenhos (Pokémon, Marvel etc.) são derrubados pela Shopee e podem gerar processo.
 
+## 15. Venda da loja cai sozinha como pedido
+
+Com a loja ligada, o caminho é automático:
+1. O cliente monta o carrinho, calcula o frete e finaliza. Isso fica guardado como **carrinho não pago**: não aparece na sua lista de pedidos nem nos números (Pedidos → chip **Carrinhos não pagos**, se quiser ver).
+2. No link do pedido ele paga com **Pix automático** ou **cartão/boleto** pelo Mercado Pago. Em compra da loja, com o Mercado Pago ligado, o Pix é sempre o automático: ninguém precisa mandar comprovante.
+3. O Mercado Pago confirma e o pedido vira **Pago** sozinho, com os itens, as cores, o frete e o endereço. Ele aparece na lista com a etiqueta **LOJA**, pronto para ir para Imprimindo → Pronto → Enviado.
+
+**Para funcionar:** etapas 8 e 13 feitas (funções `pagamento` e `mp-webhook` publicadas, `05_loja_pagamento.sql` rodado de novo depois desta atualização) e **Configurações → Oferecer cartão e boleto** ligado.
+
+**Ser avisado na hora**
+- **Com o painel aberto:** Configurações → **Ligar avisos neste aparelho**. A cada venda paga toca um som e aparece uma notificação, mesmo com o painel em outra aba. Use **Testar aviso** para conferir.
+- **No celular, com o painel fechado (Telegram, grátis):**
+  1. No Telegram, fale com **@BotFather** → `/newbot` → dê um nome (ex.: RazenLab Vendas). Ele devolve um **token**.
+  2. Mande qualquer mensagem para o seu bot novo. Depois abra no navegador `https://api.telegram.org/bot<TOKEN>/getUpdates` e copie o número em `"chat":{"id": …}`.
+  3. No Supabase, **Edge Functions → Secrets**: `TELEGRAM_BOT_TOKEN` = o token e `TELEGRAM_CHAT_ID` = o número.
+  4. Publique de novo a função `mp-webhook`. A partir daí, cada pedido pago chega no Telegram com itens, total, frete e endereço.
+
+**Carrinhos abandonados:** quem não paga em 2 dias fica vencido. Em Configurações → **Cancelar carrinhos não pagos vencidos** você limpa todos de uma vez.
+
 ---
 
 ## Como funciona o dia a dia

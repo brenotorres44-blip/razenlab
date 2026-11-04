@@ -9,6 +9,8 @@
 //  teste, e pagamento real só mexe em pedido real — um nunca confirma o outro.
 //  Opcional: MP_WEBHOOK_SECRET (assinatura secreta dos webhooks) — se
 //  cadastrado, avisos sem assinatura válida são recusados.
+//  Opcional: TELEGRAM_BOT_TOKEN + TELEGRAM_CHAT_ID — avisa no seu celular
+//  (Telegram) toda vez que um pedido vira Pago, com os itens e o endereço.
 // ==========================================================================
 
 const ok = (corpo: unknown = { ok: true }, status = 200) =>
@@ -32,6 +34,31 @@ async function assinaturaValida(req: Request, dataId: string, segredo: string) {
   let dif = 0;
   for (let i = 0; i < hex.length; i++) dif |= hex.charCodeAt(i) ^ partes.v1.charCodeAt(i);
   return dif === 0;
+}
+
+// aviso no Telegram (opcional): só se os dois segredos existirem
+async function avisarTelegram(p: Record<string, any>, d: Record<string, any>) {
+  const TOKEN = Deno.env.get("TELEGRAM_BOT_TOKEN"), CHAT = Deno.env.get("TELEGRAM_CHAT_ID");
+  if (!TOKEN || !CHAT) return;
+  const brl = (v: unknown) => Number(v || 0).toLocaleString("pt-BR", { style: "currency", currency: "BRL" });
+  const num = "#" + String(p.numero ?? "").padStart(4, "0");
+  const itens = Array.isArray(d.itens) && d.itens.length
+    ? d.itens.map((i: Record<string, any>) => `• ${i.titulo}${i.cor ? ` (${i.cor})` : ""} ×${i.qtd}`).join("\n")
+    : `• ${d.peca ?? "Pedido"}`;
+  const e = d.endereco ?? {};
+  const end = e.rua ? `${e.rua}, ${e.numero ?? ""} ${e.complemento ?? ""} · ${e.bairro ?? ""} · ${e.cidade ?? ""}/${e.uf ?? ""} · CEP ${d.cep ?? ""}` : "Retirada em mãos";
+  const texto = [
+    `${d.teste ? "🧪 TESTE · " : ""}💰 Pedido ${num} pago!`,
+    `${String(d.cliente ?? p.cliente ?? "").replace(/^\[TESTE\]\s*/, "")}${d.contato ? ` · ${d.contato}` : ""}`,
+    "", itens, "",
+    `Total: ${brl(d.valorRecebido ?? d.total)} · ${d.formaPagamento ?? "Mercado Pago"}`,
+    `Frete: ${d.freteServico ?? "—"}`, `Entrega: ${end}`,
+    "", "Abra o painel: https://razenlab.com.br/painel.html",
+  ].join("\n");
+  await fetch(`${Deno.env.get("TELEGRAM_API_BASE") ?? "https://api.telegram.org"}/bot${TOKEN}/sendMessage`, {
+    method: "POST", headers: { "Content-Type": "application/json" },
+    body: JSON.stringify({ chat_id: CHAT, text: texto.slice(0, 4000), disable_web_page_preview: true }),
+  });
 }
 
 Deno.serve(async (req) => {
@@ -109,5 +136,6 @@ Deno.serve(async (req) => {
     body: JSON.stringify({ status, dados: novo }),
   }).catch(() => null);
   if (!up || !up.ok) return ok({ erro: "não gravou" }, 500);          // o Mercado Pago tenta de novo
+  if (status === "pago" && p.status !== "pago") await avisarTelegram(p, novo).catch((e) => console.error("telegram", e));
   return ok({ ok: true, status });
 });

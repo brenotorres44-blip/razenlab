@@ -44,7 +44,9 @@ begin
 
   -- pedido de verdade usa as chaves de produção; pedido de teste só funciona com o modo teste ligado
   v_cartao   := v_aberto and case when v_teste then (n->>'mpTesteAtivo') = 'true' else (n->>'mpAtivo') = 'true' end;
-  v_pix_auto := v_aberto and case when v_teste then (n->>'mpTesteAtivo') = 'true' else (n->>'pixAutoAtivo') = 'true' end;
+  -- compra da loja: com o Mercado Pago ligado, o Pix é sempre o automático (o pedido vira Pago sozinho)
+  v_pix_auto := v_aberto and case when v_teste then (n->>'mpTesteAtivo') = 'true'
+    else (n->>'pixAutoAtivo') = 'true' or ((r.dados->>'origem') = 'loja' and (n->>'mpAtivo') = 'true') end;
 
   if com_preco and jsonb_typeof(r.dados->'itens') = 'array' then
     select json_agg(json_build_object('titulo', i->>'titulo', 'qtd', i->'qtd', 'preco', i->'preco', 'cor', i->>'cor'))

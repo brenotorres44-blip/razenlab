@@ -74,7 +74,8 @@ async function tratar(req: Request): Promise<Response> {
   const teste = d.teste === true || d.teste === "true";
   const MP_TOKEN = teste ? Deno.env.get("MP_ACCESS_TOKEN_TESTE") : Deno.env.get("MP_ACCESS_TOKEN");
   if (!MP_TOKEN) return resposta({ erro: teste ? "As credenciais de TESTE do Mercado Pago ainda não foram cadastradas." : "Pagamento pelo Mercado Pago ainda não configurado." }, 503);
-  if (teste ? !ligado(n.mpTesteAtivo) : !ligado(metodo === "pix" ? n.pixAutoAtivo : n.mpAtivo)) {
+  const pixLiberado = ligado(n.pixAutoAtivo) || (d.origem === "loja" && ligado(n.mpAtivo));   // compra da loja: Pix sempre automático
+  if (teste ? !ligado(n.mpTesteAtivo) : !(metodo === "pix" ? pixLiberado : ligado(n.mpAtivo))) {
     return resposta({ erro: "Esta forma de pagamento não está disponível no momento." }, 400);
   }
 

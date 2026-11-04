@@ -671,7 +671,9 @@ function resultado(p){
 function somaDias(isoData, n){ const d = new Date(isoData + "T12:00:00"); d.setDate(d.getDate() + n); return d.toISOString().slice(0,10); }
 function difDias(a, b){ if(!a || !b) return null; return Math.round((new Date(b+"T12:00:00") - new Date(a+"T12:00:00")) / 86400000); }
 const dataOrc = p => p.dataOrcamento || (p.criadoEm || "").slice(0,10);
-const vencido = p => p.status === "orcamento" && !!p.validadeAte && p.validadeAte < hoje();
+/* compra da loja que ainda não foi paga: é só um carrinho, não um pedido. Fica guardada em "Carrinhos não pagos" */
+const carrinho = p => ["loja","loja-teste"].includes(p.origem) && ["orcamento","aprovado"].includes(p.status);
+const vencido = p => p.status === "orcamento" && !!p.validadeAte && p.validadeAte < hoje() && !carrinho(p);
 
 // todo orçamento novo começa daqui: tudo zerado, 1 unidade
 const PECA_ZERO = { peca:"", qtd:1, peso:0, horas:0, minutos:0, acabamento:0, extras:0, entrega:0, filamentoId:"" };
@@ -760,13 +762,27 @@ function ligarTempoReal(){
       const n = ev.new || {};
       if(ev.eventType === "INSERT" && n.status === "solicitado") toast(`Nova solicitação ${numPed(n.numero)} — ${n.cliente || "cliente"}.`);
       if(ev.eventType === "UPDATE" && n.status === "comprovante" && ev.old && ev.old.status !== "comprovante") toast(`Comprovante recebido no pedido ${numPed(n.numero)}.`);
-      if(ev.eventType === "UPDATE" && n.status === "pago" && n.dados && n.dados.formaPagamento && !(ev.old && ev.old.status === "pago")) toast(`Pagamento aprovado no Mercado Pago · pedido ${numPed(n.numero)}.`);
+      if(ev.eventType === "UPDATE" && n.status === "pago" && n.dados && n.dados.formaPagamento && !(ev.old && ev.old.status === "pago") && !(dados.pedidos.find(x => x.id === n.id) || {}).dataPago){
+        const loja = ["loja","loja-teste"].includes(n.dados.origem);
+        const msg = loja ? `Nova venda na loja! Pedido ${numPed(n.numero)} · ${brl(num(n.dados.total))}` : `Pagamento aprovado no Mercado Pago · pedido ${numPed(n.numero)}.`;
+        toast(msg); avisarVenda(msg, String(n.dados.peca || ""));
+      }
       clearTimeout(tRecarga);
       tRecarga = setTimeout(async () => {
         try{ await recarregarPedidos(); if(!document.querySelector("#modal .ov")) render(); else desenharNav(); }catch(e){}
       }, 400);
     })
     .subscribe(st => { tempoReal = st === "SUBSCRIBED"; desenharNav(); });
+}
+
+/* aviso de venda neste aparelho: som + notificação do sistema (se você permitiu em Configurações) */
+function avisarVenda(titulo, corpo){
+  try{
+    const ac = new (window.AudioContext || window.webkitAudioContext)();
+    [880, 1320].forEach((f, i) => { const o = ac.createOscillator(), g = ac.createGain(); o.frequency.value = f; o.connect(g); g.connect(ac.destination);
+      const t = ac.currentTime + i * .18; g.gain.setValueAtTime(.0001, t); g.gain.exponentialRampToValueAtTime(.25, t + .02); g.gain.exponentialRampToValueAtTime(.0001, t + .16); o.start(t); o.stop(t + .17); });
+  }catch(e){}
+  try{ if("Notification" in window && Notification.permission === "granted") new Notification(titulo, { body:corpo, icon:"assets/icon-192.png", tag:"razenlab-venda" }); }catch(e){}
 }
 
 /* arquivo enviado (data URL) → armazenamento do Supabase */
@@ -917,9 +933,9 @@ const ehTeste = p => p.teste === true || p.teste === "true";
 const reais = () => dados.pedidos.filter(p => !ehTeste(p));
 const pagosEntre = (de, ate) => reais().filter(p => FATURADO.includes(p.status) && p.dataPago && p.dataPago >= de && p.dataPago <= ate);
 function resumoMes(k){ return resumoFin(reais().filter(p => FATURADO.includes(p.status) && (p.dataPago||"").startsWith(k))); }
-const abertos = () => dados.pedidos.filter(p => !ENCERRADO.includes(p.status));
+const abertos = () => dados.pedidos.filter(p => !ENCERRADO.includes(p.status) && !carrinho(p));
 const emProducao = () => dados.pedidos.filter(p => ["pago","imprimindo","pronto"].includes(p.status));
-const aguardando = () => dados.pedidos.filter(p => AGUARDA_PAGAMENTO.includes(p.status));
+const aguardando = () => dados.pedidos.filter(p => AGUARDA_PAGAMENTO.includes(p.status) && !carrinho(p));
 const atrasado = p => p.prazo && p.prazo < hoje() && ["pago","imprimindo","pronto"].includes(p.status);
 function ocupacao(){
   const fila = dados.pedidos.filter(p => ["pago","imprimindo"].includes(p.status)).reduce((s,p)=>s+num(p.horasTotal),0);
@@ -1296,7 +1312,9 @@ let selecionando = false;
 const selecionados = new Set();
 function pedidosFiltrados(){
   let l = dados.pedidos.slice().sort((a,b) => (b.numero||0)-(a.numero||0));
-  if(filtroStatus === "abertos") l = l.filter(p => !ENCERRADO.includes(p.status));
+  l = filtroStatus === "carrinhos" ? l.filter(carrinho) : l.filter(p => !carrinho(p));
+  if(filtroStatus === "carrinhos"){}
+  else if(filtroStatus === "abertos") l = l.filter(p => !ENCERRADO.includes(p.status));
   else if(filtroStatus === "acao") l = l.filter(p => ["solicitado","comprovante"].includes(p.status));
   else if(filtroStatus === "vencidos") l = l.filter(vencido);
   else if(filtroStatus !== "todos") l = l.filter(p => p.status === filtroStatus);
@@ -1320,7 +1338,8 @@ function listaPedidos(){
     </div>`).join("") : `<div class="vazio"><span class="lbl">Nenhum registro</span>Nada encontrado com esse filtro.</div>`;
 }
 TELAS.pedidos = () => {
-  const chips = [["acao","Precisa de ação"],["vencidos","Vencidos"],["abertos","Abertos"],["todos","Todos"]].concat(Object.entries(STATUS).map(([k,v])=>[k,v.rotulo]));
+  const nCar = dados.pedidos.filter(carrinho).length;
+  const chips = [["acao","Precisa de ação"],["vencidos","Vencidos"],["abertos","Abertos"],["todos","Todos"]].concat(Object.entries(STATUS).map(([k,v])=>[k,v.rotulo])).concat(nCar ? [["carrinhos",`Carrinhos não pagos (${nCar})`]] : []);
   return `
   <div class="row rv" style="--d:40ms;margin-bottom:14px">
     <input id="busca" placeholder="Buscar por peça, cliente ou número" value="${esc(busca)}" style="flex:1;min-width:220px">
@@ -1659,7 +1678,7 @@ function exportarFinanceiro(){
 let periodoAnalise = 90;
 function orcamentosDoPeriodo(){
   const desde = periodoAnalise ? somaDias(hoje(), -periodoAnalise) : "0000-00-00";
-  return reais().filter(p => p.status !== "solicitado" && p.origem !== "shopee" && dataOrc(p) >= desde);
+  return reais().filter(p => p.status !== "solicitado" && !["shopee","loja"].includes(p.origem) && dataOrc(p) >= desde);
 }
 function taxaFech(l){
   const f = l.filter(p => resultado(p) === "fechado").length, pe = l.filter(p => resultado(p) === "perdido").length;
@@ -1689,7 +1708,7 @@ TELAS.analise = () => {
     .map(([o,rot]) => ({ rot, ...taxaFech(base.filter(p => (["site","loja"].includes(p.origem) ? "site" : "painel") === o)) }));
 
   const meses = ultimosMeses(6);
-  const doMes = (k, filtro) => reais().filter(p => p.status !== "solicitado" && p.origem !== "shopee" && dataOrc(p).startsWith(k) && filtro(p)).reduce((s,p) => s + num(p.total), 0);
+  const doMes = (k, filtro) => reais().filter(p => p.status !== "solicitado" && !["shopee","loja"].includes(p.origem) && dataOrc(p).startsWith(k) && filtro(p)).reduce((s,p) => s + num(p.total), 0);
   const orcMes = meses.map(m => doMes(m.k, () => true)), fechMes = meses.map(m => doMes(m.k, p => resultado(p) === "fechado"));
 
   const ultimosPerdidos = perd.slice().sort((a,b) => (b.dataPerdido||"").localeCompare(a.dataPerdido||"")).slice(0, 8);
@@ -1908,6 +1927,10 @@ TELAS.config = () => {
     <label class="chk" style="margin-bottom:6px"><input type="checkbox" name="mpTesteAtivo" ${n.mpTesteAtivo===true||n.mpTesteAtivo==="true"?"checked":""}> Pagar pedidos de teste com as credenciais de teste do Mercado Pago</label>
     <p class="dica" style="margin:0 0 10px">Vale só para pedidos feitos na <b>loja-teste.html</b>: eles mostram cartão, boleto e Pix de teste, nunca o seu Pix de verdade, e não entram no financeiro nem na análise. Precisa do segredo <b>MP_ACCESS_TOKEN_TESTE</b> no Supabase (guia, etapa 13).</p>
     <div class="row" style="gap:10px;flex-wrap:wrap"><button class="tb min" data-acao="apagar-testes">Apagar pedidos de teste (${dados.pedidos.filter(ehTeste).length})</button></div>
+    <div class="sep"></div>
+    <div class="ph" style="margin-bottom:10px"><h2>Avisos de venda</h2><span class="cod">LOJA</span></div>
+    <p class="dica" style="margin:0 0 10px">Quando um pedido da loja é pago, o painel toca um som e mostra uma notificação neste aparelho (com o painel aberto, mesmo em outra aba). Para receber no celular com o painel fechado, configure o Telegram (guia, etapa 15).</p>
+    <div class="row" style="gap:10px;flex-wrap:wrap;margin-bottom:12px"><button class="tb min" data-acao="ativar-avisos">${"Notification" in window && Notification.permission === "granted" ? "Avisos ligados neste aparelho ✓" : "Ligar avisos neste aparelho"}</button><button class="tb min" data-acao="testar-aviso">Testar aviso</button><button class="tb min" data-acao="limpar-carrinhos">Cancelar carrinhos não pagos vencidos (${dados.pedidos.filter(p => carrinho(p) && p.validadeAte && p.validadeAte < hoje()).length})</button></div>
     <p class="dica">Cartão, boleto e Pix automático só funcionam depois de publicar as funções "pagamento" e "mp-webhook" no Supabase (veja o guia).</p>
     <button class="tb pri" style="margin-top:16px" data-acao="salvar-negocio">Salvar dados do negócio</button>
   </div>
@@ -3726,6 +3749,23 @@ document.addEventListener("click", async e => {
         vitrine = vitrine.filter(v => v.id !== w.id); fecharModal(); render();
       }
       break;
+    case "ativar-avisos": {
+      if(!("Notification" in window)){ toast("Este navegador não mostra notificações. O som continua funcionando."); break; }
+      const r = await Notification.requestPermission();
+      toast(r === "granted" ? "Avisos ligados neste aparelho." : "O navegador bloqueou as notificações. Libere nas configurações do site.");
+      render(); break;
+    }
+    case "testar-aviso": avisarVenda("Nova venda na loja! Pedido #0000 · R$ 0,00", "Teste de aviso da RazenLab"); toast("Aviso de teste enviado."); break;
+    case "limpar-carrinhos": {
+      const l = dados.pedidos.filter(p => carrinho(p) && p.validadeAte && p.validadeAte < hoje());
+      if(!l.length){ toast("Nenhum carrinho vencido."); break; }
+      if(!confirm(`Cancelar ${l.length} carrinho${l.length>1?"s":""} da loja que não ${l.length>1?"foram pagos":"foi pago"} no prazo?`)) break;
+      try{
+        for(const p of l){ const s = await gravarPedido({ ...p, status:"cancelado", motivoCancelamento:"Carrinho da loja não pago no prazo" }, true); Object.assign(p, s); }
+        render(); toast("Carrinhos cancelados.");
+      }catch(err){ falhou(err, "cancelar os carrinhos"); await carregarTudo().catch(() => {}); render(); }
+      break;
+    }
     case "apagar-testes": {
       const testes = dados.pedidos.filter(ehTeste);
       if(!testes.length){ toast("Não há pedidos de teste."); break; }
