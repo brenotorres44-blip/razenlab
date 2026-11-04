@@ -155,6 +155,28 @@ main.pg{padding:24px 32px 64px;max-width:1440px}
 .est{padding:10px 0;border-bottom:1px solid var(--rule)}
 .etq{display:inline-block;font:600 10px/1 var(--mono,ui-monospace,monospace);letter-spacing:.12em;padding:3px 6px;border-radius:5px;margin-right:7px;vertical-align:2px;border:1px solid var(--accent);color:var(--accent-strong)}
 .etq.teste{border-color:var(--warning);color:var(--warning)}
+.etq.shopee{border-color:var(--hot);color:var(--hot)}
+/* aba Shopee */
+.sh-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(300px,1fr));gap:14px}
+.sh-card{display:flex;flex-direction:column;padding:16px}
+.sh-abre{display:flex;gap:14px;align-items:center;background:none;border:0;padding:0;color:inherit;text-align:left;cursor:pointer;font:inherit;width:100%}
+.sh-th{width:64px;height:64px;flex:none;border-radius:12px;overflow:hidden;background:var(--raised);display:grid;place-items:center;font:600 24px var(--display);color:var(--muted)}
+.sh-th img{width:100%;height:100%;object-fit:cover}
+.sh-tx{display:flex;flex-direction:column;gap:3px;min-width:0}
+.sh-tx b{font-size:15px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.sh-et{align-self:flex-start;font-size:10px;font-weight:600;letter-spacing:.12em;text-transform:uppercase;padding:3px 7px;border-radius:5px;border:1px solid var(--control);color:var(--muted)}
+.sh-et.sh-teste,.sh-et.sh-fotos,.sh-et.sh-anuncio{border-color:var(--accent);color:var(--accent-strong)}
+.sh-et.sh-publicado{border-color:var(--positive);color:var(--positive)}
+.sh-et.sh-pausado{border-color:var(--warning);color:var(--warning)}
+.sh-pr{display:flex;align-items:center;gap:10px;margin-top:12px}.sh-pr .trilho{flex:1}
+.sh-ed{display:grid;grid-template-columns:minmax(0,1.5fr) minmax(0,1fr);gap:24px;align-items:start}
+.sh-lado{position:sticky;top:0;background:var(--raised);border:1px solid var(--border);border-radius:14px;padding:16px}
+.sh-ck{list-style:none;margin:0;padding:0;display:grid;gap:6px;font-size:13px;color:var(--muted)}
+.sh-ck li{display:flex;gap:8px}.sh-ck li span{width:16px;flex:none;text-align:center}
+.sh-ck li.ok{color:var(--text)}.sh-ck li.ok span{color:var(--positive)}
+.sh-passos{margin:0;padding-left:20px;display:grid;gap:8px;font-size:14px;color:var(--muted)}
+.sh-passos b{color:var(--text)}
+@media (max-width:860px){.sh-ed{grid-template-columns:1fr}.sh-lado{position:static}}
 .est:last-child{border-bottom:none}
 .est .t{display:flex;justify-content:space-between;gap:10px;font-size:14px;margin-bottom:8px}
 .est .t span:last-child{color:var(--muted);font-variant-numeric:tabular-nums}
@@ -949,6 +971,7 @@ const I = {
   seta2:'<path d="m9 18 6-6-6-6"/>',
   historico:'<circle cx="12" cy="12" r="9"/><path d="M12 7v5l3 2"/>',
   analise:'<path d="M21.2 15.9A10 10 0 1 1 8 2.8"/><path d="M22 12A10 10 0 0 0 12 2v10z"/>',
+  shopee:'<path d="M6 7h12l-1 13H7z"/><path d="M9 7a3 3 0 0 1 6 0"/><path d="M10 13.5c.6.6 1.3.9 2 .9 1.2 0 2-.6 2-1.4 0-1.9-4-1-4-2.9 0-.8.8-1.4 2-1.4.7 0 1.4.3 1.9.8"/>',
   sair:'<path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"/><path d="m16 17 5-5-5-5M21 12H9"/>'
 };
 const ico = (n, extra="") => `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round" ${extra}>${I[n]}</svg>`;
@@ -965,6 +988,7 @@ const PAGINAS = [
   { id:"analise",    nome:"Análise",       ico:"analise" },
   { id:"movimentacoes", nome:"Movimentações", ico:"historico" },
   { id:"vitrine",    nome:"Vitrine",       ico:"vitrine" },
+  { id:"shopee",     nome:"Shopee",        ico:"shopee" },
   { id:"config",     nome:"Configurações", ico:"config" }
 ];
 let aba = "painel";
@@ -1007,7 +1031,7 @@ function abrirFolhaMais(){
     <div class="ov" data-fechar style="align-items:flex-end;padding:0">
       <div class="folha" style="width:100%">
         <div class="lbl" style="padding:4px 6px 10px">Mais telas</div>
-        ${["clientes","financeiro","analise","movimentacoes","vitrine","config"].map(id => { const p = PAGINAS.find(x=>x.id===id);
+        ${["clientes","financeiro","analise","movimentacoes","vitrine","shopee","config"].map(id => { const p = PAGINAS.find(x=>x.id===id);
           return `<button class="nav-it ${aba===id?"on":""}" data-ir="${id}" style="padding:14px 12px">${ico(p.ico)}<span>${p.nome}</span></button>`; }).join("")}
         <a class="nav-it" href="index.html" target="_blank" rel="noopener" style="padding:14px 12px;text-decoration:none">${ico("site")}<span>Abrir o site</span></a>
         <button class="nav-it" data-acao="sair" style="padding:14px 12px">${ico("sair")}<span>Sair</span></button>
@@ -1289,7 +1313,7 @@ function listaPedidos(){
     <div class="it ${selecionando && selecionados.has(p.id) ? "sel" : ""}" data-abrir="${p.id}">
       ${selecionando ? `<span class="ck" aria-hidden="true">✓</span>` : ""}
       <div class="g">
-        <div class="n"><span class="nr">${numPed(p.numero)}</span>${ehTeste(p)?`<span class="etq teste">TESTE</span>`:p.origem==="loja"?`<span class="etq">LOJA</span>`:""}${esc(p.peca||"Peça sem nome")}</div>
+        <div class="n"><span class="nr">${numPed(p.numero)}</span>${ehTeste(p)?`<span class="etq teste">TESTE</span>`:p.origem==="loja"?`<span class="etq">LOJA</span>`:p.origem==="shopee"?`<span class="etq shopee">SHOPEE</span>`:""}${esc(p.peca||"Peça sem nome")}</div>
         <div class="s">${esc(p.cliente||"Sem cliente")} · ${num(p.qtd)} un.${p.prazo?` · <span class="${atrasado(p)?"dn":""}">entrega ${dataBR(p.prazo)}</span>`:""}${vencido(p)?` · <span class="dn">venceu em ${dataBR(p.validadeAte)}</span>`:""}${p.status==="perdido"&&p.motivoPerda?` · ${esc(p.motivoPerda)}`:""}${p.dataPago&&FATURADO.includes(p.status)?` · pago em ${dataBR(p.dataPago)}`:""}</div>
       </div>
       <div class="val"><b>${brl(num(p.total))}</b>${stLed(p.status)}</div>
@@ -1456,7 +1480,7 @@ function atualizarSimulador(){
 /* ---------- clientes (montado a partir dos pedidos) ---------- */
 function listaClientes(){
   const m = {};
-  reais().filter(p => p.cliente && p.status !== "cancelado").forEach(p => {
+  reais().filter(p => p.cliente && p.status !== "cancelado" && p.origem !== "shopee").forEach(p => {
     const k = p.cliente.trim().toLowerCase();
     const c = m[k] || (m[k] = { nome:p.cliente.trim(), contato:"", pedidos:0, fechados:0, perdidos:0, gasto:0, ultimo:"" });
     c.pedidos++;
@@ -1635,7 +1659,7 @@ function exportarFinanceiro(){
 let periodoAnalise = 90;
 function orcamentosDoPeriodo(){
   const desde = periodoAnalise ? somaDias(hoje(), -periodoAnalise) : "0000-00-00";
-  return reais().filter(p => p.status !== "solicitado" && dataOrc(p) >= desde);
+  return reais().filter(p => p.status !== "solicitado" && p.origem !== "shopee" && dataOrc(p) >= desde);
 }
 function taxaFech(l){
   const f = l.filter(p => resultado(p) === "fechado").length, pe = l.filter(p => resultado(p) === "perdido").length;
@@ -1665,7 +1689,7 @@ TELAS.analise = () => {
     .map(([o,rot]) => ({ rot, ...taxaFech(base.filter(p => (["site","loja"].includes(p.origem) ? "site" : "painel") === o)) }));
 
   const meses = ultimosMeses(6);
-  const doMes = (k, filtro) => reais().filter(p => p.status !== "solicitado" && dataOrc(p).startsWith(k) && filtro(p)).reduce((s,p) => s + num(p.total), 0);
+  const doMes = (k, filtro) => reais().filter(p => p.status !== "solicitado" && p.origem !== "shopee" && dataOrc(p).startsWith(k) && filtro(p)).reduce((s,p) => s + num(p.total), 0);
   const orcMes = meses.map(m => doMes(m.k, () => true)), fechMes = meses.map(m => doMes(m.k, p => resultado(p) === "fechado"));
 
   const ultimosPerdidos = perd.slice().sort((a,b) => (b.dataPerdido||"").localeCompare(a.dataPerdido||"")).slice(0, 8);
@@ -3826,5 +3850,6 @@ if("serviceWorker" in navigator && location.protocol === "https:") navigator.ser
   try{ if(await precisaCodigo()) pedirCodigo(iniciarSessao); else await iniciarSessao(); }catch(e){ mostrarLogin(erroTexto(e), true); }
 })();
 </script>
+<script src="assets/painel-shopee.js"></script>
 </body>
 </html>

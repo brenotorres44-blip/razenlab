@@ -225,6 +225,24 @@ Em **Edge Functions**, publique (ou publique de novo, colando o arquivo novo):
 - A compra fica reservada por 2 dias para pagamento. Depois disso aparece como **Vencido** no painel.
 - Peça para eu ligar a loja no site (botões de comprar e o carrinho na página principal).
 
+## 14. Aba Shopee
+
+A aba **Shopee** do painel prepara cada item para vender na Shopee: custo, preço com as taxas, anúncio, fotos, checklist e vendas.
+
+**Ligar (uma vez):** no Supabase, abra o **SQL Editor**, cole todo o `supabase/06_shopee.sql` e clique em **Run**. Recarregue o painel.
+
+**Como usar**
+1. **+ Novo item** (ou **Trazer as 8 peças de Natal já prontas**, que cria as peças do catálogo de Natal com título, descrição e preço).
+2. Preencha **filamento, peso e tempo** de uma peça: o custo sai com o mesmo cálculo dos orçamentos (Configurações → Custos da oficina).
+3. A **calculadora** desconta a comissão e a tarifa fixa da Shopee e mostra quanto você recebe, o lucro, o preço mínimo e o preço para a margem que você quiser. Ela avisa quando vender por R$ 79,99 rende mais do que um preço um pouco acima de R$ 80.
+4. Complete o anúncio (título até 120 letras, descrição — tem um modelo pronto —, embalagem, SKU e fotos) e siga o **checklist** até 9/9.
+5. Publique na Central do Vendedor (os botões **Copiar título** e **Copiar descrição** ajudam) e mude a etapa para **Publicado**.
+6. A cada venda, **Registrar venda**: vira um pedido **Pago** com a etiqueta SHOPEE, que você leva até Enviado como os outros. No Financeiro ele entra pelo valor da venda, com as taxas da Shopee e o custo descontados. Vendas da Shopee não entram na Análise de orçamentos nem em Clientes.
+
+**Taxas:** o botão **Taxas da Shopee** guarda a tabela (out/2026: até R$ 79,99 → 20% + R$ 4,50; R$ 80 a 99,99 → 14% + R$ 16; R$ 100 a 199,99 → 14% + R$ 20; acima → 14% + R$ 26; item abaixo de R$ 9 paga metade do preço de tarifa) e o tipo da sua conta. Conta CPF com mais de 450 pedidos em 90 dias paga R$ 3 a mais por item. A Shopee muda essa tabela de tempos em tempos: confira na Central do Vendedor e atualize ali.
+
+**Licença dos modelos:** só venda modelo seu ou com licença de uso comercial. Personagens de filmes, jogos e desenhos (Pokémon, Marvel etc.) são derrubados pela Shopee e podem gerar processo.
+
 ---
 
 ## Como funciona o dia a dia
