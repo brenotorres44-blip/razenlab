@@ -1897,6 +1897,7 @@ TELAS.config = () => {
       ${tx("cidade","Cidade",n.cidade)}
       ${tx("entregas","Peças entregues (opcional)",n.entregas,"Número exibido no topo do site.")}
       ${tx("cepOrigem","CEP de onde você envia",n.cepOrigem,"Usado para cotar o frete.","00000-000")}
+      ${tx("remEndereco","Endereço do remetente (etiqueta)",n.remEndereco,"Sai na etiqueta de envio. Rua, número e bairro.","Rua Exemplo, 123 · Bairro")}
     </div>
     <div class="grid g2" style="margin-top:14px">
       <label class="f"><span>Frase de apresentação do site</span><textarea name="slogan">${esc(n.slogan)}</textarea></label>
@@ -2111,6 +2112,7 @@ function desenharPedido(){
           ${acaoPrincipal(p)}
           <button class="tb ${acaoPrincipal(p)?"":"pri"}" data-acao="salvar-pedido">${p.id?"Salvar":"Criar pedido"}</button>
           <button class="tb" data-acao="gerar-orcamento">Enviar PDF</button>
+          ${p.id && ["pago","imprimindo","pronto","enviado","entregue"].includes(p.status) ? `<button class="tb" data-acao="imprimir-etiqueta" data-id="${p.id}">Imprimir etiqueta</button>` : ""}
           ${p.id?`<button class="tb" data-acao="duplicar">Duplicar</button>
             ${["enviado","entregue"].includes(p.status)?`<button class="tb" data-acao="para-vitrine">Mostrar na vitrine</button>`:""}
             <button class="tb perigo dir" data-acao="excluir-pedido">Excluir</button>`:""}
@@ -3892,5 +3894,7 @@ if("serviceWorker" in navigator && location.protocol === "https:") navigator.ser
 })();
 </script>
 <script src="assets/painel-shopee.js"></script>
+<script src="assets/vendor/qrcode-generator.js"></script>
+<script src="assets/painel-etiqueta.js"></script>
 </body>
 </html>

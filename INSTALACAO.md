@@ -262,6 +262,20 @@ Com a loja ligada, o caminho é automático:
 
 **Carrinhos abandonados:** quem não paga em 2 dias fica vencido. Em Configurações → **Cancelar carrinhos não pagos vencidos** você limpa todos de uma vez.
 
+## 16. Etiqueta para impressora térmica
+
+Em todo pedido **Pago** (ou depois), a janela do pedido tem o botão **Imprimir etiqueta**. Ela sai no tamanho **10 × 15 cm**, o mesmo das etiquetas da Shopee e do Mercado Livre, em preto e branco, com: seu logo, número do pedido com código de barras, destinatário (nome, endereço, CEP grande e telefone), remetente, lista de peças com cor e quantidade, serviço de frete, peso aproximado e um QR Code que abre o acompanhamento do pedido.
+
+**Antes da primeira vez:** em **Configurações → Seu negócio**, preencha **Endereço do remetente (etiqueta)**, **Cidade**, **CEP de onde você envia** e **WhatsApp**.
+
+**Na hora de imprimir** (a janela de impressão abre sozinha):
+- Impressora: a térmica.
+- Tamanho do papel: **100 × 150 mm** (ou 4 × 6 pol.).
+- Margens: **Nenhuma**. Escala: **100%** (ou "Tamanho real"). Desmarque "Cabeçalhos e rodapés".
+- Se a janela não abrir, libere **pop-ups** para o painel no navegador.
+
+**Importante:** quando você comprar a postagem no Melhor Envio (Correios, Loggi, Jadlog…), a etiqueta **da transportadora** é obrigatória e vem de lá. A etiqueta da RazenLab serve para identificar o pacote, ir junto dentro da caixa ou ser usada em entrega própria e retirada em mãos.
+
 ---
 
 ## Como funciona o dia a dia
