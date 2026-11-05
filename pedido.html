@@ -2588,7 +2588,9 @@ function render(){
     lado += `<section class="card hud-frame" aria-labelledby="t-ped"><h2 id="t-ped">O que você pediu</h2><p style="margin:0;white-space:pre-line;color:var(--muted)">${esc(P.pedidoCliente)}</p></section>`;
   }
 
-  if(P.pixAuto){
+  if(P.pixAuto && P.teste){
+    main += `<section class="card hud-frame" id="pagar" aria-labelledby="t-pixt"><h2 id="t-pixt">Pix</h2><p class="sub" style="margin:0">No modo teste o Mercado Pago não aceita Pix. Use o <b>cartão de teste</b> logo abaixo (titular <b>APRO</b>) para simular a compra.</p></section>`;
+  }else if(P.pixAuto){
     const a = P.pixAuto.atual;
     main += `
     <section class="card hud-frame" id="pagar" aria-labelledby="t-pixa">

@@ -72,7 +72,9 @@ async function tratar(req: Request): Promise<Response> {
 
   // ---------- ambiente: produção ou teste ----------
   const teste = d.teste === true || d.teste === "true";
-  const MP_TOKEN = teste ? Deno.env.get("MP_ACCESS_TOKEN_TESTE") : Deno.env.get("MP_ACCESS_TOKEN");
+  // limpa espaço, quebra de linha ou "Bearer " colados junto com o token no Secrets
+  const MP_TOKEN = String((teste ? Deno.env.get("MP_ACCESS_TOKEN_TESTE") : Deno.env.get("MP_ACCESS_TOKEN")) ?? "").trim().replace(/^Bearer\s+/i, "").replace(/\s+/g, "");
+  console.log("mp credencial", teste ? "teste" : "producao", MP_TOKEN.slice(0, 8) + "…", MP_TOKEN.length, "caracteres");
   if (!MP_TOKEN) return resposta({ erro: teste ? "As credenciais de TESTE do Mercado Pago ainda não foram cadastradas." : "Pagamento pelo Mercado Pago ainda não configurado." }, 503);
   const pixLiberado = ligado(n.pixAutoAtivo) || (d.origem === "loja" && ligado(n.mpAtivo));   // compra da loja: Pix sempre automático
   if (teste ? !ligado(n.mpTesteAtivo) : !(metodo === "pix" ? pixLiberado : ligado(n.mpAtivo))) {
@@ -108,6 +110,8 @@ async function tratar(req: Request): Promise<Response> {
 
   // ======================= PIX (Mercado Pago) =======================
   if (metodo === "pix") {
+    // o ambiente de teste do Mercado Pago não paga QR de Pix: no teste, só o cartão de teste
+    if (teste) return resposta({ erro: "No modo teste o Pix não funciona. Use o cartão de teste (titular APRO)." }, 400);
     const agora = Date.now();
     const atual = d.mpPix;
     // reaproveita o Pix já gerado enquanto ele vale e o valor não mudou
@@ -154,7 +158,8 @@ async function tratar(req: Request): Promise<Response> {
   const volta = (st: string) => `${SITE}pedido.html?t=${b.token}&mp=${st}`;
   const corpo: Record<string, unknown> = {
     items: [{ id: String(p.numero), title: descricao, quantity: 1, unit_price: valor, currency_id: "BRL" }],
-    payer: { name: String(p.cliente ?? d.cliente ?? "").replace(/^\[TESTE\]\s*/, "").slice(0, 120), ...(d.email ? { email: d.email } : {}) },
+    // no teste, e-mail real do comprador faz o Mercado Pago recusar (403 de política): manda só o nome
+    payer: { name: String(p.cliente ?? d.cliente ?? "").replace(/^\[TESTE\]\s*/, "").slice(0, 120), ...(d.email && !teste ? { email: d.email } : {}) },
     external_reference: p.id,
     back_urls: { success: volta("ok"), pending: volta("pendente"), failure: volta("erro") },
     auto_return: "approved",

@@ -64,8 +64,9 @@ async function avisarTelegram(p: Record<string, any>, d: Record<string, any>) {
 Deno.serve(async (req) => {
   const SUPABASE_URL = Deno.env.get("SUPABASE_URL")!;
   const SERVICE = Deno.env.get("SUPABASE_SERVICE_ROLE_KEY")!;
-  const MP_TOKEN = Deno.env.get("MP_ACCESS_TOKEN");
-  const MP_TOKEN_TESTE = Deno.env.get("MP_ACCESS_TOKEN_TESTE");
+  const limpa = (v?: string) => (v ?? "").trim().replace(/^Bearer\s+/i, "").replace(/\s+/g, "") || undefined;
+  const MP_TOKEN = limpa(Deno.env.get("MP_ACCESS_TOKEN"));
+  const MP_TOKEN_TESTE = limpa(Deno.env.get("MP_ACCESS_TOKEN_TESTE"));
   const MP_API = Deno.env.get("MP_API_BASE") ?? "https://api.mercadopago.com";
   const SEGREDO = Deno.env.get("MP_WEBHOOK_SECRET");
   if (!MP_TOKEN && !MP_TOKEN_TESTE) return ok({ erro: "sem credencial" }, 503);
