@@ -672,6 +672,7 @@ function somaDias(isoData, n){ const d = new Date(isoData + "T12:00:00"); d.setD
 function difDias(a, b){ if(!a || !b) return null; return Math.round((new Date(b+"T12:00:00") - new Date(a+"T12:00:00")) / 86400000); }
 const dataOrc = p => p.dataOrcamento || (p.criadoEm || "").slice(0,10);
 /* compra da loja que ainda não foi paga: é só um carrinho, não um pedido. Fica guardada em "Carrinhos não pagos" */
+const unidades = p => Array.isArray(p.itens) && p.itens.length ? p.itens.reduce((t,i) => t + num(i.qtd), 0) : num(p.qtd);
 const carrinho = p => ["loja","loja-teste"].includes(p.origem) && ["orcamento","aprovado"].includes(p.status);
 const vencido = p => p.status === "orcamento" && !!p.validadeAte && p.validadeAte < hoje() && !carrinho(p);
 
@@ -1268,7 +1269,7 @@ TELAS.painel = () => {
       ${fila.length ? fila.slice(0,7).map(p => `
         <div class="fila-it" data-abrir="${p.id}">
           <div class="hr ${atrasado(p)?"dn":""}">${p.prazo?diaMes(p.prazo):"—"}</div>
-          <div class="g"><div class="n">${esc(p.peca||"Peça sem nome")}</div><div class="s">${esc(p.cliente||"Sem cliente")} · ${num(p.qtd)} un. · ${dec(num(p.horasTotal))} h</div></div>
+          <div class="g"><div class="n">${esc(p.peca||"Peça sem nome")}</div><div class="s">${esc(p.cliente||"Sem cliente")} · ${unidades(p)} un. · ${dec(num(p.horasTotal))} h</div></div>
           ${stLed(p.status)}
         </div>`).join("") + (fila.length>7?`<button class="lk" data-ir="pedidos" style="margin:8px 10px 0">Ver todos (${fila.length})</button>`:"")
       : `<div class="vazio"><span class="lbl">Fila vazia</span>Nenhum pedido pago esperando impressão.<br><button class="tb pri min" data-acao="novo" style="margin-top:14px">Novo orçamento</button></div>`}
@@ -1332,7 +1333,7 @@ function listaPedidos(){
       ${selecionando ? `<span class="ck" aria-hidden="true">✓</span>` : ""}
       <div class="g">
         <div class="n"><span class="nr">${numPed(p.numero)}</span>${ehTeste(p)?`<span class="etq teste">TESTE</span>`:p.origem==="loja"?`<span class="etq">LOJA</span>`:p.origem==="shopee"?`<span class="etq shopee">SHOPEE</span>`:""}${esc(p.peca||"Peça sem nome")}</div>
-        <div class="s">${esc(p.cliente||"Sem cliente")} · ${num(p.qtd)} un.${p.prazo?` · <span class="${atrasado(p)?"dn":""}">entrega ${dataBR(p.prazo)}</span>`:""}${vencido(p)?` · <span class="dn">venceu em ${dataBR(p.validadeAte)}</span>`:""}${p.status==="perdido"&&p.motivoPerda?` · ${esc(p.motivoPerda)}`:""}${p.dataPago&&FATURADO.includes(p.status)?` · pago em ${dataBR(p.dataPago)}`:""}</div>
+        <div class="s">${esc(p.cliente||"Sem cliente")} · ${unidades(p)} un.${p.prazo?` · <span class="${atrasado(p)?"dn":""}">entrega ${dataBR(p.prazo)}</span>`:""}${vencido(p)?` · <span class="dn">venceu em ${dataBR(p.validadeAte)}</span>`:""}${p.status==="perdido"&&p.motivoPerda?` · ${esc(p.motivoPerda)}`:""}${p.dataPago&&FATURADO.includes(p.status)?` · pago em ${dataBR(p.dataPago)}`:""}</div>
       </div>
       <div class="val"><b>${brl(num(p.total))}</b>${stLed(p.status)}</div>
     </div>`).join("") : `<div class="vazio"><span class="lbl">Nenhum registro</span>Nada encontrado com esse filtro.</div>`;
