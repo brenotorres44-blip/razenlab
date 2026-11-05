@@ -1171,6 +1171,7 @@ function desenharCarrinho(){
       <span class="lj-lbl">Seus dados</span>
       <input name="nome" autocomplete="name" placeholder="Seu nome" maxlength="120">
       <div class="lj-2"><input name="contato" type="tel" inputmode="tel" autocomplete="tel" placeholder="WhatsApp com DDD" maxlength="20"><input name="email" type="email" autocomplete="email" placeholder="E-mail (opcional)" maxlength="160"></div>
+      ${retirada ? "" : `<input name="cpf" inputmode="numeric" autocomplete="off" placeholder="CPF (a transportadora pede para entregar)" maxlength="14">`}
       ${retirada ? `<p class="lj-nota">Retirada em mãos: combinamos o local e o horário pelo WhatsApp.</p>` : `
       <span class="lj-lbl">Endereço de entrega</span>
       <input name="rua" autocomplete="address-line1" placeholder="Rua" maxlength="160">
@@ -1203,6 +1204,7 @@ async function finalizarCompra(form){
   if(String(v.contato||"").replace(/\D/g,"").length < 10) return falha("Informe seu WhatsApp com DDD.");
   const retirada = loja.escolha === "retirada";
   if(!retirada && (!v.rua || !v.numero || !v.cidade || String(v.uf||"").trim().length !== 2)) return falha("Preencha o endereço completo.");
+  if(!retirada && String(v.cpf||"").replace(/\D/g,"").length !== 11) return falha("Informe seu CPF: a transportadora precisa dele para entregar.");
   if(!v.aceite) return falha("Marque que aceita a política de privacidade e os termos.");
   if(loja.simulado){
     falha(""); avisoLoja("Simulação: com a função da loja publicada, este botão cria o pedido e abre a tela de pagamento.");
@@ -1212,7 +1214,7 @@ async function finalizarCompra(form){
   try{
     const r = await chamarLoja({ acao:"finalizar", cep:loja.cep, servicoId:loja.escolha,
       itens:carrinho.map(x => ({ id:x.id, qtd:x.qtd, cor:x.cor })),
-      cliente:{ nome:v.nome, contato:v.contato, email:v.email || "", aceite:true },
+      cliente:{ nome:v.nome, contato:v.contato, email:v.email || "", cpf:v.cpf || "", aceite:true },
       endereco:{ rua:v.rua||"", numero:v.numero||"", complemento:v.complemento||"", bairro:v.bairro||"", cidade:v.cidade||"", uf:String(v.uf||"").toUpperCase() } });
     try{ const l = JSON.parse(localStorage.getItem("razenlab-meus-pedidos") || "[]"); l.unshift({ numero:r.numero, token:r.token }); localStorage.setItem("razenlab-meus-pedidos", JSON.stringify(l.slice(0,20))); }catch(e){}
     carrinho = []; salvarCarrinho();

@@ -100,8 +100,8 @@ html,body{background:#fff;color:#000;font-family:Arial,Helvetica,sans-serif;-web
   </div>
   <div class="bx rem">
     <div class="rt">REMETENTE</div>
-    <b>${ab(n.nome || "RazenLab")}${n.nome && !/razen/i.test(n.nome) ? " · RazenLab" : ""}</b><br>
-    ${n.remEndereco ? ab(n.remEndereco) + "<br>" : ""}${ab(n.cidade)}${n.cepOrigem ? ` · CEP ${cep(n.cepOrigem)}` : ""}${n.whatsapp ? ` · ${tel(n.whatsapp)}` : ""}
+    <b>${ab(n.remNome || n.nome || "RazenLab")}${(n.remNome || n.nome) && !/razen/i.test(n.remNome || n.nome) ? " · RazenLab" : ""}</b><br>
+    ${n.remRua ? `${ab(n.remRua)}, ${ab(n.remNumero)}${n.remComplemento ? ` · ${ab(n.remComplemento)}` : ""}${n.remBairro ? ` · ${ab(n.remBairro)}` : ""}<br>` : n.remEndereco ? ab(n.remEndereco) + "<br>" : ""}${ab(n.remCidade || n.cidade)}${n.remUF ? "/" + ab(n.remUF) : ""}${n.cepOrigem ? ` · CEP ${cep(n.cepOrigem)}` : ""}${n.whatsapp ? ` · ${tel(n.whatsapp)}` : ""}
   </div>
   <div class="bx itens">
     <div class="rt">CONTEÚDO · ${unid} ${unid === 1 ? "PEÇA" : "PEÇAS"}</div>
@@ -147,4 +147,39 @@ document.addEventListener("click", e => {
   e.stopPropagation();
   const p = (typeof pedidoAberto !== "undefined" && pedidoAberto && pedidoAberto.id === b.dataset.id) ? pedidoAberto : dados.pedidos.find(x => x.id === b.dataset.id);
   imprimirEtiqueta(p);
+}, true);
+
+/* ---------- etiqueta da transportadora (Melhor Envio): comprar, imprimir, rastrear ---------- */
+async function chamarEtiqueta(acao, id){
+  const { data, error } = await sb.functions.invoke("etiqueta", { body:{ acao, pedidoId:id } });
+  if(error){ let t = error.message; try{ const j = await error.context.json(); if(j && j.erro) t = j.erro; }catch(_){} throw new Error(t); }
+  if(data && data.erro) throw new Error(data.erro);
+  return data;
+}
+document.addEventListener("click", async e => {
+  const b = e.target.closest("[data-me]");
+  if(!b) return;
+  e.stopPropagation();
+  const acao = b.dataset.me, id = b.dataset.id, p = dados.pedidos.find(x => x.id === id);
+  if(acao === "comprar" && !confirm(`Comprar a etiqueta de ${p ? (p.freteServico || "frete") : "frete"} no Melhor Envio?\n\nO valor sai do saldo da sua carteira do Melhor Envio.`)) return;
+  // abre a aba já no clique para o navegador não bloquear o PDF
+  const aba = acao !== "rastrear" ? window.open("", "_blank") : null;
+  const txt = b.textContent; b.disabled = true; b.textContent = acao === "comprar" ? "Comprando…" : acao === "imprimir" ? "Abrindo…" : "Buscando…";
+  try{
+    const r = await chamarEtiqueta(acao, id);
+    if(r.url && aba) aba.location.href = r.url; else if(aba) aba.close();
+    if(p){
+      if(r.url) p.etiquetaUrl = r.url;
+      if(r.rastreio) p.rastreio = r.rastreio;
+      if(acao === "comprar") p.meStatus = "gerada";
+    }
+    const campo = document.querySelector('#ped-form [name="rastreio"]');
+    if(campo && r.rastreio){ campo.value = r.rastreio; if(typeof pedidoAberto !== "undefined" && pedidoAberto) pedidoAberto.rastreio = r.rastreio; }
+    toast(r.rastreio ? `Rastreio: ${r.rastreio}` : acao === "rastrear" ? "A transportadora ainda não liberou o código. Tente de novo mais tarde." : "Etiqueta pronta. O rastreio aparece assim que a transportadora liberar.");
+    try{ if(typeof recarregarPedidos === "function"){ await recarregarPedidos(); const novo = dados.pedidos.find(x => x.id === id); if(novo && typeof abrirPedido === "function") abrirPedido(novo); } }catch(_){}
+  }catch(err){
+    if(aba) aba.close();
+    toast(err.message || "Não consegui falar com o Melhor Envio.");
+    b.disabled = false; b.textContent = txt;
+  }
 }, true);

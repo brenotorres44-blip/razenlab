@@ -36,6 +36,19 @@ async function assinaturaValida(req: Request, dataId: string, segredo: string) {
   return dif === 0;
 }
 
+// compra automática da etiqueta (se ligada no painel): pedido da loja, real, com frete do Melhor Envio
+async function comprarEtiquetaAuto(p: Record<string, any>, d: Record<string, any>, URL_: string, SERVICE: string, cab: Record<string, string>) {
+  if (d.teste === true || d.teste === "true" || d.origem !== "loja" || !d.freteServicoId) return;
+  const rc = await fetch(`${URL_}/rest/v1/config?id=eq.1&select=dados`, { headers: cab });
+  const [c] = rc.ok ? await rc.json() : [];
+  if (c?.dados?.negocio?.meAuto !== true && c?.dados?.negocio?.meAuto !== "true") return;
+  const r = await fetch(`${URL_}/functions/v1/etiqueta`, {
+    method: "POST", headers: { Authorization: `Bearer ${SERVICE}`, apikey: SERVICE, "Content-Type": "application/json" },
+    body: JSON.stringify({ acao: "comprar", pedidoId: p.id }),
+  });
+  console.log("etiqueta automática", r.status, (await r.text()).slice(0, 300));
+}
+
 // aviso no Telegram (opcional): só se os dois segredos existirem
 async function avisarTelegram(p: Record<string, any>, d: Record<string, any>) {
   const TOKEN = Deno.env.get("TELEGRAM_BOT_TOKEN"), CHAT = Deno.env.get("TELEGRAM_CHAT_ID");
@@ -137,6 +150,9 @@ Deno.serve(async (req) => {
     body: JSON.stringify({ status, dados: novo }),
   }).catch(() => null);
   if (!up || !up.ok) return ok({ erro: "não gravou" }, 500);          // o Mercado Pago tenta de novo
-  if (status === "pago" && p.status !== "pago") await avisarTelegram(p, novo).catch((e) => console.error("telegram", e));
+  if (status === "pago" && p.status !== "pago") {
+    await avisarTelegram(p, novo).catch((e) => console.error("telegram", e));
+    await comprarEtiquetaAuto(p, novo, SUPABASE_URL, SERVICE, cab).catch((e) => console.error("etiqueta", e));
+  }
   return ok({ ok: true, status });
 });

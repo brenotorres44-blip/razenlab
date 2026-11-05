@@ -276,6 +276,23 @@ Em todo pedido **Pago** (ou depois), a janela do pedido tem o botão **Imprimir 
 
 **Importante:** quando você comprar a postagem no Melhor Envio (Correios, Loggi, Jadlog…), a etiqueta **da transportadora** é obrigatória e vem de lá. A etiqueta da RazenLab serve para identificar o pacote, ir junto dentro da caixa ou ser usada em entrega própria e retirada em mãos.
 
+## 17. Etiqueta da transportadora e rastreio automáticos (Melhor Envio)
+
+O código de rastreio nasce quando a etiqueta da transportadora é comprada. O sistema compra a etiqueta no Melhor Envio com o **saldo da sua carteira**, gera o PDF para imprimir e grava o rastreio no pedido sozinho.
+
+**Preparar (uma vez)**
+1. **Token com mais permissões:** no Melhor Envio, **Integrações → Permissões de acesso → Gerar novo token** com: `shipping-calculate`, `cart-read`, `cart-write`, `shipping-checkout`, `shipping-generate`, `shipping-print`, `shipping-tracking` e `orders-read`. No Supabase, troque o valor do segredo **MELHOR_ENVIO_TOKEN** por esse token novo e apague o antigo no Melhor Envio.
+2. **Saldo:** no Melhor Envio, **Carteira → Adicionar saldo** (Pix cai na hora). Cada etiqueta sai desse saldo, pelo mesmo valor do frete que o cliente pagou.
+3. **Função:** publique a função **etiqueta** (`supabase/functions/etiqueta/index.ts`) com o **Verify JWT desligado**. Publique de novo **loja** e **mp-webhook**.
+4. **Seus dados de remetente:** painel → **Configurações → Remetente**: nome, CPF, rua, número, bairro, cidade e UF (a transportadora exige).
+
+**Usar**
+- Pedido pago → abra o pedido → **Comprar etiqueta no Melhor Envio**. Abre o PDF da etiqueta (imprime na térmica, 10 × 15) e o campo **Código de rastreio** se preenche sozinho.
+- Se o código ainda não veio (algumas transportadoras liberam minutos depois), toque em **Atualizar rastreio**.
+- **Automático:** em Configurações → Remetente, ligue **Comprar a etiqueta da transportadora sozinho quando um pedido da loja for pago**. Aí, assim que o Mercado Pago confirma, a etiqueta já fica pronta no pedido.
+- O carrinho da loja agora pede o **CPF** do cliente (obrigatório para a transportadora). Em pedido feito pelo painel, preencha o CPF no pedido e cote o frete pelo botão de cotação (o sistema guarda qual transportadora você escolheu).
+- Pedido de teste nunca compra etiqueta de verdade.
+
 ---
 
 ## Como funciona o dia a dia

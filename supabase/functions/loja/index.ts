@@ -39,6 +39,16 @@ const somaDiasUteis = (iso: string, d: number) => {
   return x.toISOString().slice(0, 10);
 };
 const md = (iso: string) => iso.slice(5, 10);
+// CPF válido (dígitos verificadores): a transportadora exige o CPF de quem recebe
+function cpfOk(v: string) {
+  const c = v.replace(/\D/g, "");
+  if (c.length !== 11 || /^(\d)\1{10}$/.test(c)) return false;
+  for (const t of [9, 10]) {
+    let s = 0; for (let i = 0; i < t; i++) s += Number(c[i]) * (t + 1 - i);
+    if (((s * 10) % 11) % 10 !== Number(c[t])) return false;
+  }
+  return true;
+}
 function colecaoNoAr(c: Record<string, string> | undefined) {
   if (!c) return true;
   if (c.modo === "ligada") return true;
@@ -141,6 +151,7 @@ async function tratar(req: Request): Promise<Response> {
   if (tel.length < 10 || tel.length > 13) return resposta({ erro: "Informe um WhatsApp com DDD." }, 400);
   if (email && !/^[^@\s]+@[^@\s]+\.[^@\s]+$/.test(email)) return resposta({ erro: "Confira o e-mail." }, 400);
   if (cli.aceite !== true) return resposta({ erro: "Marque a autorização de uso dos dados." }, 400);
+  const cpf = soDigitos(cli.cpf);
 
   const servicoId = String(b.servicoId ?? "");
   let frete = retirada;
@@ -157,6 +168,7 @@ async function tratar(req: Request): Promise<Response> {
   if (servicoId !== "retirada" && (!endereco.rua || !endereco.numero || !endereco.cidade || endereco.uf.length !== 2)) {
     return resposta({ erro: "Preencha o endereço de entrega completo." }, 400);
   }
+  if (servicoId !== "retirada" && !cpfOk(cpf)) return resposta({ erro: "Confira o CPF: a transportadora precisa dele para entregar." }, 400);
 
   // contra abuso: até 5 pedidos da loja por telefone por dia
   const desde = new Date(Date.now() - 864e5).toISOString();
@@ -174,6 +186,7 @@ async function tratar(req: Request): Promise<Response> {
     peca: resumo.slice(0, 120), pedidoCliente: `Compra pela loja do site:\n${itens.map((i) => `• ${i.titulo}${i.cor ? ` · cor: ${i.cor}` : ""} · ${i.qtd} un. × R$ ${i.preco.toFixed(2).replace(".", ",")}`).join("\n")}`,
     itens, qtd: 1, precoManual: subtotal, precoUn: subtotal, desconto: 0,
     entrega: frete.preco, freteServico: frete.id === "retirada" ? "Retirada em mãos" : `${frete.empresa} ${frete.servico}`.trim(),
+    freteServicoId: frete.id === "retirada" ? null : Number(frete.id), pacote, cpf: servicoId === "retirada" ? null : cpf,
     total, dataOrcamento: hoje, validadeAte: somaDias(hoje, 2), prazo: somaDiasUteis(hoje, prazoDias + (frete.prazo ?? 0)),
     origem: teste ? "loja-teste" : "loja", teste,
     consentimento: { em: new Date().toISOString(), politica: "2026-10", finalidade: "compra e entrega" },

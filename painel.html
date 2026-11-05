@@ -1897,8 +1897,22 @@ TELAS.config = () => {
       ${tx("cidade","Cidade",n.cidade)}
       ${tx("entregas","Peças entregues (opcional)",n.entregas,"Número exibido no topo do site.")}
       ${tx("cepOrigem","CEP de onde você envia",n.cepOrigem,"Usado para cotar o frete.","00000-000")}
-      ${tx("remEndereco","Endereço do remetente (etiqueta)",n.remEndereco,"Sai na etiqueta de envio. Rua, número e bairro.","Rua Exemplo, 123 · Bairro")}
     </div>
+    <div class="sep"></div>
+    <div class="ph" style="margin-bottom:10px"><h2>Remetente</h2><span class="cod">ETIQUETAS</span></div>
+    <p class="dica" style="margin:0 0 10px">Usado nas etiquetas da transportadora (Melhor Envio) e na etiqueta térmica. Fica só no painel, nunca no site.</p>
+    <div class="grid g2">
+      ${tx("remNome","Nome do remetente",n.remNome,"Como sai na etiqueta.","Breno Torres")}
+      ${tx("remCpf","CPF (ou CNPJ) do remetente",n.remCpf,"A transportadora exige.","000.000.000-00")}
+      ${tx("remRua","Rua",n.remRua,"","Rua Exemplo")}
+      ${tx("remNumero","Número",n.remNumero,"","123")}
+      ${tx("remComplemento","Complemento",n.remComplemento,"","casa 2")}
+      ${tx("remBairro","Bairro",n.remBairro,"","Centro")}
+      ${tx("remCidade","Cidade",n.remCidade||n.cidade,"","São Bernardo do Campo")}
+      ${tx("remUF","UF",n.remUF,"","SP")}
+    </div>
+    <label class="chk" style="margin:12px 0 4px"><input type="checkbox" name="meAuto" ${n.meAuto===true||n.meAuto==="true"?"checked":""}> Comprar a etiqueta da transportadora sozinho quando um pedido da loja for pago</label>
+    <p class="dica" style="margin:0">Usa o saldo da sua carteira do Melhor Envio. Desligado, você compra com um toque dentro do pedido.</p>
     <div class="grid g2" style="margin-top:14px">
       <label class="f"><span>Frase de apresentação do site</span><textarea name="slogan">${esc(n.slogan)}</textarea></label>
       <label class="f"><span>Texto da seção de contato</span><textarea name="sobre">${esc(n.sobre)}</textarea></label>
@@ -2088,9 +2102,16 @@ function desenharPedido(){
             <div class="grid g3">
               ${txt("cep","CEP",p.cep,"00000-000",'inputmode="numeric" data-cep')}
               ${ENDERECO_CAMPOS.map(([k,r]) => txt("end_"+k, r, e[k], "")).join("")}
-              ${txt("rastreio","Código de rastreio",p.rastreio,"AA123456789BR",'style="text-transform:uppercase"')}
+              ${txt("cpf","CPF do destinatário",p.cpf||"","000.000.000-00",'inputmode="numeric"')}
+              ${txt("rastreio","Código de rastreio",p.rastreio,"sai sozinho ao comprar a etiqueta",'style="text-transform:uppercase"')}
             </div>
             <input type="hidden" name="freteServico" value="${esc(p.freteServico||"")}">
+            <input type="hidden" name="freteServicoId" value="${esc(p.freteServicoId||"")}">
+            ${p.id && !ehTeste(p) && ["pago","imprimindo","pronto","enviado"].includes(p.status) ? `<div class="row" style="gap:8px;flex-wrap:wrap;margin-top:12px">
+              ${p.etiquetaUrl ? `<button type="button" class="tb min pri" data-me="imprimir" data-id="${p.id}">Imprimir etiqueta da transportadora</button><button type="button" class="tb min" data-me="rastrear" data-id="${p.id}">Atualizar rastreio</button>`
+                : ["pago","imprimindo","pronto"].includes(p.status) ? `<button type="button" class="tb min pri" data-me="comprar" data-id="${p.id}">Comprar etiqueta no Melhor Envio${num(p.meValor||p.entrega) ? ` · ${brl(num(p.meValor||p.entrega))}` : ""}</button>` : ""}
+              <span class="dica" style="margin:0;align-self:center">${p.etiquetaUrl ? "Etiqueta comprada." : "Paga com o saldo da sua carteira do Melhor Envio e preenche o rastreio."}</span>
+            </div>` : ""}
             <div class="row" style="margin-top:12px">
               <button type="button" class="tb min" data-acao="cotar-frete">Cotar frete pelo CEP</button>
               <span class="p13 muted" id="frete-escolhido">${p.freteServico?`Escolhido: <b style="color:var(--text)">${esc(p.freteServico)}</b>`:""}</span>
@@ -2183,6 +2204,7 @@ function montarPedido(){
     qtd:c.qtd, peso:num(v.peso), horas:num(v.horas), minutos:num(v.minutos), acabamento:num(v.acabamento), extras:num(v.extras), entrega:num(v.entrega),
     precoManual: num(v.precoManual) > 0 ? num(v.precoManual) : "", desconto:num(v.desconto),
     cep:v.cep.trim(), endereco, rastreio:v.rastreio.trim().toUpperCase(), freteServico:v.freteServico || "",
+    cpf:String(v.cpf||"").replace(/\D/g,""), freteServicoId: num(v.freteServicoId) || "",
     materialTexto: c.fil ? [c.fil.material, c.fil.cor].filter(Boolean).join(" ") : "",
     precoUn:c.preco, total:c.total, custoTotal:c.custoTotal, lucroTotal:c.lucroTotal, horasTotal:c.horasTotal, filamentoTotal:c.filamentoTotal };
   delete p.valorPago;
@@ -2371,6 +2393,7 @@ function escolherFrete(i){
   const campo = f.querySelector('[name="entrega"]');
   campo.value = dec(o.preco, 2);
   f.querySelector('[name="freteServico"]').value = nome;
+  const sid = f.querySelector('[name="freteServicoId"]'); if(sid) sid.value = o.id || "";
   document.getElementById("frete-escolhido").innerHTML = `Escolhido: <b style="color:var(--text)">${esc(nome)}</b>`;
   f.querySelectorAll("[data-frete-opcao]").forEach(b => b.style.borderColor = +b.dataset.freteOpcao === i ? "var(--cyan)" : "var(--line)");
   atualizarPedido();
