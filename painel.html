@@ -626,7 +626,8 @@ const CONFIG_PADRAO = {
   precoFilamento: 120, potencia: 200, precoKwh: 0.92, valorImpressora: 2000, vidaUtil: 5000,
   manutencaoHora: 0.5, horaTrabalho: 30, taxaFalha: 8, margem: 60, taxaPagamento: 0, horasDia: 12,
   embComp: 20, embLarg: 15, embAlt: 10, embPeso: 150,  // caixa padrão para cotar frete (cm e gramas)
-  tempoAjuste: 100   // % do tempo do MakerWorld (calculado para Bambu Lab) na sua impressora
+  tempoAjuste: 100,  // % do tempo do MakerWorld (calculado para Bambu Lab) na sua impressora
+  taxaMaquininha: 0  // % que a maquininha desconta (débito/crédito à vista); entra sozinho no lucro
 };
 const NEGOCIO_PADRAO = {
   nome:"RazenLab",
@@ -927,7 +928,31 @@ function ultimosMeses(n){
 /* dinheiro de verdade de cada pedido pago */
 const recebido = p => num(p.valorRecebido) > 0 ? num(p.valorRecebido) : num(p.total);
 const taxaRec  = p => num(p.taxaRecebimento != null && p.taxaRecebimento !== "" ? p.taxaRecebimento : p.taxaMercadoPago);
-const custoDe  = p => p.custoTotal != null ? num(p.custoTotal) : (p.lucroTotal != null ? num(p.total) - num(p.lucroTotal) : 0);
+/* taxa automática pela forma de pagamento (Mercado Pago já vem com a taxa real) */
+const pctForma = forma => /maquininha/i.test(forma || "") ? Math.min(30, Math.max(0, num(dados.config.taxaMaquininha))) : 0;
+const taxaAuto = (forma, valor) => Math.round(num(valor) * pctForma(forma)) / 100;
+/* venda da loja não tem peso/tempo lançados: estima o custo de produção pelas suas
+   próprias regras de preço (margem + taxa) e soma o frete, que é repasse */
+function custoLoja(p){
+  const cfg = dados.config, t = Math.min(Math.max(num(cfg.taxaPagamento),0),90)/100, m = Math.max(0, num(cfg.margem))/100;
+  const pecas = Math.max(0, num(p.total) - num(p.entrega));
+  return Math.round((pecas * (1 - t) / (1 + m) + num(p.entrega)) * 100) / 100;
+}
+function dicaTaxa(forma){
+  if(/mercado pago/i.test(forma || "")) return "Vem sozinha do Mercado Pago.";
+  const pct = pctForma(forma);
+  return pct ? `Vazio = ${dec(pct, pct % 1 ? 2 : 0)}% automático (Configurações).` : /maquininha/i.test(forma || "") ? "Cadastre a taxa da maquininha em Configurações e ela entra sozinha." : "Pix e dinheiro: sem taxa.";
+}
+function resumoPagamento(p){
+  if(!FATURADO.includes(p.status)) return p.dataOrcamento ? `orçado em ${dataBR(p.dataOrcamento)} · o resto entra sozinho` : "entra sozinho";
+  const liq = recebido(p) - taxaRec(p);
+  return `pago${p.dataPago ? " em " + dataBR(p.dataPago) : ""} · ${esc(p.formaPagamento || "Pix")} · líquido ${brl(liq)} · lucro ${brl(liq - custoDe(p))}${custoEstimadoDe(p) ? " (estimado)" : ""}`;
+}
+const daLoja = p => Array.isArray(p.itens) && p.itens.length > 0;
+const custoEstimadoDe = p => daLoja(p) && (p.custoEstimado || p.custoTotal == null || num(p.custoTotal) <= num(p.entrega) + 0.01);
+const custoDe  = p => custoEstimadoDe(p) ? custoLoja(p)
+  : p.custoTotal != null ? num(p.custoTotal)
+  : (p.lucroTotal != null ? num(p.total) - num(p.lucroTotal) : 0);
 const lucroReal = p => recebido(p) - taxaRec(p) - custoDe(p);
 function resumoFin(l){
   const soma = f => l.reduce((s,p) => s + f(p), 0);
@@ -1383,8 +1408,9 @@ function comNovaSituacao(p0, st, D, motivo){
   p.status = st;
   if(st !== "solicitado" && !p.dataOrcamento) p.dataOrcamento = D;
   if(p.dataOrcamento && !p.validadeAte) p.validadeAte = somaDias(p.dataOrcamento, num(dados.negocio.validadeDias) || 7);
-  if(FATURADO.includes(st)){ p.dataPago = p.dataPago || D; p.formaPagamento = p.formaPagamento || "Pix"; if(p.prazoAuto && !p0.dataPago) p.prazo = prazoAutomatico(p.dataPago, p.freteDias); }
-  else{ delete p.dataPago; if(!p.mpPagamentoId){ delete p.formaPagamento; delete p.valorRecebido; delete p.taxaRecebimento; } }
+  if(FATURADO.includes(st)){ p.dataPago = p.dataPago || D; p.formaPagamento = p.formaPagamento || "Pix"; if(p.prazoAuto && !p0.dataPago) p.prazo = prazoAutomatico(p.dataPago, p.freteDias);
+    if(!p.mpPagamentoId && (p.taxaAuto || !num(p.taxaRecebimento))){ const t = taxaAuto(p.formaPagamento, recebido(p)); if(t > 0){ p.taxaRecebimento = t; p.taxaAuto = true; } } }
+  else{ delete p.dataPago; if(!p.mpPagamentoId){ delete p.formaPagamento; delete p.valorRecebido; delete p.taxaRecebimento; delete p.taxaAuto; } }
   if(["enviado","entregue"].includes(st)) p.dataEnviado = p.dataEnviado || D; else delete p.dataEnviado;
   if(st === "entregue") p.dataEntregue = p.dataEntregue || D; else delete p.dataEntregue;
   if(!["cancelado","perdido"].includes(st)){
@@ -1586,13 +1612,13 @@ TELAS.estoque = () => `
     <div class="pn rv" style="--d:140ms" id="fil-form">
       <div class="ph"><h2>Cadastrar filamento</h2></div>
       <div class="grid">
-        <label class="f"><span>Nome</span><input name="nome" placeholder="PLA Voolt preto"></label>
+        <label class="f"><span>Nome</span><input name="nome" placeholder="vazio = material + cor"></label>
         <div class="grid g2">
           <label class="f"><span>Material</span><input name="material" placeholder="PLA, PETG, TPU"></label>
           <label class="f"><span>Cor</span><input name="cor" placeholder="Preto"></label>
         </div>
         <label class="f"><span>Linha Voolt3D (parâmetros)</span><select name="guia">${guiaOpcoes("")}</select></label>
-        <label class="f"><span>Preço do rolo de 1 kg</span><div class="campo"><span class="u">R$</span><input class="num" name="precoKg" inputmode="decimal" value="0"></div></label>
+        <label class="f"><span>Preço do rolo de 1 kg</span><div class="campo"><span class="u">R$</span><input class="num" name="precoKg" inputmode="decimal" value="" placeholder="igual ao último"></div></label>
         <div class="grid g2">
           <label class="f"><span>Tenho em estoque</span><div class="campo"><input class="num" name="estoque" inputmode="decimal" value="1000"><span class="u">g</span></div></label>
           <label class="f"><span>Avisar abaixo de</span><div class="campo"><input class="num" name="minimo" inputmode="decimal" value="200"><span class="u">g</span></div></label>
@@ -1636,7 +1662,7 @@ TELAS.financeiro = () => {
   <section class="kpis">
     <div class="pn hov kpi rv" style="--d:60ms"><div class="lbl">Faturado</div><div class="v" data-conta="${r.fat}" data-tipo="brl">${brl(0)}</div><div class="dl">${r.qtd} pedido${r.qtd===1?"":"s"} pago${r.qtd===1?"":"s"}${r.qtd?` · ticket ${brl(r.fat/r.qtd)}`:""}</div></div>
     <div class="pn hov kpi rv" style="--d:120ms"><div class="lbl">Custos e taxas</div><div class="v" data-conta="${r.custos + r.taxas}" data-tipo="brl">${brl(0)}</div><div class="dl">produção e frete ${brl(r.custos)} · taxas ${brl(r.taxas)}</div></div>
-    <div class="pn hov kpi rv" style="--d:180ms"><div class="lbl">Lucro real</div><div class="v ${r.lucro<0?"dn":"up"}" data-conta="${r.lucro}" data-tipo="brl">${brl(0)}</div><div class="dl">margem de ${dec(r.margem,0)}%</div></div>
+    <div class="pn hov kpi rv" style="--d:180ms"><div class="lbl">Lucro real</div><div class="v ${r.lucro<0?"dn":"up"}" data-conta="${r.lucro}" data-tipo="brl">${brl(0)}</div><div class="dl">margem de ${dec(r.margem,0)}%${lista.some(custoEstimadoDe) ? ` · ${lista.filter(custoEstimadoDe).length} venda${lista.filter(custoEstimadoDe).length===1?"":"s"} da loja com custo estimado` : ""}</div></div>
     <div class="pn hov kpi rv" style="--d:240ms"><div class="lbl">Aguardando pagamento</div><div class="v" data-conta="${receber}" data-tipo="brl">${brl(0)}</div><div class="dl">${pend.length} orçamento${pend.length===1?"":"s"} em aberto</div></div>
   </section>
   <div class="pn rv" style="--d:300ms;margin-bottom:16px">
@@ -1968,6 +1994,7 @@ TELAS.config = () => {
       ${cn("taxaFalha","Reserva para falhas",c.taxaFalha,"%")}
       ${cn("margem","Margem de lucro",c.margem,"%")}
       ${cn("taxaPagamento","Taxa de recebimento",c.taxaPagamento,"%","Pix é 0.")}
+      ${cn("taxaMaquininha","Taxa da maquininha",c.taxaMaquininha||0,"%","Descontada sozinha quando o pedido é pago no cartão da maquininha.")}
       ${cn("horasDia","Horas de impressão por dia",c.horasDia,"h","Usado no anel de ocupação.")}
       ${cn("embComp","Caixa padrão · comprimento",c.embComp,"cm","Medidas usadas na cotação de frete.")}
       ${cn("embLarg","Caixa padrão · largura",c.embLarg,"cm")}
@@ -2059,8 +2086,9 @@ function desenharPedido(){
             ${p.anexo?`<button type="button" class="tb min" data-arquivo="${esc(p.anexo)}">Abrir anexo do cliente</button>`:`<span class="faint">Sem anexo</span>`}</div>
         </div>` : ""}
 
-        <details class="pn ped-datas" style="background:rgba(2,8,20,.45);margin-bottom:16px" ${p.id ? "open" : ""}>
-          <summary class="lbl" style="margin-bottom:10px;cursor:pointer">Pagamento e datas${p.id ? "" : " · abrir só se o cliente já aprovou ou pagou"}</summary>
+        <details class="pn ped-datas" style="background:rgba(2,8,20,.45);margin-bottom:16px">
+          <summary class="lbl" style="cursor:pointer">Pagamento e datas <span class="faint" style="text-transform:none;letter-spacing:0;font-weight:400">· ${resumoPagamento(p)}</span></summary>
+          <div style="height:10px"></div>
           <div class="grid g3">
             <label class="f"><span>Data do orçamento</span><input type="date" name="f_dataOrcamento" value="${p.dataOrcamento||""}"></label>
             <label class="f"><span>Data de aprovação</span><input type="date" name="f_dataAprovado" value="${p.dataAprovado||""}"></label>
@@ -2068,12 +2096,12 @@ function desenharPedido(){
             <label class="f"><span>Forma de pagamento</span><select name="f_forma"><option value="">—</option>${
               [...new Set(["Pix","Dinheiro","Cartão na maquininha","Transferência","Outro", p.formaPagamento].filter(Boolean))].map(o => `<option ${p.formaPagamento===o?"selected":""}>${esc(o)}</option>`).join("")}</select></label>
             <label class="f"><span>Valor recebido</span><div class="campo"><span class="u">R$</span><input class="num" name="f_valorRecebido" inputmode="decimal" value="${p.valorRecebido ? dec(num(p.valorRecebido),2) : ""}" placeholder="${esc(dec(num(p.total),2))}"></div><span class="dica">Vazio = o total do pedido.</span></label>
-            <label class="f"><span>Taxa descontada</span><div class="campo"><span class="u">R$</span><input class="num" name="f_taxa" inputmode="decimal" value="${taxaRec(p) ? dec(taxaRec(p),2) : ""}" placeholder="0,00"></div><span class="dica">Maquininha ou Mercado Pago.</span></label>
+            <label class="f"><span>Taxa descontada</span><div class="campo"><span class="u">R$</span><input class="num" name="f_taxa" inputmode="decimal" value="${taxaRec(p) && !p.taxaAuto ? dec(taxaRec(p),2) : ""}" placeholder="${esc(dec(p.taxaAuto ? taxaRec(p) : taxaAuto(p.formaPagamento, recebido(p)),2))}"></div><span class="dica" id="taxa-dica">${dicaTaxa(p.formaPagamento)}</span></label>
             <label class="f"><span>Início da produção</span><input type="date" name="f_dataInicio" value="${p.dataInicio||""}"></label>
             <label class="f"><span>Data de envio</span><input type="date" name="f_dataEnviado" value="${p.dataEnviado||""}"></label>
             <label class="f"><span>Data de entrega</span><input type="date" name="f_dataEntregue" value="${p.dataEntregue||""}"></label>
           </div>
-          <p class="dica" style="margin-top:8px">Cada data preenchida avança o pedido para a etapa dela (Aprovado, Pago, Imprimindo, Enviado, Entregue). O relatório financeiro usa a data do pagamento.</p>
+          <p class="dica" style="margin-top:8px">Não precisa preencher: as datas entram sozinhas quando você muda a situação do pedido, e a taxa sai da forma de pagamento. Mexa aqui só para corrigir algo (ex.: pagamento de outro dia).</p>
         </details>
 
         ${p.mpPagamentoId || p.mpStatus ? `<div class="req" style="border-color:rgba(30,155,255,.5);background:rgba(30,155,255,.07)">
@@ -2225,6 +2253,10 @@ function montarPedido(){
   if(!num(v.peso) && !num(v.horas) && !num(v.acabamento) && num(pedidoAberto.custoTotal) > num(p.custoTotal)){
     p.custoTotal = num(pedidoAberto.custoTotal); p.lucroTotal = num(p.total) - p.custoTotal;
   }
+  // venda da loja sem peso/tempo lançados: custo estimado (você pode lançar o real quando quiser)
+  if(daLoja(p) && !num(v.peso) && !num(v.horas) && !num(v.acabamento)){
+    p.custoEstimado = true; p.custoTotal = custoLoja(p); p.lucroTotal = Math.round((num(p.total) - p.custoTotal) * 100) / 100;
+  } else delete p.custoEstimado;
   // datas informadas à mão avançam a situação (nunca a fazem voltar)
   const ordemFluxo = s => FLUXO.indexOf(s);
   if(!["cancelado","perdido"].includes(p.status)){
@@ -2241,8 +2273,13 @@ function montarPedido(){
   if(FATURADO.includes(p.status)){
     if(v.f_forma) p.formaPagamento = v.f_forma; else if(!p.formaPagamento) p.formaPagamento = "Pix";
     if(num(v.f_valorRecebido) > 0) p.valorRecebido = num(v.f_valorRecebido); else if(!p.mpPagamentoId) delete p.valorRecebido;
-    if(v.f_taxa !== undefined){ if(num(v.f_taxa) > 0) p.taxaRecebimento = num(v.f_taxa); else delete p.taxaRecebimento; }
-  }else if(!p.mpPagamentoId){ delete p.formaPagamento; delete p.valorRecebido; delete p.taxaRecebimento; }
+    if(v.f_taxa !== undefined){
+      const auto = String(v.f_taxa).trim() === "" && !p.mpPagamentoId ? taxaAuto(p.formaPagamento, recebido(p)) : 0;
+      if(auto > 0){ p.taxaRecebimento = auto; p.taxaAuto = true; }
+      else if(num(v.f_taxa) > 0){ p.taxaRecebimento = num(v.f_taxa); delete p.taxaAuto; }
+      else { delete p.taxaRecebimento; delete p.taxaAuto; }
+    }
+  }else if(!p.mpPagamentoId){ delete p.formaPagamento; delete p.valorRecebido; delete p.taxaRecebimento; delete p.taxaAuto; }
   // orçamento: para quem, quando foi feito, até quando vale e de onde veio
   p.origem = p.origem || "painel";
   if(p.status !== "solicitado" && !p.dataOrcamento) p.dataOrcamento = hoje();
@@ -3745,7 +3782,10 @@ document.addEventListener("click", async e => {
       break;
     case "add-filamento": {
       const f = lerCampos(document.getElementById("fil-form"));
-      if(!f.nome.trim()){ toast("Dê um nome ao filamento."); break; }
+      // nome e preço se preenchem sozinhos: "PLA Preto" e o preço do último rolo do mesmo material
+      if(!f.nome.trim()) f.nome = [f.material, f.cor].map(x => String(x||"").trim()).filter(Boolean).join(" ");
+      if(!f.nome.trim()){ toast("Preencha pelo menos o material e a cor."); break; }
+      if(!num(f.precoKg)){ const igual = [...dados.filamentos].reverse().find(x => num(x.precoKg) && String(x.material||"").toLowerCase() === String(f.material||"").trim().toLowerCase()); f.precoKg = igual ? igual.precoKg : dados.config.precoFilamento; }
       const novo = { nome:f.nome.trim(), material:f.material.trim(), cor:f.cor.trim(), guia:f.guia||"", precoKg:num(f.precoKg), estoque: String(f.estoque).trim()==="" ? null : num(f.estoque), minimo:num(f.minimo) };
       try{ await gravarFilamento(novo); dados.filamentos.push(novo); render(); toast("Filamento cadastrado."); }catch(err){ falhou(err, "cadastrar o filamento"); }
       break;
@@ -3873,6 +3913,13 @@ document.addEventListener("input", e => {
 document.addEventListener("change", async e => {
   if(e.target.closest("#ped-form")){
     formSujo = true; atualizarPedido();
+    // forma de pagamento: mostra na hora a taxa que vai entrar sozinha
+    if(["f_forma","f_valorRecebido"].includes(e.target.name)){
+      const f = document.getElementById("ped-form"), forma = f.querySelector('[name="f_forma"]').value;
+      const valor = num(f.querySelector('[name="f_valorRecebido"]').value) || num((pedidoAberto && pedidoAberto.total) || 0);
+      const tx = f.querySelector('[name="f_taxa"]'); if(tx) tx.placeholder = dec(taxaAuto(forma, valor), 2);
+      const d = document.getElementById("taxa-dica"); if(d) d.textContent = dicaTaxa(forma);
+    }
     // escolher o motivo de "Não fechou" já grava
     if(e.target.name === "motivoPerda" && e.target.value && pedidoAberto && pedidoAberto.id && document.querySelector('#ped-form [name="status"]').value === "perdido"){
       const salvo = await salvarPedido(true);
