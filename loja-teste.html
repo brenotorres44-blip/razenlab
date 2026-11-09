@@ -1112,7 +1112,7 @@ async function calcularFrete(){
   loja.cep = cep; loja.erroFrete = ""; loja.opcoes = []; loja.escolha = ""; loja.calculando = true; desenharCarrinho();
   try{
     const r = await chamarLoja({ acao:"cotar", cep, itens:carrinho.map(x => ({ id:x.id, qtd:x.qtd, cor:x.cor })) });
-    loja.opcoes = r.opcoes || []; loja.subtotal = r.subtotal; loja.erroFrete = r.erro || ""; loja.simulado = false;
+    loja.opcoes = tresFretes(r.opcoes || []); loja.subtotal = r.subtotal; loja.erroFrete = r.erro || ""; loja.simulado = false;
   }catch(e){
     if(e.simular){
       loja.simulado = true;
@@ -1134,6 +1134,16 @@ async function buscarEnderecoLoja(cep){
     loja.endereco = { rua:j.logradouro || "", bairro:j.bairro || "", cidade:j.localidade || "", uf:j.uf || "" };
     ["rua","bairro","cidade","uf"].forEach(k => { const el = document.querySelector(`#loja-form [name="${k}"]`); if(el && !el.value) el.value = loja.endereco[k]; });
   }catch(e){}
+}
+/* mostra só 3 fretes: o mais barato, o mais rápido e o próximo mais barato (+ retirada em mãos) */
+function tresFretes(l){
+  const ret = l.filter(o => o.id === "retirada"), env = l.filter(o => o.id !== "retirada").sort((a,b) => a.preco - b.preco);
+  const pega = [];
+  if(env[0]) pega.push(env[0]);
+  const rapido = env.filter(o => o.prazo).sort((a,b) => a.prazo - b.prazo || a.preco - b.preco)[0];
+  if(rapido && !pega.includes(rapido)) pega.push(rapido);
+  for(const o of env){ if(pega.length >= 3) break; if(!pega.includes(o)) pega.push(o); }
+  return pega.sort((a,b) => a.preco - b.preco).concat(ret);
 }
 function freteEscolhido(){ return loja.opcoes.find(o => o.id === loja.escolha); }
 
