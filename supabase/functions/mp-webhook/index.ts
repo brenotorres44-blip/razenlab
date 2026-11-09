@@ -8,7 +8,8 @@
 //  MP_ACCESS_TOKEN_TESTE (loja-teste). Pagamento de teste só mexe em pedido de
 //  teste, e pagamento real só mexe em pedido real — um nunca confirma o outro.
 //  Opcional: MP_WEBHOOK_SECRET (assinatura secreta dos webhooks) — se
-//  cadastrado, avisos sem assinatura válida são recusados.
+//  cadastrado, avisos sem assinatura válida são recusados. Para seguir testando
+//  com a conta vendedora de teste, cadastre também MP_WEBHOOK_SECRET_TESTE.
 //  Opcional: TELEGRAM_BOT_TOKEN + TELEGRAM_CHAT_ID — avisa no seu celular
 //  (Telegram) toda vez que um pedido vira Pago, com os itens e o endereço.
 // ==========================================================================
@@ -90,7 +91,13 @@ Deno.serve(async (req) => {
   const tipo = corpo?.type ?? corpo?.topic ?? url.searchParams.get("type") ?? url.searchParams.get("topic");
   const id = String(corpo?.data?.id ?? url.searchParams.get("data.id") ?? url.searchParams.get("id") ?? "");
   if (tipo !== "payment" || !/^\d+$/.test(id)) return ok({ ignorado: true });
-  if (SEGREDO && !(await assinaturaValida(req, id, SEGREDO))) return ok({ erro: "assinatura inválida" }, 401);
+  // aceita a assinatura da aplicação real ou da de teste (MP_WEBHOOK_SECRET_TESTE, opcional)
+  const segredos = [SEGREDO, Deno.env.get("MP_WEBHOOK_SECRET_TESTE")].filter(Boolean) as string[];
+  if (segredos.length) {
+    let valida = false;
+    for (const sg of segredos) if (await assinaturaValida(req, id, sg)) { valida = true; break; }
+    if (!valida) return ok({ erro: "assinatura inválida" }, 401);
+  }
 
   // 1) consulta o pagamento na fonte: primeiro na conta de produção, depois na de teste
   let pg: Record<string, any> | null = null, deTeste = false;
