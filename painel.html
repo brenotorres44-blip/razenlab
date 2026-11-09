@@ -669,6 +669,11 @@ function resultado(p){
   return "aberto";
 }
 function somaDias(isoData, n){ const d = new Date(isoData + "T12:00:00"); d.setDate(d.getDate() + n); return d.toISOString().slice(0,10); }
+function somaDiasUteis(isoData, n){ const d = new Date(isoData + "T12:00:00"); let k = 0; while(k < n){ d.setDate(d.getDate() + 1); const w = d.getDay(); if(w !== 0 && w !== 6) k++; } return d.toISOString().slice(0,10); }
+/* prazo de entrega automático: dias úteis de produção (Configurações) + dias do frete escolhido, contados a partir de hoje ou do pagamento */
+const diasProducao = () => Math.min(60, Math.max(1, num(dados.negocio.prazoProducaoDias) || 5));
+const prazoAutomatico = (base, freteDias) => somaDiasUteis(base || hoje(), diasProducao() + Math.max(0, Math.round(num(freteDias))));
+const textoPrazo = (freteDias) => `${diasProducao()} dias úteis de produção${num(freteDias) ? ` + ${Math.round(num(freteDias))} do frete` : ""}. Mude se quiser.`;
 function difDias(a, b){ if(!a || !b) return null; return Math.round((new Date(b+"T12:00:00") - new Date(a+"T12:00:00")) / 86400000); }
 const dataOrc = p => p.dataOrcamento || (p.criadoEm || "").slice(0,10);
 /* compra da loja que ainda não foi paga: é só um carrinho, não um pedido. Fica guardada em "Carrinhos não pagos" */
@@ -1378,7 +1383,7 @@ function comNovaSituacao(p0, st, D, motivo){
   p.status = st;
   if(st !== "solicitado" && !p.dataOrcamento) p.dataOrcamento = D;
   if(p.dataOrcamento && !p.validadeAte) p.validadeAte = somaDias(p.dataOrcamento, num(dados.negocio.validadeDias) || 7);
-  if(FATURADO.includes(st)){ p.dataPago = p.dataPago || D; p.formaPagamento = p.formaPagamento || "Pix"; }
+  if(FATURADO.includes(st)){ p.dataPago = p.dataPago || D; p.formaPagamento = p.formaPagamento || "Pix"; if(p.prazoAuto && !p0.dataPago) p.prazo = prazoAutomatico(p.dataPago, p.freteDias); }
   else{ delete p.dataPago; if(!p.mpPagamentoId){ delete p.formaPagamento; delete p.valorRecebido; delete p.taxaRecebimento; } }
   if(["enviado","entregue"].includes(st)) p.dataEnviado = p.dataEnviado || D; else delete p.dataEnviado;
   if(st === "entregue") p.dataEntregue = p.dataEntregue || D; else delete p.dataEntregue;
@@ -1918,7 +1923,7 @@ TELAS.config = () => {
       <label class="f"><span>Texto da seção de contato</span><textarea name="sobre">${esc(n.sobre)}</textarea></label>
       <label class="f"><span>Formas de pagamento</span><textarea name="pagamento">${esc(n.pagamento)}</textarea></label>
       ${cn("validadeDias","Validade do orçamento",n.validadeDias,"dias")}
-      ${cn("prazoProducaoDias","Prazo de produção na loja",n.prazoProducaoDias || 5,"dias úteis","Somado ao prazo do frete nas compras pelo site.")}
+      ${cn("prazoProducaoDias","Prazo de produção",n.prazoProducaoDias || 5,"dias úteis","Calcula sozinho o prazo de entrega dos orçamentos e da loja (somado ao prazo do frete).")}
     </div>
     <div class="sep"></div>
     <div class="ph" style="margin-bottom:10px"><h2>Recebimento por Pix</h2><span class="cod">APARECE PARA O CLIENTE NO LINK DO PEDIDO</span></div>
@@ -1996,6 +2001,10 @@ function abrirPedido(p){
   // data do orçamento: hoje num orçamento novo; nos antigos sem data, o dia em que foram criados
   if(!pedidoAberto.dataOrcamento && pedidoAberto.status !== "solicitado")
     pedidoAberto.dataOrcamento = pedidoAberto.id ? ((pedidoAberto.criadoEm || "").slice(0,10) || hoje()) : hoje();
+  // prazo de entrega: vem calculado quando ainda não tem um
+  if(!pedidoAberto.prazo && !["enviado","entregue","cancelado","perdido"].includes(pedidoAberto.status)){
+    pedidoAberto.prazo = prazoAutomatico(pedidoAberto.dataPago, pedidoAberto.freteDias); pedidoAberto.prazoAuto = true;
+  }
   // pedido antigo que só tem o valor (sem peso/tempo): o valor vira "preço combinado" para não ser recalculado para zero
   const pa = pedidoAberto;
   if(pa.id && num(pa.total) > 0 && !(num(pa.precoManual) > 0) && precificar(pa).preco <= 0){
@@ -2088,7 +2097,8 @@ function desenharPedido(){
               <datalist id="lista-clientes">${listaClientes().map(x=>`<option value="${esc(x.nome)}">`).join("")}</datalist>
               ${txt("contato","WhatsApp",p.contato,"(11) 90000-0000")}
               ${txt("email","E-mail",p.email,"opcional")}
-              <label class="f"><span>Prazo de entrega</span><input type="date" name="prazo" value="${p.prazo||""}"></label>
+              <label class="f"><span>Prazo de entrega</span><input type="date" name="prazo" value="${p.prazo||""}"><span class="dica" id="prazo-dica">${p.prazoAuto ? esc(textoPrazo(p.freteDias)) : p.prazo ? "Definido por você." : ""}</span>
+                <input type="hidden" name="prazoAuto" value="${p.prazoAuto ? "1" : ""}"><input type="hidden" name="freteDias" value="${esc(p.freteDias || "")}"></label>
             </div>
             ${blocoMakerWorld(p.modelo ? p.modelo.url : "", p.modelo ? JSON.stringify(p.modelo) : (p.modeloJson || ""))}
             ${camposPeca(p)}
@@ -2247,6 +2257,10 @@ function montarPedido(){
   const antes = etapa => !["cancelado","perdido"].includes(p.status) && FLUXO.indexOf(p.status) < FLUXO.indexOf(etapa);
   if(antes("aprovado")) delete p.dataAprovado; else { const d = v.f_dataAprovado || p.dataAprovado || (p.status === "aprovado" ? hoje() : ""); if(d) p.dataAprovado = d; else delete p.dataAprovado; }
   if(antes("imprimindo")) delete p.dataInicio; else { const d = v.f_dataInicio || p.dataInicio || (p.status === "imprimindo" ? hoje() : ""); if(d) p.dataInicio = d; else delete p.dataInicio; }
+  // prazo automático: ao virar Pago, conta a produção a partir do dia do pagamento
+  p.prazoAuto = v.prazoAuto === "1"; p.freteDias = num(v.freteDias) || "";
+  if(p.prazoAuto && FATURADO.includes(p.status) && !(pedidoAberto && pedidoAberto.dataPago) && p.dataPago) p.prazo = prazoAutomatico(p.dataPago, p.freteDias);
+  if(!p.prazo && p.prazoAuto) p.prazo = prazoAutomatico(p.dataPago, p.freteDias);
   return p;
 }
 async function salvarPedido(silencioso, mudarStatus){
@@ -2394,6 +2408,11 @@ function escolherFrete(i){
   campo.value = dec(o.preco, 2);
   f.querySelector('[name="freteServico"]').value = nome;
   const sid = f.querySelector('[name="freteServicoId"]'); if(sid) sid.value = o.id || "";
+  const fd = f.querySelector('[name="freteDias"]'); if(fd) fd.value = o.prazo || "";
+  if(f.querySelector('[name="prazoAuto"]').value === "1"){
+    f.querySelector('[name="prazo"]').value = prazoAutomatico(pedidoAberto && pedidoAberto.dataPago, o.prazo);
+    const dc = document.getElementById("prazo-dica"); if(dc) dc.textContent = textoPrazo(o.prazo);
+  }
   document.getElementById("frete-escolhido").innerHTML = `Escolhido: <b style="color:var(--text)">${esc(nome)}</b>`;
   f.querySelectorAll("[data-frete-opcao]").forEach(b => b.style.borderColor = +b.dataset.freteOpcao === i ? "var(--cyan)" : "var(--line)");
   atualizarPedido();
@@ -3845,6 +3864,7 @@ document.addEventListener("input", e => {
   if(e.target.id === "mov-busca"){ movBusca = e.target.value; desenharMovs(); return; }
   if(e.target.closest("#ped-form")){
     formSujo = true;
+    if(e.target.name === "prazo"){ const a = document.querySelector('#ped-form [name="prazoAuto"]'); if(a) a.value = ""; const dc = document.getElementById("prazo-dica"); if(dc) dc.textContent = "Definido por você."; }
     if(e.target.name === "entrega" && e.isTrusted){ const h = document.querySelector('#ped-form [name="freteServico"]'); if(h) h.value = ""; const s = document.getElementById("frete-escolhido"); if(s) s.textContent = "Frete digitado à mão."; }
     atualizarPedido();
   }
