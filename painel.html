@@ -1010,7 +1010,6 @@ const PAGINAS = [
   { id:"analise",    nome:"Análise",       ico:"analise" },
   { id:"movimentacoes", nome:"Movimentações", ico:"historico" },
   { id:"vitrine",    nome:"Vitrine",       ico:"vitrine" },
-  { id:"shopee",     nome:"Shopee",        ico:"shopee" },
   { id:"config",     nome:"Configurações", ico:"config" }
 ];
 let aba = "painel";
@@ -1053,7 +1052,7 @@ function abrirFolhaMais(){
     <div class="ov" data-fechar style="align-items:flex-end;padding:0">
       <div class="folha" style="width:100%">
         <div class="lbl" style="padding:4px 6px 10px">Mais telas</div>
-        ${["clientes","financeiro","analise","movimentacoes","vitrine","shopee","config"].map(id => { const p = PAGINAS.find(x=>x.id===id);
+        ${["clientes","financeiro","analise","movimentacoes","vitrine","config"].map(id => { const p = PAGINAS.find(x=>x.id===id);
           return `<button class="nav-it ${aba===id?"on":""}" data-ir="${id}" style="padding:14px 12px">${ico(p.ico)}<span>${p.nome}</span></button>`; }).join("")}
         <a class="nav-it" href="index.html" target="_blank" rel="noopener" style="padding:14px 12px;text-decoration:none">${ico("site")}<span>Abrir o site</span></a>
         <button class="nav-it" data-acao="sair" style="padding:14px 12px">${ico("sair")}<span>Sair</span></button>
@@ -3936,7 +3935,6 @@ if("serviceWorker" in navigator && location.protocol === "https:") navigator.ser
   try{ if(await precisaCodigo()) pedirCodigo(iniciarSessao); else await iniciarSessao(); }catch(e){ mostrarLogin(erroTexto(e), true); }
 })();
 </script>
-<script src="assets/painel-shopee.js"></script>
 <script src="assets/vendor/qrcode-generator.js"></script>
 <script src="assets/painel-etiqueta.js"></script>
 </body>
